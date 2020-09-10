@@ -11,13 +11,13 @@ dependencies:
   - pandas
   - pip
   - psutil
-  - pyproj>=2.6
+  - pyproj
   - requests
   - scipy
   - seaborn
   - shapely
   - pip:
-      - adcircpy==1.0.12
+      - adcircpy
       - coverage
       - coverage-badge
       - eventlet

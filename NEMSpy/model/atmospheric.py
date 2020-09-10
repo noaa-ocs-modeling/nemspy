@@ -1,10 +1,16 @@
-from NEMSpy.model.model import Model
+from NEMSpy.model.model import Model, ModelKey, ModelVerbosity
 
 
 class AtmosphericModel(Model):
-    pass
+    def __init__(self, processes: int, verbosity: ModelVerbosity):
+        super().__init__(ModelKey.ATMOSPHERIC, processes, verbosity)
 
 
-class ATMesh(AtmosphericModel):
-    def __init__(self):
-        super().__init__()
+class ATMESH(AtmosphericModel):
+    def __init__(self, processes: int, verbosity: ModelVerbosity):
+        super().__init__(processes, verbosity)
+
+
+class HWRF(AtmosphericModel):
+    def __init__(self, processes: int, verbosity: ModelVerbosity):
+        super().__init__(processes, verbosity)
