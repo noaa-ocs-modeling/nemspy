@@ -1,0 +1,32 @@
+name: nemspy
+channels:
+  - conda-forge
+dependencies:
+  - bs4
+  - fiona
+  - geopandas
+  - matplotlib
+  - netcdf4
+  - numpy
+  - pandas
+  - pip
+  - psutil
+  - pyproj>=2.6
+  - requests
+  - scipy
+  - seaborn
+  - shapely
+  - pip:
+      - adcircpy==1.0.12
+      - coverage
+      - coverage-badge
+      - eventlet
+      - flake8
+      - haversine
+      - nose
+      - ordered-set
+      - paramiko
+      - rednose
+      - requests_futures
+      - utm
+      - wget

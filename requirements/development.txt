@@ -1,4 +1,0 @@
--r production.txt
-coverage
-flake8
-nose
