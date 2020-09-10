@@ -20,7 +20,7 @@ jobs:
           path: ~/conda_pkgs_dir
           key: ${{ runner.os }}-conda-${{ hashFiles('environment.yml') }}
       - name: Create and activate conda environment
-        uses: goanpeca/setup-miniconda@v1
+        uses: conda-incubator/setup-miniconda@v1.7.0
         with:
           activate-environment: nemspy
           python-version: ${{ matrix.python-version }}
