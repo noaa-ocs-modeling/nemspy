@@ -14,14 +14,7 @@ class ModelSequence:
         self.duration = duration if duration is not None else \
             timedelta(hours=1)
         self.indent = indent
-        self.__models = {model_type: None for model_type in ModelType}
         self.relations = {model_type: {} for model_type in ModelType}
-
-    @property
-    def models(self) -> {ModelType: Model}:
-        return {model_type: model
-                for model_type, model in self.__models.items()
-                if model is not None}
 
     def __getitem__(self, model_type: ModelType) -> Model:
         return self.__models[model_type]
@@ -29,10 +22,6 @@ class ModelSequence:
     def __setitem__(self, model_type: ModelType, model: Model):
         assert model_type == model.model_type
         self.__models[model_type] = model
-
-    def add_relation(self, source: ModelType, destination: ModelType,
-                     method: ModelRelationMethod = ModelRelationMethod.REDISTRIBUTE):
-        self.relations[source][destination] = method
 
     def __str__(self) -> str:
         lines = []
@@ -47,3 +36,19 @@ class ModelSequence:
         block = '\n'.join(block)
         block = [f'runSeq::', indent(block, self.indent), '::']
         return '\n'.join(block)
+
+
+class NEMS:
+
+    def __init__(self, models: [ModelType]):
+        self.models = models
+
+    @property
+    def models(self) -> {ModelType: Model}:
+        return {model_type: model
+                for model_type, model in self.__models.items()
+                if model is not None}
+
+    @models.setter
+    def models(self, models):
+        self.__models = {model_type: None for model_type in ModelType}
