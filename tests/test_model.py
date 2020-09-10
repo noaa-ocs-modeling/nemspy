@@ -1,15 +1,15 @@
 import unittest
 
-from NEMSpy.model.atmospheric import ATMESH, AtmosphericModel
-from NEMSpy.model.hydrologic import HydrologicalModel, NationalWaterModel
-from NEMSpy.model.model import Model
+from NEMSpy.model import Model
+from NEMSpy.model.atmospheric import ATMesh, AtmosphericModel
+from NEMSpy.model.hydrologic import HydrologicalModel, NWM
 from NEMSpy.model.ocean import ADCIRC, OceanModel
 from NEMSpy.model.wave import WaveModel, WaveWatch3
 
 
 class TestModel(unittest.TestCase):
     def test_atmesh(self):
-        model = ATMESH()
+        model = ATMesh()
         assert isinstance(model, AtmosphericModel)
         assert isinstance(model, Model)
 
@@ -24,7 +24,7 @@ class TestModel(unittest.TestCase):
         assert isinstance(model, Model)
 
     def test_nwm(self):
-        model = NationalWaterModel()
+        model = NWM()
         assert isinstance(model, HydrologicalModel)
         assert isinstance(model, Model)
 
