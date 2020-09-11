@@ -2,7 +2,9 @@ from datetime import timedelta
 from enum import Enum
 from textwrap import indent
 
-from NEMSpy.model import Model, ModelType
+from pandas import DataFrame
+
+from nemspy.model import Earth, Model, ModelType
 
 
 class ModelRelationMethod(Enum):
@@ -10,12 +12,12 @@ class ModelRelationMethod(Enum):
 
 
 class ModelSequence:
-    def __init__(self, duration: timedelta = None, indent: str = '  '):
+    def __init__(self, duration: timedelta = None, indent_str: str = '  '):
         self.duration = duration if duration is not None else \
             timedelta(hours=1)
-        self.indent = indent
+        self.indent = indent_str
         self.__models = {model_type: None for model_type in ModelType}
-        self.relations = {model_type: {} for model_type in ModelType}
+        self.relations = DataFrame(columns=['source', 'destination', 'method'])
 
     @property
     def models(self) -> {ModelType: Model}:
@@ -27,18 +29,23 @@ class ModelSequence:
         return self.__models[model_type]
 
     def __setitem__(self, model_type: ModelType, model: Model):
-        assert model_type == model.model_type
+        assert model_type == model.type
         self.__models[model_type] = model
+
+    def add_earth(self, earth: Earth):
+        for model in earth:
+            self[model.type] = model
 
     def add_relation(self, source: ModelType, destination: ModelType,
                      method: ModelRelationMethod = ModelRelationMethod.REDISTRIBUTE):
-        self.relations[source][destination] = method
+        self.relations.loc[len(self.relations)] = [source, destination, method]
+        self.relations.sort_values('destination')
 
     def __str__(self) -> str:
         lines = []
-        for source, source_relations in self.relations.items():
-            for destination, method in source_relations.items():
-                lines += f'{source} -> {destination}   :remapMethod={method}'
+        for relation_index, relation in self.relations.iterrows():
+            lines += f'{relation["source"]} -> {relation["destination"]}'.ljust(
+                13) + f':remapMethod={relation["method"]}'
         for model_type in self.models:
             lines += f'{model_type}'
         block = '\n'.join(lines)

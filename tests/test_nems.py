@@ -1,8 +1,8 @@
 from datetime import timedelta
 import unittest
 
-from NEMSpy.model import Earth, ModelVerbosity
-from NEMSpy.nems import ModelSequence
+from nemspy.model import Earth, ModelVerbosity
+from nemspy.nems import ModelSequence
 
 
 class TestNEMS(unittest.TestCase):

@@ -1,10 +1,10 @@
 import unittest
 
-from NEMSpy.model import Model
-from NEMSpy.model.atmospheric import ATMesh, AtmosphericModel
-from NEMSpy.model.hydrologic import HydrologicalModel, NWM
-from NEMSpy.model.ocean import ADCIRC, OceanModel
-from NEMSpy.model.wave import WaveModel, WaveWatch3
+from nemspy.model import Model
+from nemspy.model.atmospheric import ATMesh, AtmosphericModel
+from nemspy.model.hydrologic import HydrologicalModel, NWM
+from nemspy.model.ocean import ADCIRC, OceanModel
+from nemspy.model.wave import WaveModel, WaveWatch3
 
 
 class TestModel(unittest.TestCase):
