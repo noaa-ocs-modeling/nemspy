@@ -2,7 +2,7 @@ from datetime import timedelta
 from enum import Enum
 from textwrap import indent
 
-from NEMSpy.model import Model, ModelType
+from .model import Model, ModelType
 from .model.ocean import OceanModel
 from .model.atmospheric import AtmosphericModel
 from .model.wave import WaveModel
