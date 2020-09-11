@@ -9,19 +9,20 @@ class ModelRelationMethod(Enum):
     REDISTRIBUTE = 'redist'
 
 
+class ModelConnector:
+    def __init__(
+            self, source: ModelType, destination: ModelType,
+            method: ModelRelationMethod = ModelRelationMethod.REDISTRIBUTE):
+        self.source = source
+        self.destination = destination
+        self.method = method
+
+
 class ModelSequence:
-    def __init__(self, duration: timedelta = None, indent: str = '  '):
-        self.duration = duration if duration is not None else \
-            timedelta(hours=1)
+    def __init__(self, duration: timedelta, indent: str = '  '):
+        self.duration = duration
         self.indent = indent
         self.relations = {model_type: {} for model_type in ModelType}
-
-    def __getitem__(self, model_type: ModelType) -> Model:
-        return self.__models[model_type]
-
-    def __setitem__(self, model_type: ModelType, model: Model):
-        assert model_type == model.model_type
-        self.__models[model_type] = model
 
     def __str__(self) -> str:
         lines = []
@@ -37,11 +38,29 @@ class ModelSequence:
         block = [f'runSeq::', indent(block, self.indent), '::']
         return '\n'.join(block)
 
+    def add_model_connector(
+            self, source: ModelType, destination: ModelType,
+            method: ModelRelationMethod = ModelRelationMethod.REDISTRIBUTE
+            ):
+        self.connectors.append(ModelConnector(source, destination, method))
+
 
 class NEMS:
 
     def __init__(self, models: [ModelType]):
         self.models = models
+        self.sequences = []
+
+    def __getitem__(self, model_type: ModelType) -> Model:
+        return self.__models[model_type]
+
+    def __setitem__(self, model_type: ModelType, model: Model):
+        assert model_type == model.model_type
+        self.__models[model_type] = model
+
+    def add_model_sequence(self, duration: timedelta) -> ModelSequence:
+        self.sequences.append(seq := ModelSequence(duration))
+        return seq
 
     @property
     def models(self) -> {ModelType: Model}:
