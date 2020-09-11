@@ -1,0 +1,51 @@
+#############################################
+####  NEMS Run-Time Configuration File  #####
+#############################################
+
+# EARTH #
+EARTH_component_list: ATM WAV OCN HYD
+EARTH_attributes::
+  Verbosity = min
+::
+
+# ATM #
+ATM_model:                      atmesh
+ATM_petlist_bounds:             0 0
+ATM_attributes::
+  Verbosity = min
+::
+
+# WAV #
+WAV_model:                      ww3data
+WAV_petlist_bounds:             1 1
+WAV_attributes::
+  Verbosity = min
+::
+
+# OCN #
+OCN_model:                      adcirc
+OCN_petlist_bounds:             2 12
+OCN_attributes::
+  Verbosity = min
+::
+
+# HYD #
+HYD_model:                      nwm
+HYD_petlist_bounds:             13 781
+HYD_attributes::
+  Verbosity = min
+::
+
+# Run Sequence #
+runSeq::
+  @3600
+    ATM -> OCN   :remapMethod=redist
+    ATM -> HYD   :remapMethod=redist
+    WAV -> OCN   :remapMethod=redist
+    OCN -> HYD   :remapMethod=redist
+    ATM
+    WAV
+    OCN
+    HYD
+  @
+::

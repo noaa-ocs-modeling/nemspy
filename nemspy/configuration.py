@@ -1,29 +1,29 @@
 from datetime import timedelta
-from enum import Enum
+from functools import lru_cache
 from textwrap import indent
 
 from pandas import DataFrame
 
 from . import get_logger
-from .model import Earth, Model, ModelType
+from .model import ConfigurationEntry, Earth, Model, ModelType
 
 LOGGER = get_logger('configuration')
 
 INDENTATION = '  '
 
 
-class ModelMediation(Enum):
-    REDISTRIBUTE = 'redist'
+class ModelSequence(ConfigurationEntry):
+    header = 'Run Sequence'
 
-
-class ModelSequence:
-    def __init__(self, duration: timedelta, **kwargs):
+    def __init__(self, duration: timedelta, order: [ModelType], **kwargs):
         self.duration = duration
+        self.order = order
 
-        self.__models = {model_type: None for model_type in ModelType}
+        self.__models = {}
         for key, value in kwargs.items():
-            if key in ModelType and isinstance(value, Model):
-                self[key] = value
+            if key in {entry.name for entry in ModelType} and \
+                    isinstance(value, Model):
+                self[ModelType[key]] = value
             elif key.upper() == 'EARTH' and isinstance(value, Earth):
                 for model_type, model in value:
                     self[model_type] = model
@@ -33,46 +33,72 @@ class ModelSequence:
 
     @property
     def models(self) -> {ModelType: Model}:
-        return {model_type: model
-                for model_type, model in self.__models.items()
-                if model is not None}
+        return [self[model_type] for model_type in self.order
+                if model_type in self]
 
     def __getitem__(self, model_type: ModelType) -> Model:
         return self.__models[model_type]
 
     def __setitem__(self, model_type: ModelType, model: Model):
         assert model_type == model.type
-        if self[model_type] is not None:
-            LOGGER
+        if model_type in self.__models:
+            LOGGER.warning(f'overwriting existing "{model_type.name}" model')
         self.__models[model_type] = model
 
-    def __iter__(self) -> (ModelType, Model):
-        for model_type, model in self.__models.items():
-            yield model_type, model
+    def __contains__(self, model_type: ModelType):
+        return model_type in self.__models
 
-    def add_earth(self, earth: Earth):
-        for model in earth:
-            self[model.type] = model
-
-    def add_connection(self, source: ModelType, destination: ModelType,
-                       method: ModelMediation = None):
-        if method is None:
-            method = ModelMediation.REDISTRIBUTE
-        self.connections.loc[len(self.connections)] = [source, destination,
-                                                       method]
-        self.connections.sort_values('destination', inplace=True)
+    def __iter__(self) -> Model:
+        for model in self.models:
+            yield model
 
     def __str__(self) -> str:
         lines = []
-        for relation_index, relation in self.connections.iterrows():
-            lines += f'{relation["source"]} -> {relation["destination"]}'.ljust(
-                13) + f':remapMethod={relation["method"]}'
-        # TODO: Order of execution is not well-defined on the current API
-        for model_type in self.models:
-            lines += f'{model_type}'
+        for model in self.models:
+            lines.extend(str(connection) for connection in model.connections)
+        lines.extend(model_type.value for model_type in self.order)
         block = '\n'.join(lines)
-        block = [f'@{self.duration / timedelta(seconds=1)}',
-                 indent(block, INDENTATION), '@']
-        block = '\n'.join(block)
-        block = [f'runSeq::', indent(block, INDENTATION), '::']
-        return '\n'.join(block)
+        block = '\n'.join([
+            f'@{self.duration / timedelta(seconds=1):.0f}',
+            indent(block, INDENTATION),
+            '@'
+        ])
+        return '\n'.join([f'runSeq::', indent(block, INDENTATION), '::'])
+
+    def __repr__(self) -> str:
+        models = [f'{model.type.name}={repr(model)}' for model in self.models]
+        return f'{self.__class__.__name__}({repr(self.duration)}, {self.order}, ' \
+               f'{", ".join(models)})'
+
+
+class NEMSConfiguration:
+    header = '#############################################\n' \
+             '####  NEMS Run-Time Configuration File  #####\n' \
+             '#############################################'
+
+    def __init__(self, earth: Earth, model_sequence: ModelSequence):
+        self.earth = earth
+        self.model_sequence = model_sequence
+
+    def write(self, filename: str):
+        with open(filename, 'w') as output_file:
+            output_file.write(str(self))
+
+    @property
+    @lru_cache(maxsize=1)
+    def entries(self) -> [ConfigurationEntry]:
+        return [self.earth, *self.earth.models.values(), self.model_sequence]
+
+    def __iter__(self) -> ConfigurationEntry:
+        for entry in self.entries:
+            yield entry
+
+    def __str__(self) -> str:
+        return f'{self.header}\n' + \
+               '\n' + \
+               '\n'.join(f'# {entry.header} #\n'
+                         f'{entry}\n'
+                         for entry in self.entries)
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({repr(self.earth)}, {repr(self.model_sequence)})'

@@ -15,7 +15,7 @@ class AtmosphericModel(Model):
 
 class ATMeshData(AtmosphericModel):
     """
-    Atmospheric Mesh (ATMesh) data
+    Atmospheric Mesh (ATMesh) reference
     """
 
     def __init__(self, processes: int, **kwargs):
