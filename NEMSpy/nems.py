@@ -37,7 +37,7 @@ class ModelSequence:
         block = [f'runSeq::', indent(block, self.indent), '::']
         return '\n'.join(block)
 
-    def add_model_connector(
+    def define_connector(
             self, source: ModelType, destination: ModelType,
             method: ModelRelationMethod = ModelRelationMethod.REDISTRIBUTE
             ):
@@ -57,7 +57,7 @@ class NEMS:
         assert model_type == model.model_type
         self.__models[model_type] = model
 
-    def add_model_sequence(self, duration: timedelta) -> ModelSequence:
+    def define_sequence(self, duration: timedelta) -> ModelSequence:
         self.sequences.append(seq := ModelSequence(duration))
         return seq
 
