@@ -4,7 +4,10 @@ from textwrap import indent
 
 from pandas import DataFrame
 
+from . import get_logger
 from .model import Earth, Model, ModelType
+
+LOGGER = get_logger('configuration')
 
 INDENTATION = '  '
 
@@ -13,21 +16,20 @@ class ModelMediation(Enum):
     REDISTRIBUTE = 'redist'
 
 
-class ModelMediator:
-    def __init__(self, source: Model, destination: Model,
-                 method: ModelMediation):
-        self.source = source
-        self.destination = destination
-        self.method = method
-
-
 class ModelSequence:
-    def __init__(self, duration: timedelta = None):
-        self.duration = duration if duration is not None else \
-            timedelta(hours=1)
+    def __init__(self, duration: timedelta, **kwargs):
+        self.duration = duration
+
         self.__models = {model_type: None for model_type in ModelType}
-        self.connections = DataFrame(
-            columns=['source', 'destination', 'method'])
+        for key, value in kwargs.items():
+            if key in ModelType and isinstance(value, Model):
+                self[key] = value
+            elif key.upper() == 'EARTH' and isinstance(value, Earth):
+                for model_type, model in value:
+                    self[model_type] = model
+
+        self.connections = DataFrame(columns=['source', 'destination',
+                                              'method'])
 
     @property
     def models(self) -> {ModelType: Model}:
@@ -40,17 +42,25 @@ class ModelSequence:
 
     def __setitem__(self, model_type: ModelType, model: Model):
         assert model_type == model.type
+        if self[model_type] is not None:
+            LOGGER
         self.__models[model_type] = model
+
+    def __iter__(self) -> (ModelType, Model):
+        for model_type, model in self.__models.items():
+            yield model_type, model
 
     def add_earth(self, earth: Earth):
         for model in earth:
             self[model.type] = model
 
     def add_connection(self, source: ModelType, destination: ModelType,
-                       method: ModelMediation = ModelMediation.REDISTRIBUTE):
+                       method: ModelMediation = None):
+        if method is None:
+            method = ModelMediation.REDISTRIBUTE
         self.connections.loc[len(self.connections)] = [source, destination,
                                                        method]
-        self.connections.sort_values('destination')
+        self.connections.sort_values('destination', inplace=True)
 
     def __str__(self) -> str:
         lines = []

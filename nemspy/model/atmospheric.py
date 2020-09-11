@@ -1,4 +1,7 @@
-from . import Model, ModelType, ModelVerbosity
+from . import Model, ModelType
+from .. import get_logger
+
+LOGGER = get_logger('model.atmos')
 
 
 class AtmosphericModel(Model):
@@ -6,17 +9,17 @@ class AtmosphericModel(Model):
     abstract implementation of a generic atmospheric model
     """
 
-    def __init__(self, name: str, processes: int, verbosity: ModelVerbosity):
-        super().__init__(name, ModelType.ATMOSPHERIC, processes, verbosity)
+    def __init__(self, name: str, processes: int, **kwargs):
+        super().__init__(name, ModelType.ATMOSPHERIC, processes, **kwargs)
 
 
-class ATMesh(AtmosphericModel):
+class ATMeshData(AtmosphericModel):
     """
-    Atmospheric Mesh (ATMesh) model
+    Atmospheric Mesh (ATMesh) data
     """
 
-    def __init__(self, processes: int, verbosity: ModelVerbosity):
-        super().__init__('atmesh', processes, verbosity)
+    def __init__(self, processes: int, **kwargs):
+        super().__init__('atmesh', processes, **kwargs)
 
 
 class HWRF(AtmosphericModel):
@@ -25,5 +28,5 @@ class HWRF(AtmosphericModel):
     https://en.wikipedia.org/wiki/Hurricane_Weather_Research_and_Forecasting_Model
     """
 
-    def __init__(self, processes: int, verbosity: ModelVerbosity):
-        super().__init__('hwrf', processes, verbosity)
+    def __init__(self, processes: int, **kwargs):
+        super().__init__('hwrf', processes, **kwargs)

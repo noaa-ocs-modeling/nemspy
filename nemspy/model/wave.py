@@ -1,4 +1,7 @@
-from . import Model, ModelType, ModelVerbosity
+from . import Model, ModelType
+from .. import get_logger
+
+LOGGER = get_logger('model.wave')
 
 
 class WaveModel(Model):
@@ -6,8 +9,8 @@ class WaveModel(Model):
     abstract implementation of a generic wave model
     """
 
-    def __init__(self, name: str, processes: int, verbosity: ModelVerbosity):
-        super().__init__(name, ModelType.WAVE, processes, verbosity)
+    def __init__(self, name: str, processes: int, **kwargs):
+        super().__init__(name, ModelType.WAVE, processes, **kwargs)
 
 
 class WaveWatch3(WaveModel):
@@ -16,8 +19,8 @@ class WaveWatch3(WaveModel):
     https://polar.ncep.noaa.gov/waves/wavewatch/
     """
 
-    def __init__(self, processes: int, verbosity: ModelVerbosity):
-        super().__init__('ww3', processes, verbosity)
+    def __init__(self, processes: int, **kwargs):
+        super().__init__('ww3', processes, **kwargs)
 
 
 class WaveWatch3Data(WaveWatch3):
@@ -25,8 +28,8 @@ class WaveWatch3Data(WaveWatch3):
     dummy IO for simulated WaveWatch III output
     """
 
-    def __init__(self, processes: int, verbosity: ModelVerbosity):
-        super().__init__(processes, verbosity)
+    def __init__(self, processes: int, **kwargs):
+        super().__init__(processes, **kwargs)
         self.name = 'ww3data'
 
 
@@ -36,5 +39,5 @@ class SWAN(WaveModel):
     http://swanmodel.sourceforge.net/
     """
 
-    def __init__(self, processes: int, verbosity: ModelVerbosity):
-        super().__init__('swan', processes, verbosity)
+    def __init__(self, processes: int, **kwargs):
+        super().__init__('swan', processes, **kwargs)

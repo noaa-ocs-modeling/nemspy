@@ -2,7 +2,11 @@ from abc import ABC
 from enum import Enum
 from textwrap import indent
 
-from ..nems import INDENTATION
+from .. import get_logger
+
+LOGGER = get_logger('model')
+
+INDENTATION = '  '
 
 
 class ModelType(Enum):
@@ -31,19 +35,18 @@ class Model(ABC):
     """
 
     def __init__(self, name: str, model_type: ModelType, processors: int,
-                 verbosity: ModelVerbosity, previous: 'Model' = None):
+                 verbosity: ModelVerbosity = None, previous: 'Model' = None):
         self.name = name
         self.type = model_type
 
         self.__start_processor = None
         self.__end_processor = None
-
-        self.previous = previous
-        self.next = None
-
         self.__processors = processors
 
-        self.verbosity = verbosity
+        self.next = None
+        self.previous = previous
+
+        self.verbosity = verbosity if verbosity is not None else ModelVerbosity.MINIMUM
 
     @property
     def processors(self):
@@ -79,10 +82,11 @@ class Model(ABC):
                 current_model = current_model.next
         else:
             self.__start_processor = 0
+            self.__end_processor = self.__start_processor + self.processors - 1
 
     @property
     def next(self):
-        return self.__previous
+        return self.__next
 
     @next.setter
     def next(self, next: 'Model'):
@@ -105,16 +109,14 @@ class Earth:
     multi-model coupling container
     """
 
-    def __init__(self, verbosity: ModelVerbosity, models: [Model] = None,
-                 indent: str = '  '):
-        self.verbosity = verbosity
+    def __init__(self, verbosity: ModelVerbosity = None, **kwargs):
+        self.type = 'EARTH'
+        self.verbosity = verbosity if verbosity is None else ModelVerbosity.MINIMUM
 
         self.__models = {}
-        if models is not None:
-            for model in models:
-                self.add(model)
-
-        self.type = 'EARTH'
+        for key, value in kwargs.items():
+            if key in {entry.name for entry in ModelType}:
+                self[key] = value
 
     @property
     def models(self):
@@ -128,9 +130,6 @@ class Earth:
     def __setitem__(self, model_type: ModelType, model: Model):
         assert model_type == model.type
         self.__models[model_type] = model
-
-    def add(self, model: Model):
-        self[model.type] = model
 
     def __str__(self) -> str:
         return '\n'.join([
