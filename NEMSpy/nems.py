@@ -6,7 +6,7 @@ from .model import Model, ModelType
 from .model.ocean import OceanModel
 from .model.atmospheric import AtmosphericModel
 from .model.wave import WaveModel
-from .model.hydrological import HydrologicalModel
+from .model.hydrologic import HydrologicalModel
 
 
 class ModelRelationMethod(Enum):
