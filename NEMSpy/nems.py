@@ -3,6 +3,10 @@ from enum import Enum
 from textwrap import indent
 
 from NEMSpy.model import Model, ModelType
+from .model.ocean import OceanModel
+from .model.atmospheric import AtmosphericModel
+from .model.wave import WaveModel
+from .model.hydrological import HydrologicalModel
 
 
 class ModelRelationMethod(Enum):
@@ -19,22 +23,22 @@ class ModelConnector:
 
 
 class ModelSequence:
-    def __init__(self, duration: timedelta, indent: str = '  '):
+    def __init__(self, duration: timedelta):
         self.duration = duration
-        self.indent = indent
         self.connectors = []
 
     def __str__(self) -> str:
         lines = []
         for conn in self.connectors:
             lines += f'{conn.source} -> {conn.destination}    :remapMethod={conn.method}'
+        # TODO: Order of execution is not well-defined on the current API
         for model_type in self.models:
             lines += f'{model_type}'
         block = '\n'.join(lines)
-        block = [f'@{self.duration / timedelta(seconds=1)}',
-                 indent(block, self.indent), '@']
+        block = [f'@{self.duration.total_seconds()}',
+                 indent(block, '  '), '@']
         block = '\n'.join(block)
-        block = [f'runSeq::', indent(block, self.indent), '::']
+        block = ['runSeq::', indent(block, '  '), '::']
         return '\n'.join(block)
 
     def define_connector(
@@ -46,7 +50,31 @@ class ModelSequence:
 
 class NEMS:
 
-    def __init__(self, models: [ModelType]):
+    def __init__(
+            self,
+            ocean: OceanModel = None,
+            wave: WaveModel = None,
+            atmospheric: AtmosphericModel = None,
+            hydrological: HydrologicalModel = None
+    ):
+        models = {}
+
+        if ocean is not None:
+            assert isinstance(ocean, OceanModel)
+            models.update({OceanModel: ocean})
+
+        if wave is not None:
+            assert isinstance(wave, WaveModel)
+            models.update({WaveModel: wave})
+
+        if atmospheric is not None:
+            assert isinstance(atmospheric, AtmosphericModel)
+            models.update({AtmosphericModel: atmospheric})
+
+        if hydrological is not None:
+            assert isinstance(hydrological, HydrologicalModel)
+            models.update({HydrologicalModel: hydrological})
+
         self.models = models
         self.sequences = []
 
@@ -72,4 +100,6 @@ class NEMS:
 
     @models.setter
     def models(self, models):
-        self.__models = {model_type: None for model_type in ModelType}
+        if len(models) == 0:
+            raise TypeError('Must specify at least one model.')
+        self.__models = models
