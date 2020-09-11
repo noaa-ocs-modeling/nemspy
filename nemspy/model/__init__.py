@@ -60,18 +60,16 @@ class Model(ConfigurationEntry):
     """
 
     def __init__(self, name: str, model_type: ModelType, processors: int,
-                 verbosity: ModelVerbosity = None, previous: 'Model' = None):
+                 verbosity: ModelVerbosity = None):
         self.name = name
         self.type = model_type
+        self.processors = processors
+        self.verbosity = verbosity if verbosity is not None else ModelVerbosity.MINIMUM
 
         self.__start_processor = None
-        self.__end_processor = None
-        self.__processors = processors
 
+        self.previous = None
         self.next = None
-        self.previous = previous
-
-        self.verbosity = verbosity if verbosity is not None else ModelVerbosity.MINIMUM
 
         self.connections = []
 
@@ -87,7 +85,6 @@ class Model(ConfigurationEntry):
     @processors.setter
     def processors(self, processes: int):
         self.__processors = processes
-        self.__end_processor = self.__start_processor + self.__processors - 1
 
     @property
     def start_processor(self) -> int:
@@ -95,7 +92,7 @@ class Model(ConfigurationEntry):
 
     @property
     def end_processor(self) -> int:
-        return self.__end_processor
+        return self.start_processor + self.processors - 1
 
     @property
     def previous(self):
@@ -104,17 +101,15 @@ class Model(ConfigurationEntry):
     @previous.setter
     def previous(self, previous: 'Model'):
         self.__previous = previous
-        if self.__previous is not None:
-            self.__previous.__next = self
-            self.__start_processor = self.__previous.end_processor + 1
-            self.processors = self.__processors
+        if self.previous is not None:
+            self.previous.__next = self
+            self.__start_processor = self.previous.end_processor + 1
             current_model = self.next
             while current_model is not None:
-                current_model.__start_processor = current_model.__previous.end_processor + 1
+                current_model.__start_processor = current_model.previous.end_processor + 1
                 current_model = current_model.next
         else:
             self.__start_processor = 0
-            self.__end_processor = self.__start_processor + self.processors - 1
 
     @property
     def next(self):
@@ -123,8 +118,8 @@ class Model(ConfigurationEntry):
     @next.setter
     def next(self, next: 'Model'):
         self.__next = next
-        if self.__next is not None:
-            self.__next.previous = self
+        if self.next is not None:
+            self.next.previous = self
 
     def __str__(self) -> str:
         return '\n'.join([
