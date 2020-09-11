@@ -1,4 +1,4 @@
-from nemspy.model import Model, ModelType, ModelVerbosity
+from . import Model, ModelType, ModelVerbosity
 
 
 class AtmosphericModel(Model):

@@ -2,6 +2,8 @@ from abc import ABC
 from enum import Enum
 from textwrap import indent
 
+from ..nems import INDENTATION
+
 
 class ModelType(Enum):
     """
@@ -28,38 +30,37 @@ class Model(ABC):
     abstract implementation of a generic model
     """
 
-    def __init__(self, name: str, model_type: ModelType, processes: int,
-                 verbosity: ModelVerbosity, indent_str: str = '  ',
-                 previous: 'Model' = None):
+    def __init__(self, name: str, model_type: ModelType, processors: int,
+                 verbosity: ModelVerbosity, previous: 'Model' = None):
         self.name = name
         self.type = model_type
 
-        self.__processes = processes
-        self.__start_process = None
-        self.__end_process = None
+        self.__start_processor = None
+        self.__end_processor = None
 
         self.previous = previous
         self.next = None
 
+        self.__processors = processors
+
         self.verbosity = verbosity
-        self.indent = indent_str
 
     @property
-    def processes(self):
-        return self.__processes
+    def processors(self):
+        return self.__processors
 
-    @processes.setter
-    def processes(self, processes: int):
-        self.__processes = processes
-        self.__end_process = self.__start_process + self.__processes - 1
-
-    @property
-    def start_process(self) -> int:
-        return self.__start_process
+    @processors.setter
+    def processors(self, processes: int):
+        self.__processors = processes
+        self.__end_processor = self.__start_processor + self.__processors - 1
 
     @property
-    def end_process(self) -> int:
-        return self.__end_process
+    def start_processor(self) -> int:
+        return self.__start_processor
+
+    @property
+    def end_processor(self) -> int:
+        return self.__end_processor
 
     @property
     def previous(self):
@@ -70,14 +71,14 @@ class Model(ABC):
         self.__previous = previous
         if self.__previous is not None:
             self.__previous.__next = self
-            self.__start_process = self.__previous.end_process + 1
-            self.processes = self.__processes
-            current = self.next
-            while current is not None:
-                current.__start_process = current.__previous.end_process + 1
-                current = current.next
+            self.__start_processor = self.__previous.end_processor + 1
+            self.processors = self.__processors
+            current_model = self.next
+            while current_model is not None:
+                current_model.__start_processor = current_model.__previous.end_processor + 1
+                current_model = current_model.next
         else:
-            self.__start_process = 0
+            self.__start_processor = 0
 
     @property
     def next(self):
@@ -92,9 +93,9 @@ class Model(ABC):
     def __str__(self) -> str:
         return '\n'.join([
             f'{self.type}_model:                      {self.name}'
-            f'{self.type}_petlist_bounds:             {self.start_process} {self.end_process}',
+            f'{self.type}_petlist_bounds:             {self.start_processor} {self.end_processor}',
             f'{self.type}_attributes::',
-            indent(f'Verbosity = {self.verbosity}', self.indent),
+            indent(f'Verbosity = {self.verbosity}', INDENTATION),
             '::'
         ])
 
@@ -113,7 +114,6 @@ class Earth:
             for model in models:
                 self.add(model)
 
-        self.indent_str = indent
         self.type = 'EARTH'
 
     @property
@@ -136,6 +136,6 @@ class Earth:
         return '\n'.join([
             f'{self.type}_component_list: {" ".join(self.models)}'
             f'{self.type}_attributes::',
-            indent(f'Verbosity = {self.verbosity}', self.indent_str),
+            indent(f'Verbosity = {self.verbosity}', INDENTATION),
             '::'
         ])

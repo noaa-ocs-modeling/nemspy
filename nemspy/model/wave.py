@@ -1,4 +1,4 @@
-from nemspy.model import Model, ModelType, ModelVerbosity
+from . import Model, ModelType, ModelVerbosity
 
 
 class WaveModel(Model):
@@ -26,7 +26,8 @@ class WaveWatch3Data(WaveWatch3):
     """
 
     def __init__(self, processes: int, verbosity: ModelVerbosity):
-        super().__init__('ww3data', processes, verbosity)
+        super().__init__(processes, verbosity)
+        self.name = 'ww3data'
 
 
 class SWAN(WaveModel):

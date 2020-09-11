@@ -4,20 +4,30 @@ from textwrap import indent
 
 from pandas import DataFrame
 
-from nemspy.model import Earth, Model, ModelType
+from .model import Earth, Model, ModelType
+
+INDENTATION = '  '
 
 
-class ModelRelationMethod(Enum):
+class ModelMediation(Enum):
     REDISTRIBUTE = 'redist'
 
 
+class ModelMediator:
+    def __init__(self, source: Model, destination: Model,
+                 method: ModelMediation):
+        self.source = source
+        self.destination = destination
+        self.method = method
+
+
 class ModelSequence:
-    def __init__(self, duration: timedelta = None, indent_str: str = '  '):
+    def __init__(self, duration: timedelta = None):
         self.duration = duration if duration is not None else \
             timedelta(hours=1)
-        self.indent = indent_str
         self.__models = {model_type: None for model_type in ModelType}
-        self.relations = DataFrame(columns=['source', 'destination', 'method'])
+        self.connections = DataFrame(
+            columns=['source', 'destination', 'method'])
 
     @property
     def models(self) -> {ModelType: Model}:
@@ -36,21 +46,23 @@ class ModelSequence:
         for model in earth:
             self[model.type] = model
 
-    def add_relation(self, source: ModelType, destination: ModelType,
-                     method: ModelRelationMethod = ModelRelationMethod.REDISTRIBUTE):
-        self.relations.loc[len(self.relations)] = [source, destination, method]
-        self.relations.sort_values('destination')
+    def add_connection(self, source: ModelType, destination: ModelType,
+                       method: ModelMediation = ModelMediation.REDISTRIBUTE):
+        self.connections.loc[len(self.connections)] = [source, destination,
+                                                       method]
+        self.connections.sort_values('destination')
 
     def __str__(self) -> str:
         lines = []
-        for relation_index, relation in self.relations.iterrows():
+        for relation_index, relation in self.connections.iterrows():
             lines += f'{relation["source"]} -> {relation["destination"]}'.ljust(
                 13) + f':remapMethod={relation["method"]}'
+        # TODO: Order of execution is not well-defined on the current API
         for model_type in self.models:
             lines += f'{model_type}'
         block = '\n'.join(lines)
         block = [f'@{self.duration / timedelta(seconds=1)}',
-                 indent(block, self.indent), '@']
+                 indent(block, INDENTATION), '@']
         block = '\n'.join(block)
-        block = [f'runSeq::', indent(block, self.indent), '::']
+        block = [f'runSeq::', indent(block, INDENTATION), '::']
         return '\n'.join(block)
