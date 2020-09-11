@@ -22,13 +22,12 @@ class ModelSequence:
     def __init__(self, duration: timedelta, indent: str = '  '):
         self.duration = duration
         self.indent = indent
-        self.relations = {model_type: {} for model_type in ModelType}
+        self.connectors = []
 
     def __str__(self) -> str:
         lines = []
-        for source, source_relations in self.relations.items():
-            for destination, method in source_relations.items():
-                lines += f'{source} -> {destination}   :remapMethod={method}'
+        for conn in self.connectors:
+            lines += f'{conn.source} -> {conn.destination}    :remapMethod={conn.method}'
         for model_type in self.models:
             lines += f'{model_type}'
         block = '\n'.join(lines)
