@@ -62,6 +62,9 @@ class NEMS:
         self.sequences.append(seq := ModelSequence(duration))
         return seq
 
+    def write(self):
+        raise NotImplementedError
+
     @property
     def models(self) -> {ModelType: Model}:
         return {model_type: model
