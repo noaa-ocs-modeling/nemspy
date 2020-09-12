@@ -11,18 +11,13 @@ from nemspy.configuration import NEMSConfiguration as NEMS # I would just call i
 from nesmpy import model as models
 
 
-from adcircpy import AdcircRun
-from NWMPy import NWMDriver  # This doesn't exist.
-
 
 def main():
-    args = []
-    kwargs = {}
     nems = NEMS(
-        ocean=models.ADCIRC(300, AdcircRun(*args, **kwargs)),
-        atmospheric=models.AtmosphericMeshData('/path/to/wind_data.nc'),  # this is always 1 core
-        waves=models.WavesMeshData('/path/to/wave_data.nc'), # this is always 1 core
-        hydrologic=models.NationalWaterModel(300, NWMDriver(*args, **kwargs))
+        ocn=models.ADCIRC(300),
+        atm=models.AtmosphericMeshData(),  # this is always 1 core
+        wav=models.WavesMeshData(), # this is always 1 core
+        hyd=models.NationalWaterModel(300)
         )
     seq = nems.add_sequence(timedelta(hours=1))
     seq.connect('atm', 'ocn')
