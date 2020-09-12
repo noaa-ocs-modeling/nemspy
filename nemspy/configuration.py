@@ -2,10 +2,11 @@ from datetime import timedelta
 from functools import lru_cache
 from textwrap import indent
 
-from pandas import DataFrame
+# from pandas import DataFrame
 
 from . import get_logger
-from .model import ConfigurationEntry, Earth, Model, ModelType, ModelVerbosity
+from .model import ConfigurationEntry, Earth, Model, ModelType, \
+    ModelVerbosity, ModelMediation, ModelMediator
 
 LOGGER = get_logger('configuration')
 
@@ -34,8 +35,11 @@ class ModelSequence(ConfigurationEntry):
             if next_model_index < len(models):
                 model.next = models[next_model_index]
 
-        self.connections = DataFrame(columns=['source', 'destination',
-                                              'method'])
+        self.connections = []
+
+    def connect(self, source: Model, destination: Model,
+                method: ModelMediation = None):
+        self.connections.append(ModelMediator(source, destination, method))
 
     @property
     @lru_cache(maxsize=1)
@@ -75,7 +79,7 @@ class ModelSequence(ConfigurationEntry):
             indent(block, INDENTATION),
             '@'
         ])
-        return '\n'.join([f'runSeq::', indent(block, INDENTATION), '::'])
+        return '\n'.join(['runSeq::', indent(block, INDENTATION), '::'])
 
     def __repr__(self) -> str:
         models = [f'{model.type.name}={repr(model)}' for model in self.models]
@@ -87,12 +91,12 @@ class NEMSConfiguration:
              '####  NEMS Run-Time Configuration File  #####\n' \
              '#############################################'
 
-    def __init__(self, model_sequence: ModelSequence):
-        self.model_sequence = model_sequence
+    def __init__(self, model_sequences: [ModelSequence]):
+        self.model_sequences = model_sequences
 
-    @property
-    def models(self):
-        return self.model_sequence.models
+    # @property
+    # def models(self):
+    #     return self.model_sequence.models
 
     def write(self, filename: str):
         with open(filename, 'w') as output_file:
@@ -101,7 +105,8 @@ class NEMSConfiguration:
     @property
     @lru_cache(maxsize=1)
     def entries(self) -> [ConfigurationEntry]:
-        return [self.model_sequence.earth, *self.models, self.model_sequence]
+        # TODO: EARTH is not a member of a sequence.
+        return [self.model_sequence.earth, *self.models, *self.model_sequences]
 
     def __iter__(self) -> ConfigurationEntry:
         for entry in self.entries:
@@ -114,5 +119,5 @@ class NEMSConfiguration:
                          f'{entry}\n'
                          for entry in self.entries)
 
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({repr(self.model_sequence)})'
+    # def __repr__(self) -> str:
+    #     return f'{self.__class__.__name__}({repr(self.model_sequence)})'

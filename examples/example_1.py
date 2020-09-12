@@ -1,25 +1,19 @@
 #! /usr/bin/env python
-# flake8: noqa
-import sys
-import pathlib
-sys.path.insert(0, str((pathlib.Path(__file__).parent / '..').resolve())) # This can be removed if setup.py is created
-
 from datetime import timedelta
 
-from nemspy.configuration import NEMSConfiguration as NEMS # I would just call it NEMS
-
-from nesmpy import model as models
-
+from nemspy import NEMS, model
 
 
 def main():
     nems = NEMS(
-        ocn=models.ADCIRC(300),
-        atm=models.AtmosphericMeshData(),  # this is always 1 core
-        wav=models.WavesMeshData(), # this is always 1 core
-        hyd=models.NationalWaterModel(300)
+        ocean=model.ocean.ADCIRC(300),
+        atmospheric=model.atmospheric.AtmosphericMeshData(),
+        waves=model.waves.WaveMeshData(),
+        hydrologic=model.hydrologic.NationalWaterModel(300)
         )
+    print(nems.configuration)
     seq = nems.add_sequence(timedelta(hours=1))
+    print(nems.configuration)
     seq.connect('atm', 'ocn')
     seq.connect('wav', 'ocn')
     seq.connect('atm', 'hyd')

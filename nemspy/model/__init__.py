@@ -71,12 +71,7 @@ class Model(ConfigurationEntry):
         self.previous = None
         self.next = None
 
-        self.connections = []
-
         self.header = str(self.type.value)
-
-    def connect(self, other: 'Model', method: ModelMediation = None):
-        self.connections.append(ModelMediator(self, other, method))
 
     @property
     def processors(self):
