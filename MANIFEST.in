@@ -1,0 +1,2 @@
+include versioneer.py
+include nemspy/_version.py
