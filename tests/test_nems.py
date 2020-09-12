@@ -15,7 +15,7 @@ from nemspy.model import ModelType
 from nemspy.model.atmospheric import ATMeshData
 from nemspy.model.hydrologic import NationalWaterModel
 from nemspy.model.ocean import ADCIRC
-from nemspy.model.wave import WaveWatch3Data
+from nemspy.model.waves import WaveWatch3Data
 
 
 class TestConfiguration(unittest.TestCase):
