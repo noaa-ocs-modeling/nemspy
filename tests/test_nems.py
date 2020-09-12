@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# flake8: noqa
+import sys
+import pathlib
+sys.path.insert(0, str((pathlib.Path(__file__).parent / '..').resolve())) # This can be removed if setup.py is created
+
 from datetime import timedelta
 from pathlib import Path
 import tempfile
@@ -37,7 +43,8 @@ class TestConfiguration(unittest.TestCase):
             with open(temporary_filename) as temporary_file:
                 with open(repository_root() /
                           'tests/reference/nems.configure') as reference_file:
-                    assert temporary_file.read() == reference_file.read()
+                    self.assertEqual(
+                        temporary_file.read(), reference_file.read())
 
 
 if __name__ == '__main__':
