@@ -1,7 +1,7 @@
 from . import Model, ModelType
 from .. import get_logger
 
-LOGGER = get_logger('model.wave')
+LOGGER = get_logger('model.waves')
 
 
 class WaveModel(Model):
