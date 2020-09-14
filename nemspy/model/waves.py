@@ -1,16 +1,16 @@
-from . import Model, ModelType
-from .. import get_logger
+from .base import ModelEntry, ModelType
+from ..logger import get_logger
 
-LOGGER = get_logger('model.waves')
+LOGGER = get_logger('model.wave')
 
 
-class WaveModel(Model):
+class WaveModel(ModelEntry):
     """
     abstract implementation of a generic wave model
     """
 
     def __init__(self, name: str, processes: int, **kwargs):
-        super().__init__(name, ModelType.WAVE, processes, **kwargs)
+        super().__init__(name, ModelType.WAVES, processes, **kwargs)
 
 
 class WaveMeshData(WaveModel):

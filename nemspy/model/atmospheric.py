@@ -1,10 +1,10 @@
-from . import Model, ModelType
-from .. import get_logger
+from .base import ModelEntry, ModelType
+from ..logger import get_logger
 
 LOGGER = get_logger('model.atmos')
 
 
-class AtmosphericModel(Model):
+class AtmosphericModel(ModelEntry):
     """
     abstract implementation of a generic atmospheric model
     """
