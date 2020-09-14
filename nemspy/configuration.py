@@ -1,8 +1,7 @@
 from datetime import timedelta
 from functools import lru_cache
 from textwrap import indent
-
-from pandas import DataFrame
+from typing import Iterator
 
 from . import get_logger
 from .model import ConfigurationEntry, INDENTATION, Model, ModelType, \
@@ -43,7 +42,7 @@ class Earth(ConfigurationEntry):
     def __contains__(self, model_type: ModelType):
         return model_type in self.__models
 
-    def __iter__(self) -> (ModelType, Model):
+    def __iter__(self) -> Iterator[(ModelType, Model)]:
         for model_type, model in self.models.items():
             yield model_type, model
 
@@ -67,7 +66,7 @@ class ModelSequence(ConfigurationEntry):
     def __init__(self, duration: timedelta, **kwargs):
         self.duration = duration
 
-        self.__models = {}
+        self.__models: {ModelType: Model} = {}
         for key, value in kwargs.items():
             if key in {entry.name for entry in ModelType} and \
                     isinstance(value, Model):
@@ -77,18 +76,14 @@ class ModelSequence(ConfigurationEntry):
                     self[model_type] = model
 
         # set start and end processors
-        models = list(self.__models.values())
-        for model_index, model in enumerate(models):
+        for model_index, model in enumerate(self):
             next_model_index = model_index + 1
-            if next_model_index < len(models):
-                model.next = models[next_model_index]
-
-        self.connections = DataFrame(columns=['source', 'destination',
-                                              'method'])
+            if next_model_index < len(self):
+                model.next = self.models[next_model_index]
 
     @property
     @lru_cache(maxsize=1)
-    def models(self) -> {ModelType: Model}:
+    def models(self) -> [Model]:
         return [self[model_type] for model_type in self.__models
                 if model_type in self]
 
@@ -109,9 +104,12 @@ class ModelSequence(ConfigurationEntry):
     def __contains__(self, model_type: ModelType):
         return model_type in self.__models
 
-    def __iter__(self) -> Model:
+    def __iter__(self) -> Iterator[Model]:
         for model in self.models:
             yield model
+
+    def __len__(self) -> int:
+        return len(self.models)
 
     def __str__(self) -> str:
         lines = []
@@ -124,7 +122,11 @@ class ModelSequence(ConfigurationEntry):
             indent(block, INDENTATION),
             '@'
         ])
-        return '\n'.join([f'runSeq::', indent(block, INDENTATION), '::'])
+        return '\n'.join([
+            f'{self.header}::',
+            indent(block, INDENTATION),
+            '::'
+        ])
 
     def __repr__(self) -> str:
         models = [f'{model.type.name}={repr(model)}' for model in self.models]
@@ -139,10 +141,6 @@ class NEMSConfiguration:
     def __init__(self, model_sequence: ModelSequence):
         self.model_sequence = model_sequence
 
-    @property
-    def models(self):
-        return self.model_sequence.models
-
     def write(self, filename: str):
         with open(filename, 'w') as output_file:
             output_file.write(str(self))
@@ -150,9 +148,10 @@ class NEMSConfiguration:
     @property
     @lru_cache(maxsize=1)
     def entries(self) -> [ConfigurationEntry]:
-        return [self.model_sequence.earth, *self.models, self.model_sequence]
+        return [self.model_sequence.earth, *self.model_sequence.models,
+                self.model_sequence]
 
-    def __iter__(self) -> ConfigurationEntry:
+    def __iter__(self) -> Iterator[ConfigurationEntry]:
         for entry in self.entries:
             yield entry
 
