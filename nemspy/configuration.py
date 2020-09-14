@@ -1,5 +1,6 @@
 from datetime import timedelta
 from functools import lru_cache
+from os import PathLike
 from textwrap import indent
 from typing import Iterator
 
@@ -141,7 +142,7 @@ class NEMSConfiguration:
     def __init__(self, model_sequence: ModelSequence):
         self.model_sequence = model_sequence
 
-    def write(self, filename: str):
+    def write(self, filename: PathLike):
         with open(filename, 'w') as output_file:
             output_file.write(str(self))
 
