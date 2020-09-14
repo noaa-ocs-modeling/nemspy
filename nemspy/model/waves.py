@@ -13,6 +13,16 @@ class WaveModel(Model):
         super().__init__(name, ModelType.WAVE, processes, **kwargs)
 
 
+class WaveMeshData(WaveModel):
+    """
+    WaveWatch III mesh reference
+    """
+
+    def __init__(self, **kwargs):
+        # Uses ww3data as name but the implementation is model agnostic
+        super().__init__('ww3data', 1, **kwargs)
+
+
 class WaveWatch3(WaveModel):
     """
     WaveWatch III model
@@ -21,16 +31,6 @@ class WaveWatch3(WaveModel):
 
     def __init__(self, processes: int, **kwargs):
         super().__init__('ww3', processes, **kwargs)
-
-
-class WaveMesh(WaveWatch3):
-    """
-    WaveWatch III mesh reference
-    """
-
-    def __init__(self, processes: int, **kwargs):
-        super().__init__(processes, **kwargs)
-        self.name = 'ww3data'
 
 
 class SWAN(WaveModel):

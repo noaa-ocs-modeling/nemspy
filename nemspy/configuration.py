@@ -92,17 +92,17 @@ class ModelSequence(ConfigurationEntry):
         return [model for model_type, model in self.__models.items()
                 if model_type in self]
 
-    @property
-    def earth(self) -> Earth:
-        return Earth(ModelVerbosity.MAXIMUM, **{model.type.name: model
-                                                for model in self.models})
-
     def connect(self, source: ModelType, destination: ModelType,
                 method: RemapMethod = None):
         if method is None:
             method = RemapMethod.REDISTRIBUTE
         self.connections.append(Connection(self[source], self[destination],
                                            method))
+
+    @property
+    def earth(self) -> Earth:
+        return Earth(ModelVerbosity.MAXIMUM, **{model.type.name: model
+                                                for model in self.models})
 
     def __getitem__(self, model_type: ModelType) -> Model:
         return self.__models[model_type]

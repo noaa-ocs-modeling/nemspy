@@ -1,5 +1,9 @@
+#!/usr/bin/env python
+# flake8: noqa
+
 from datetime import timedelta
 from pathlib import Path
+import sys
 import tempfile
 import unittest
 
