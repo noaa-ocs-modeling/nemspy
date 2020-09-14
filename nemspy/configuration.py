@@ -1,7 +1,5 @@
-# from abc import ABC, abstractmethod
 from datetime import timedelta
 from enum import Enum
-from functools import lru_cache
 from textwrap import indent
 from typing import List, Dict, Generator
 
@@ -40,11 +38,10 @@ class ModelSequence:
                 self[ModelType[key.upper()]] = value
 
         # set start and end processors
-        models = list(self.models.values())
-        for model_index, model in enumerate(models):
+        for model_index, model in enumerate(self.models):
             next_model_index = model_index + 1
-            if next_model_index < len(models):
-                model.next = models[next_model_index]
+            if next_model_index < len(self.models):
+                model.next = self.models[next_model_index]
 
         self.connections: List[ModelMediator] = []
 
@@ -52,9 +49,6 @@ class ModelSequence:
         return self.__models[model_type]
 
     def __setitem__(self, model_type: ModelType, model: ModelEntry):
-        assert model_type == model.type
-        # if model_type in self.__models:
-        #     LOGGER.warning(f'overwriting existing "{model_type.name}" model')
         self.__models[model_type] = model
 
     def __contains__(self, model_type: ModelType):
@@ -73,9 +67,9 @@ class ModelSequence:
                 lines.extend(str(connection)
                              for connection in model.connections)
             lines.extend(model_type.value for model_type in self.models)
-            block = '\n'.join(lines)
         else:
-            lines.append(self.models[0].value)
+            lines.append(str(self.models[0]))
+        block = '\n'.join(lines)
         block = '\n'.join([
             f'@{self.duration.total_seconds():.0f}',
             indent(block, INDENTATION),
