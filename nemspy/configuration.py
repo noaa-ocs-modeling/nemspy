@@ -4,9 +4,9 @@ from os import PathLike
 from textwrap import indent
 from typing import Iterator, Tuple
 
-from . import get_logger
-from .model import ConfigurationEntry, INDENTATION, Model, ModelType, \
-    ModelVerbosity
+from .model.base import ConfigurationEntry, Connection, INDENTATION, Model, \
+    ModelType, ModelVerbosity, RemapMethod
+from .utilities import get_logger
 
 LOGGER = get_logger('configuration')
 
@@ -68,7 +68,7 @@ class ModelSequence(ConfigurationEntry):
     def __init__(self, duration: timedelta, **kwargs):
         self.duration = duration
 
-        self.__models: {ModelType: Model} = {}
+        self.__models = {}
         for key, value in kwargs.items():
             key = key.upper()
             if key in {entry.name for entry in ModelType} and \
@@ -84,16 +84,25 @@ class ModelSequence(ConfigurationEntry):
             if next_model_index < len(self):
                 model.next = self.models[next_model_index]
 
+        self.connections = []
+
     @property
     @lru_cache(maxsize=1)
     def models(self) -> [Model]:
-        return [self[model_type] for model_type in self.__models
+        return [model for model_type, model in self.__models.items()
                 if model_type in self]
 
     @property
     def earth(self) -> Earth:
         return Earth(ModelVerbosity.MAXIMUM, **{model.type.name: model
                                                 for model in self.models})
+
+    def connect(self, source: ModelType, destination: ModelType,
+                method: RemapMethod = None):
+        if method is None:
+            method = RemapMethod.REDISTRIBUTE
+        self.connections.append(Connection(self[source], self[destination],
+                                           method))
 
     def __getitem__(self, model_type: ModelType) -> Model:
         return self.__models[model_type]
@@ -115,11 +124,9 @@ class ModelSequence(ConfigurationEntry):
         return len(self.models)
 
     def __str__(self) -> str:
-        lines = []
-        for model in self.models:
-            lines.extend(str(connection) for connection in model.connections)
-        lines.extend(model_type.value for model_type in self.__models)
-        block = '\n'.join(lines)
+        block = '\n'.join(
+            [str(connection) for connection in self.connections] + \
+            [model_type.value for model_type in self.__models])
         block = '\n'.join([
             f'@{self.duration / timedelta(seconds=1):.0f}',
             indent(block, INDENTATION),
@@ -136,7 +143,7 @@ class ModelSequence(ConfigurationEntry):
         return f'{self.__class__.__name__}({repr(self.duration)}, {", ".join(models)})'
 
 
-class NEMSConfiguration:
+class Configuration:
     def __init__(self, model_sequence: ModelSequence):
         self.model_sequence = model_sequence
 

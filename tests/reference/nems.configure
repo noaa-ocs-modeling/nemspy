@@ -40,8 +40,9 @@ HYD_attributes::
 runSeq::
   @3600
     ATM -> OCN   :remapMethod=redist
-    ATM -> HYD   :remapMethod=redist
     WAV -> OCN   :remapMethod=redist
+    ATM -> HYD   :remapMethod=redist
+    WAV -> HYD   :remapMethod=redist
     OCN -> HYD   :remapMethod=redist
     ATM
     WAV

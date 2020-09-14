@@ -1,7 +1,7 @@
 import unittest
 
-from nemspy.model import ModelMediation, ModelVerbosity
 from nemspy.model.atmospheric import AtmosphericMesh
+from nemspy.model.base import ModelVerbosity
 from nemspy.model.ocean import ADCIRC
 from nemspy.model.wave import WaveMesh
 
@@ -18,15 +18,6 @@ class TestModel(unittest.TestCase):
                          '  Verbosity = min\n' \
                          '  test = test2\n' \
                          '::')
-
-    def test_connection(self):
-        model_1 = AtmosphericMesh(1)
-        model_2 = WaveMesh(1)
-
-        model_1.connect(model_2, ModelMediation.REDISTRIBUTE)
-
-        self.assertEqual(str(model_1.connections[0]),
-                         'ATM -> WAV   :remapMethod=redist')
 
     def test_processors(self):
         model_1 = AtmosphericMesh(1)

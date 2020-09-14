@@ -1,5 +1,5 @@
-from . import Model, ModelType
-from .. import get_logger
+from .base import Model, ModelType
+from ..utilities import get_logger
 
 LOGGER = get_logger('model.wave')
 
