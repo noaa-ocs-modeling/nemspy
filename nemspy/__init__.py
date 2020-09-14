@@ -2,6 +2,11 @@ import logging
 from pathlib import Path
 import sys
 
+from ._version import get_versions
+
+__version__ = get_versions()['version']
+del get_versions
+
 
 def repository_root(path: str = None) -> str:
     if path is None:
