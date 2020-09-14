@@ -5,7 +5,7 @@ import unittest
 
 from nemspy import repository_root
 from nemspy.configuration import ModelSequence, NEMSConfiguration
-from nemspy.model import ModelType
+from nemspy.model import ModelMediation, ModelType
 from nemspy.model.atmospheric import ATMeshData
 from nemspy.model.hydrologic import NationalWaterModel
 from nemspy.model.ocean import ADCIRC
@@ -21,10 +21,14 @@ class TestConfiguration(unittest.TestCase):
             ModelType.HYDROLOGICAL: NationalWaterModel(769)
         }
 
-        models[ModelType.ATMOSPHERIC].connect(models[ModelType.OCEAN])
-        models[ModelType.WAVE].connect(models[ModelType.OCEAN])
-        models[ModelType.ATMOSPHERIC].connect(models[ModelType.HYDROLOGICAL])
-        models[ModelType.OCEAN].connect(models[ModelType.HYDROLOGICAL])
+        models[ModelType.ATMOSPHERIC].connect(models[ModelType.OCEAN],
+                                              ModelMediation.REDISTRIBUTE)
+        models[ModelType.WAVE].connect(models[ModelType.OCEAN],
+                                       ModelMediation.REDISTRIBUTE)
+        models[ModelType.ATMOSPHERIC].connect(models[ModelType.HYDROLOGICAL],
+                                              ModelMediation.REDISTRIBUTE)
+        models[ModelType.OCEAN].connect(models[ModelType.HYDROLOGICAL],
+                                        ModelMediation.REDISTRIBUTE)
 
         model_sequence = ModelSequence(timedelta(hours=1),
                                        **{model_type.name: model for
