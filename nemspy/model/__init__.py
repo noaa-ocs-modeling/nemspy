@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 from textwrap import indent
+from typing import Any
 
 from .. import get_logger
 
@@ -45,6 +46,9 @@ class ModelMediator:
                f'{self.destination.type.value}'.ljust(13) + \
                f':remapMethod={self.method.value}'
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({repr(self.source)}, {repr(self.destination)}, {self.method.__class__.__name__}.{self.method.name})'
+
 
 class ConfigurationEntry(ABC):
     """
@@ -64,11 +68,12 @@ class Model(ConfigurationEntry):
     """
 
     def __init__(self, name: str, model_type: ModelType, processors: int,
-                 verbosity: ModelVerbosity = None):
+                 verbosity: ModelVerbosity = None, **kwargs):
         self.name = name
         self.type = model_type
         self.processors = processors
         self.verbosity = verbosity if verbosity is not None else ModelVerbosity.MINIMUM
+        self.attributes = kwargs
 
         self.__start_processor = None
 
@@ -83,7 +88,7 @@ class Model(ConfigurationEntry):
         self.connections.append(ModelMediator(self, other, method))
 
     @property
-    def processors(self):
+    def processors(self) -> int:
         return self.__processors
 
     @processors.setter
@@ -99,7 +104,7 @@ class Model(ConfigurationEntry):
         return self.start_processor + self.processors - 1
 
     @property
-    def previous(self):
+    def previous(self) -> 'Model':
         return self.__previous
 
     @previous.setter
@@ -116,7 +121,7 @@ class Model(ConfigurationEntry):
             self.__start_processor = 0
 
     @property
-    def next(self):
+    def next(self) -> 'Model':
         return self.__next
 
     @next.setter
@@ -125,12 +130,21 @@ class Model(ConfigurationEntry):
         if self.next is not None:
             self.next.previous = self
 
+    def __getitem__(self, attribute: str) -> Any:
+        return self.attributes[attribute]
+
     def __str__(self) -> str:
+        attributes = [
+            f'{attribute} = {value if not isinstance(value, Enum) else value.value}'
+            for attribute, value in [('Verbosity', self.verbosity)] +
+                                    list(self.attributes.items())
+        ]
+
         return '\n'.join([
             f'{self.header}_model:                      {self.name}',
             f'{self.header}_petlist_bounds:             {self.start_processor} {self.end_processor}',
             f'{self.header}_attributes::',
-            indent(f'Verbosity = {self.verbosity.value}', INDENTATION),
+            indent('\n'.join(attributes), INDENTATION),
             '::'
         ])
 
