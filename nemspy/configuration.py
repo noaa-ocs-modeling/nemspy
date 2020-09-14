@@ -16,7 +16,7 @@ class Earth(ConfigurationEntry):
     multi-model coupling container
     """
 
-    header = 'EARTH'
+    entry_type = 'EARTH'
 
     def __init__(self, verbosity: ModelVerbosity = None, **kwargs):
         self.verbosity = verbosity if verbosity is None else ModelVerbosity.MINIMUM
@@ -50,8 +50,8 @@ class Earth(ConfigurationEntry):
 
     def __str__(self) -> str:
         return '\n'.join([
-            f'{self.header}_component_list: {" ".join(model_type.value for model_type in self.models)}',
-            f'{self.header}_attributes::',
+            f'{self.entry_type}_component_list: {" ".join(model_type.value for model_type in self.models)}',
+            f'{self.entry_type}_attributes::',
             indent(f'Verbosity = {self.verbosity.value}', INDENTATION),
             '::'
         ])
@@ -63,7 +63,7 @@ class Earth(ConfigurationEntry):
 
 
 class ModelSequence(ConfigurationEntry):
-    header = 'Run Sequence'
+    entry_type = 'Run Sequence'
 
     def __init__(self, duration: timedelta, **kwargs):
         self.duration = duration
@@ -126,7 +126,7 @@ class ModelSequence(ConfigurationEntry):
             '@'
         ])
         return '\n'.join([
-            f'{self.header}::',
+            f'runSeq::',
             indent(block, INDENTATION),
             '::'
         ])
@@ -165,7 +165,7 @@ class NEMSConfiguration:
     def __str__(self) -> str:
         return f'{self.header}\n' + \
                '\n' + \
-               '\n'.join(f'# {entry.header} #\n'
+               '\n'.join(f'# {entry.entry_type} #\n'
                          f'{entry}\n'
                          for entry in self.entries)
 
