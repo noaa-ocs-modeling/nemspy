@@ -13,7 +13,7 @@ class AtmosphericModel(Model):
         super().__init__(name, ModelType.ATMOSPHERIC, processes, **kwargs)
 
 
-class ATMeshData(AtmosphericModel):
+class AtmosphericMesh(AtmosphericModel):
     """
     Atmospheric Mesh (ATMesh) reference
     """
