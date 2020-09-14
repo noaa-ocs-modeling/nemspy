@@ -41,8 +41,8 @@ class TestConfiguration(unittest.TestCase):
             with open(temporary_filename) as temporary_file:
                 with open(repository_root() /
                           'tests/reference/nems.configure') as reference_file:
-                    self.assertEqual(temporary_file.read(),
-                                     reference_file.read())
+                    self.assertEqual(reference_file.read(),
+                                     temporary_file.read())
 
 
 if __name__ == '__main__':
