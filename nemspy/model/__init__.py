@@ -47,6 +47,10 @@ class ModelMediator:
 
 
 class ConfigurationEntry(ABC):
+    """
+    NEMS / NUOPC configuration entry within `*.configure` file
+    """
+
     header: str = NotImplementedError
 
     @abstractmethod
@@ -132,53 +136,3 @@ class Model(ConfigurationEntry):
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}("{self.name}", {self.type}, {self.processors}, {self.verbosity})'
-
-
-class Earth(ConfigurationEntry):
-    """
-    multi-model coupling container
-    """
-
-    header = 'EARTH'
-
-    def __init__(self, verbosity: ModelVerbosity = None, **kwargs):
-        self.verbosity = verbosity if verbosity is None else ModelVerbosity.MINIMUM
-        self.__models = {model_type: None for model_type in ModelType}
-        for key, value in kwargs.items():
-            if key in {entry.name for entry in ModelType}:
-                if isinstance(value, Model):
-                    self[ModelType[key]] = value
-
-    @property
-    def models(self):
-        return self.__models
-
-    def __getitem__(self, model_type: ModelType) -> Model:
-        return self.__models[model_type]
-
-    def __setitem__(self, model_type: ModelType, model: Model):
-        assert model_type == model.type
-        if self.__models[model_type] is not None:
-            LOGGER.warning(f'overwriting existing "{model_type.name}" model: '
-                           f'{repr(self[model_type])}')
-        self.__models[model_type] = model
-
-    def __contains__(self, model_type: ModelType):
-        return model_type in self.__models
-
-    def __iter__(self) -> (ModelType, Model):
-        for model_type, model in self.models.items():
-            yield model_type, model
-
-    def __str__(self) -> str:
-        return '\n'.join([
-            f'{self.header}_component_list: {" ".join(model_type.value for model_type in self.models)}',
-            f'{self.header}_attributes::',
-            indent(f'Verbosity = {self.verbosity.value}', INDENTATION),
-            '::'
-        ])
-
-    def __repr__(self) -> str:
-        models = [f'{model_type.name}={repr(model)}'
-                  for model_type, model in self.models.items()]
-        return f'{self.__class__.__name__}({self.verbosity}, {", ".join(models)})'
