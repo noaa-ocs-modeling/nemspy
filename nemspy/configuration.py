@@ -2,7 +2,7 @@ from datetime import timedelta
 from functools import lru_cache
 from os import PathLike
 from textwrap import indent
-from typing import Iterator
+from typing import Iterator, Tuple
 
 from . import get_logger
 from .model import ConfigurationEntry, INDENTATION, Model, ModelType, \
@@ -44,7 +44,7 @@ class Earth(ConfigurationEntry):
     def __contains__(self, model_type: ModelType):
         return model_type in self.__models
 
-    def __iter__(self) -> Iterator[(ModelType, Model)]:
+    def __iter__(self) -> Iterator[Tuple[ModelType, Model]]:
         for model_type, model in self.models.items():
             yield model_type, model
 
