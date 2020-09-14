@@ -1,8 +1,8 @@
 from datetime import timedelta
 from functools import lru_cache
+from os import PathLike
 from textwrap import indent
-
-from pandas import DataFrame
+from typing import Iterator, Tuple
 
 from . import get_logger
 from .model import ConfigurationEntry, INDENTATION, Model, ModelType, \
@@ -16,12 +16,13 @@ class Earth(ConfigurationEntry):
     multi-model coupling container
     """
 
-    header = 'EARTH'
+    entry_type = 'EARTH'
 
     def __init__(self, verbosity: ModelVerbosity = None, **kwargs):
         self.verbosity = verbosity if verbosity is None else ModelVerbosity.MINIMUM
         self.__models = {model_type: None for model_type in ModelType}
         for key, value in kwargs.items():
+            key = key.upper()
             if key in {entry.name for entry in ModelType}:
                 if isinstance(value, Model):
                     self[ModelType[key]] = value
@@ -43,14 +44,14 @@ class Earth(ConfigurationEntry):
     def __contains__(self, model_type: ModelType):
         return model_type in self.__models
 
-    def __iter__(self) -> (ModelType, Model):
+    def __iter__(self) -> Iterator[Tuple[ModelType, Model]]:
         for model_type, model in self.models.items():
             yield model_type, model
 
     def __str__(self) -> str:
         return '\n'.join([
-            f'{self.header}_component_list: {" ".join(model_type.value for model_type in self.models)}',
-            f'{self.header}_attributes::',
+            f'{self.entry_type}_component_list: {" ".join(model_type.value for model_type in self.models)}',
+            f'{self.entry_type}_attributes::',
             indent(f'Verbosity = {self.verbosity.value}', INDENTATION),
             '::'
         ])
@@ -62,33 +63,30 @@ class Earth(ConfigurationEntry):
 
 
 class ModelSequence(ConfigurationEntry):
-    header = 'Run Sequence'
+    entry_type = 'Run Sequence'
 
     def __init__(self, duration: timedelta, **kwargs):
         self.duration = duration
 
-        self.__models = {}
+        self.__models: {ModelType: Model} = {}
         for key, value in kwargs.items():
+            key = key.upper()
             if key in {entry.name for entry in ModelType} and \
                     isinstance(value, Model):
                 self[ModelType[key]] = value
-            elif key.upper() == 'EARTH' and isinstance(value, Earth):
+            elif key == 'EARTH' and isinstance(value, Earth):
                 for model_type, model in value:
                     self[model_type] = model
 
         # set start and end processors
-        models = list(self.__models.values())
-        for model_index, model in enumerate(models):
+        for model_index, model in enumerate(self):
             next_model_index = model_index + 1
-            if next_model_index < len(models):
-                model.next = models[next_model_index]
-
-        self.connections = DataFrame(columns=['source', 'destination',
-                                              'method'])
+            if next_model_index < len(self):
+                model.next = self.models[next_model_index]
 
     @property
     @lru_cache(maxsize=1)
-    def models(self) -> {ModelType: Model}:
+    def models(self) -> [Model]:
         return [self[model_type] for model_type in self.__models
                 if model_type in self]
 
@@ -109,9 +107,12 @@ class ModelSequence(ConfigurationEntry):
     def __contains__(self, model_type: ModelType):
         return model_type in self.__models
 
-    def __iter__(self) -> Model:
+    def __iter__(self) -> Iterator[Model]:
         for model in self.models:
             yield model
+
+    def __len__(self) -> int:
+        return len(self.models)
 
     def __str__(self) -> str:
         lines = []
@@ -124,7 +125,11 @@ class ModelSequence(ConfigurationEntry):
             indent(block, INDENTATION),
             '@'
         ])
-        return '\n'.join([f'runSeq::', indent(block, INDENTATION), '::'])
+        return '\n'.join([
+            f'runSeq::',
+            indent(block, INDENTATION),
+            '::'
+        ])
 
     def __repr__(self) -> str:
         models = [f'{model.type.name}={repr(model)}' for model in self.models]
@@ -132,27 +137,20 @@ class ModelSequence(ConfigurationEntry):
 
 
 class NEMSConfiguration:
-    header = '#############################################\n' \
-             '####  NEMS Run-Time Configuration File  #####\n' \
-             '#############################################'
-
     def __init__(self, model_sequence: ModelSequence):
         self.model_sequence = model_sequence
 
-    @property
-    def models(self):
-        return self.model_sequence.models
-
-    def write(self, filename: str):
+    def write(self, filename: PathLike):
         with open(filename, 'w') as output_file:
             output_file.write(str(self))
 
     @property
     @lru_cache(maxsize=1)
     def entries(self) -> [ConfigurationEntry]:
-        return [self.model_sequence.earth, *self.models, self.model_sequence]
+        return [self.model_sequence.earth, *self.model_sequence.models,
+                self.model_sequence]
 
-    def __iter__(self) -> ConfigurationEntry:
+    def __iter__(self) -> Iterator[ConfigurationEntry]:
         for entry in self.entries:
             yield entry
 
@@ -161,9 +159,11 @@ class NEMSConfiguration:
                 if isinstance(entry, entry_type)]
 
     def __str__(self) -> str:
-        return f'{self.header}\n' + \
+        return '#############################################\n' \
+               '####  NEMS Run-Time Configuration File  #####\n' \
+               '#############################################\n' \
                '\n' + \
-               '\n'.join(f'# {entry.header} #\n'
+               '\n'.join(f'# {entry.entry_type} #\n'
                          f'{entry}\n'
                          for entry in self.entries)
 

@@ -1,9 +1,15 @@
 import logging
+from os import PathLike
 from pathlib import Path
 import sys
 
+from ._version import get_versions
 
-def repository_root(path: str = None) -> str:
+__version__ = get_versions()['version']
+del get_versions
+
+
+def repository_root(path: PathLike = None) -> str:
     if path is None:
         path = __file__
     if not isinstance(path, Path):
@@ -17,8 +23,8 @@ def repository_root(path: str = None) -> str:
         return repository_root(path.parent)
 
 
-def get_logger(name: str, log_filename: str = None, file_level: int = None,
-               console_level: int = None,
+def get_logger(name: str, log_filename: PathLike = None,
+               file_level: int = None, console_level: int = None,
                log_format: str = None) -> logging.Logger:
     if file_level is None:
         file_level = logging.DEBUG

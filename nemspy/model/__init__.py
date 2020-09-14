@@ -55,7 +55,7 @@ class ConfigurationEntry(ABC):
     NEMS / NUOPC configuration entry within `*.configure` file
     """
 
-    header: str = NotImplementedError
+    entry_type: str = NotImplementedError
 
     @abstractmethod
     def __str__(self) -> str:
@@ -82,7 +82,7 @@ class Model(ConfigurationEntry):
 
         self.connections = []
 
-        self.header = str(self.type.value)
+        self.entry_type = str(self.type.value)
 
     def connect(self, other: 'Model', method: ModelMediation = None):
         self.connections.append(ModelMediator(self, other, method))
@@ -141,9 +141,9 @@ class Model(ConfigurationEntry):
         ]
 
         return '\n'.join([
-            f'{self.header}_model:                      {self.name}',
-            f'{self.header}_petlist_bounds:             {self.start_processor} {self.end_processor}',
-            f'{self.header}_attributes::',
+            f'{self.entry_type}_model:                      {self.name}',
+            f'{self.entry_type}_petlist_bounds:             {self.start_processor} {self.end_processor}',
+            f'{self.entry_type}_attributes::',
             indent('\n'.join(attributes), INDENTATION),
             '::'
         ])

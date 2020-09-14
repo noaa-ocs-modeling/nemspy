@@ -23,9 +23,9 @@ class WaveWatch3(WaveModel):
         super().__init__('ww3', processes, **kwargs)
 
 
-class WaveWatch3Data(WaveWatch3):
+class WaveMesh(WaveWatch3):
     """
-    dummy IO for simulated WaveWatch III output
+    WaveWatch III mesh reference
     """
 
     def __init__(self, processes: int, **kwargs):

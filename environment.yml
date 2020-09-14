@@ -30,3 +30,4 @@ dependencies:
       - requests_futures
       - utm
       - wget
+      - versioneer
