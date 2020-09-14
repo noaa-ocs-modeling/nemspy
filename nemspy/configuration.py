@@ -137,10 +137,6 @@ class ModelSequence(ConfigurationEntry):
 
 
 class NEMSConfiguration:
-    header = '#############################################\n' \
-             '####  NEMS Run-Time Configuration File  #####\n' \
-             '#############################################'
-
     def __init__(self, model_sequence: ModelSequence):
         self.model_sequence = model_sequence
 
@@ -163,7 +159,9 @@ class NEMSConfiguration:
                 if isinstance(entry, entry_type)]
 
     def __str__(self) -> str:
-        return f'{self.header}\n' + \
+        return '#############################################\n' \
+               '####  NEMS Run-Time Configuration File  #####\n' \
+               '#############################################\n' \
                '\n' + \
                '\n'.join(f'# {entry.entry_type} #\n'
                          f'{entry}\n'
