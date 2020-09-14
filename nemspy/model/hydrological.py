@@ -1,10 +1,10 @@
-from . import Model, ModelType
-from .. import get_logger
+from .base import ModelEntry, ModelType
+from ..logger import get_logger
 
 LOGGER = get_logger('model.hydro')
 
 
-class HydrologicalModel(Model):
+class HydrologicalModel(ModelEntry):
     """
     abstract implementation of a generic hydrological model
     """

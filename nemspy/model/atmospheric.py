@@ -1,10 +1,10 @@
-from . import Model, ModelType
-from .. import get_logger
+from .base import ModelEntry, ModelType
+from ..logger import get_logger
 
 LOGGER = get_logger('model.atmos')
 
 
-class AtmosphericModel(Model):
+class AtmosphericModel(ModelEntry):
     """
     abstract implementation of a generic atmospheric model
     """
@@ -13,13 +13,13 @@ class AtmosphericModel(Model):
         super().__init__(name, ModelType.ATMOSPHERIC, processes, **kwargs)
 
 
-class ATMeshData(AtmosphericModel):
+class AtmosphericMeshData(AtmosphericModel):
     """
     Atmospheric Mesh (ATMesh) reference
     """
 
-    def __init__(self, processes: int, **kwargs):
-        super().__init__('atmesh', processes, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__('atmesh', 1, **kwargs)
 
 
 class HWRF(AtmosphericModel):
