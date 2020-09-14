@@ -6,17 +6,17 @@ import unittest
 from nemspy import repository_root
 from nemspy.configuration import ModelSequence, NEMSConfiguration
 from nemspy.model import ModelMediation, ModelType
-from nemspy.model.atmospheric import ATMeshData
+from nemspy.model.atmospheric import AtmosphericMesh
 from nemspy.model.hydrologic import NationalWaterModel
 from nemspy.model.ocean import ADCIRC
-from nemspy.model.wave import WaveWatch3Data
+from nemspy.model.wave import WaveMesh
 
 
 class TestConfiguration(unittest.TestCase):
     def test_configuration(self):
         models = {
-            ModelType.ATMOSPHERIC: ATMeshData(1),
-            ModelType.WAVE: WaveWatch3Data(1),
+            ModelType.ATMOSPHERIC: AtmosphericMesh(1),
+            ModelType.WAVE: WaveMesh(1),
             ModelType.OCEAN: ADCIRC(11),
             ModelType.HYDROLOGICAL: NationalWaterModel(769)
         }
@@ -41,7 +41,8 @@ class TestConfiguration(unittest.TestCase):
             with open(temporary_filename) as temporary_file:
                 with open(repository_root() /
                           'tests/reference/nems.configure') as reference_file:
-                    assert temporary_file.read() == reference_file.read()
+                    self.assertEqual(temporary_file.read(),
+                                     reference_file.read())
 
 
 if __name__ == '__main__':
