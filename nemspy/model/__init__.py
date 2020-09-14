@@ -71,7 +71,7 @@ class Model(ConfigurationEntry):
                  verbosity: ModelVerbosity = None, **kwargs):
         self.name = name
         self.type = model_type
-        self.processors = processors
+        self.__processors = processors
         self.verbosity = verbosity if verbosity is not None else ModelVerbosity.MINIMUM
         self.attributes = kwargs
 
@@ -92,8 +92,11 @@ class Model(ConfigurationEntry):
         return self.__processors
 
     @processors.setter
-    def processors(self, processes: int):
-        self.__processors = processes
+    def processors(self, processors: int):
+        if processors != self.processors:
+            self.__processors = processors
+            # update following processors
+            self.next.previous = self
 
     @property
     def start_processor(self) -> int:
