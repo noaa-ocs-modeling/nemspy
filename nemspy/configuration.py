@@ -22,6 +22,7 @@ class Earth(ConfigurationEntry):
         self.verbosity = verbosity if verbosity is None else ModelVerbosity.MINIMUM
         self.__models = {model_type: None for model_type in ModelType}
         for key, value in kwargs.items():
+            key = key.upper()
             if key in {entry.name for entry in ModelType}:
                 if isinstance(value, Model):
                     self[ModelType[key]] = value
@@ -69,10 +70,11 @@ class ModelSequence(ConfigurationEntry):
 
         self.__models: {ModelType: Model} = {}
         for key, value in kwargs.items():
+            key = key.upper()
             if key in {entry.name for entry in ModelType} and \
                     isinstance(value, Model):
                 self[ModelType[key]] = value
-            elif key.upper() == 'EARTH' and isinstance(value, Earth):
+            elif key == 'EARTH' and isinstance(value, Earth):
                 for model_type, model in value:
                     self[model_type] = model
 
