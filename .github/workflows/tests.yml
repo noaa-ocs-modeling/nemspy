@@ -22,7 +22,7 @@ jobs:
           restore-keys: ${{ runner.os }}-pip-${{ matrix.python-version }}-
       - name: Install dependencies
         run: |
-          pip install dunamai
+          pip install dunamai==1.3
           python setup.py install -e .[dev]
       - name: Lint with flake8
         run: |
