@@ -34,7 +34,7 @@ jobs:
           pip install dunamai
       - name: Deploy to PyPI
         uses: casperdcl/deploy-pypi@v1
-        if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+        if: startsWith(github.event.ref, 'refs/tags')
         with:
           password: ${{ secrets.pypi_token }}
           build: true
