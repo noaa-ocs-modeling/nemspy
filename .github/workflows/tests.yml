@@ -21,7 +21,9 @@ jobs:
           key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('setup.py') }}
           restore-keys: ${{ runner.os }}-pip-${{ matrix.python-version }}-
       - name: Install dependencies
-        run: pip install -e .[dev]
+        run: |
+          pip install dunamai
+          python setup.py install -e .[dev]
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names

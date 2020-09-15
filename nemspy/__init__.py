@@ -1,2 +1,2 @@
-from ._version import __version__
 from .interface import ModelingSystem
+from .model import Model
