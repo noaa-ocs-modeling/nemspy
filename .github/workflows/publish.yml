@@ -14,11 +14,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Get version from VCS
-        uses: mtkennerly/dunamai-action@v1
-        with:
-          env-var: VERSION
-          args: --style semver
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
