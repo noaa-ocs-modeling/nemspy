@@ -110,6 +110,13 @@ class ModelSequence(ConfigurationEntry):
     @sequence.setter
     def sequence(self, sequence: [ModelType]):
         if sequence != list(self.__models):
+            if len(sequence) != len(self):
+                raise ValueError(f'given length {len(sequence)} differs from '
+                                 f'sequence length {len(self)}')
+            for model_type in sequence:
+                if model_type not in self:
+                    raise ValueError(f'{model_type} not in sequence '
+                                     f'{self.sequence}')
             models = self.__models
             self.__models = {model_type: models[model_type]
                              for model_type in sequence}
@@ -140,8 +147,14 @@ class ModelSequence(ConfigurationEntry):
         # set start and end processors
         models = self.models
         for model_index, model in enumerate(models):
+            if model_index == 0 and model.previous is not None:
+                model.previous.next = None
+                model.previous = None
+            if model_index == len(self) and model.next is not None:
+                model.next.previous = None
+                model.next = None
             next_model_index = model_index + 1
-            if next_model_index < len(models):
+            if next_model_index < len(self):
                 model.next = models[next_model_index]
 
     def __getitem__(self, model_type: ModelType) -> Model:
@@ -179,7 +192,8 @@ class ModelSequence(ConfigurationEntry):
         ])
 
     def __repr__(self) -> str:
-        models = [f'{model.type.name}={repr(model)}' for model in self.models]
+        models = [f'{model.type.name.lower()}={repr(model)}'
+                  for model in self.models]
         return f'{self.__class__.__name__}({repr(self.interval)}, {", ".join(models)})'
 
 

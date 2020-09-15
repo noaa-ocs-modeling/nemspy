@@ -1,5 +1,8 @@
+from datetime import timedelta
 import unittest
 
+from nemspy.configuration import ModelSequence
+from nemspy.model import ModelType
 from nemspy.model.atmosphere import AtmosphericMesh
 from nemspy.model.ocean import ADCIRC
 from nemspy.model.waves import WaveMesh
@@ -49,6 +52,49 @@ class TestModel(unittest.TestCase):
         self.assertEqual(model_2.end_processor, 6)
         self.assertEqual(model_3.start_processor, 7)
         self.assertEqual(model_3.end_processor, 17)
+
+    def test_sequence(self):
+        sequence = ModelSequence(timedelta(hours=1),
+                                 atmospheric=AtmosphericMesh(1),
+                                 wave=WaveMesh(1), ocean=ADCIRC(11))
+
+        self.assertEqual(sequence.sequence, [ModelType.ATMOSPHERIC,
+                                             ModelType.WAVE, ModelType.OCEAN])
+
+        models = sequence.models
+
+        self.assertEqual(models[0].start_processor, 0)
+        self.assertEqual(models[0].end_processor, 0)
+        self.assertEqual(models[1].start_processor, 1)
+        self.assertEqual(models[1].end_processor, 1)
+        self.assertEqual(models[2].start_processor, 2)
+        self.assertEqual(models[2].end_processor, 12)
+
+        with self.assertRaises(ValueError):
+            sequence.sequence = []
+        with self.assertRaises(ValueError):
+            sequence.sequence = [ModelType.ATMOSPHERIC]
+        with self.assertRaises(ValueError):
+            sequence.sequence = [ModelType.HYDROLOGICAL]
+
+        self.assertEqual(sequence.sequence, [ModelType.ATMOSPHERIC,
+                                             ModelType.WAVE, ModelType.OCEAN])
+
+        sequence.sequence = [ModelType.OCEAN, ModelType.ATMOSPHERIC,
+                             ModelType.WAVE]
+
+        self.assertEqual(sequence.sequence, [ModelType.OCEAN,
+                                             ModelType.ATMOSPHERIC,
+                                             ModelType.WAVE])
+
+        models = sequence.models
+
+        self.assertEqual(models[0].start_processor, 0)
+        self.assertEqual(models[0].end_processor, 10)
+        self.assertEqual(models[1].start_processor, 11)
+        self.assertEqual(models[1].end_processor, 11)
+        self.assertEqual(models[2].start_processor, 12)
+        self.assertEqual(models[2].end_processor, 12)
 
 
 if __name__ == '__main__':
