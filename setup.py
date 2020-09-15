@@ -16,6 +16,6 @@ setup(
     packages=find_packages(),
     python_requires='>=3.8',
     setup_requires=['setuptools>=41.2'],
-    extras_require={'dev': ['coverage', 'dunamai', 'nose']},
+    extras_require={'dev': ['coverage', 'dunamai', 'flake8', 'nose']},
     test_suite='nose.collector'
 )
