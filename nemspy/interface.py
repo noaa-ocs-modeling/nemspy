@@ -72,7 +72,7 @@ class ModelingSystem:
         model execution order
         """
 
-        return [model_type.name
+        return [model_type.name.lower()
                 for model_type in self.__configuration.sequence.sequence]
 
     @sequence.setter
