@@ -1,5 +1,5 @@
-from ._version import get_versions
+from dunamai import Version, get_version
+
 from .interface import ModelingSystem
 
-__version__ = get_versions()['version']
-del get_versions
+__version__ = get_version('nemspy', third_choice=Version.from_git).serialize()

@@ -1,13 +1,13 @@
 #!/usr/bin/env python
-from setuptools import config, find_packages, setup
+from dunamai import Version
 
-import versioneer
+from setuptools import config, find_packages, setup
 
 metadata = config.read_configuration('setup.cfg')['metadata']
 
 setup(
     name=metadata['name'],
-    version=versioneer.get_version(),
+    version=Version.from_git().serialize(),
     author=metadata['author'],
     author_email=metadata['author_email'],
     description=metadata['description'],
@@ -16,8 +16,7 @@ setup(
     url=metadata['url'],
     packages=find_packages(),
     python_requires='>=3.8',
-    cmdclass=versioneer.get_cmdclass(),
-    setup_requires=["setuptools>=41.2"],
-    test_suite='nose.collector',
-    tests_require=['nose']
+    setup_requires=['setuptools>=41.2'],
+    extras_require={'dev': ['coverage', 'dunamai', 'nose']},
+    test_suite='nose.collector'
 )
