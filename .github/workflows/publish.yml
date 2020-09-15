@@ -9,11 +9,11 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to PyPi
+    name: Python ${{ matrix.python-version }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest ]
+        os: [ ubuntu-latest ]
         python-version: [ 3.8 ]
     steps:
       - name: Checkout repository
