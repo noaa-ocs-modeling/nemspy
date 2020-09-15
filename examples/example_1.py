@@ -17,4 +17,4 @@ if __name__ == '__main__':
     nems.connect('atmospheric', 'hydrological')
     nems.connect('wave', 'hydrological')
     nems.connect('ocean', 'hydrological')
-    nems.write('nems.configure')
+    print('nems.configure')
