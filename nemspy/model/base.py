@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 from textwrap import indent
-from typing import Any
 
 from nemspy.utilities import get_logger
 
@@ -38,19 +37,19 @@ class RemapMethod(Enum):
 
 
 class Connection:
-    def __init__(self, source: 'Model', destination: 'Model',
+    def __init__(self, source: ModelType, destination: ModelType,
                  method: RemapMethod):
         self.source = source
         self.destination = destination
         self.method = method if method is not None else RemapMethod.REDISTRIBUTE
 
     def __str__(self) -> str:
-        return f'{self.source.type.value} -> ' \
-               f'{self.destination.type.value}'.ljust(13) + \
+        return f'{self.source.value} -> ' \
+               f'{self.destination.value}'.ljust(13) + \
                f':remapMethod={self.method.value}'
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({repr(self.source)}, {repr(self.destination)}, {self.method.__class__.__name__}.{self.method.name})'
+        return f'{self.__class__.__name__}({self.source.name}, {self.destination.name}, {self.method.name})'
 
 
 class ConfigurationEntry(ABC):
@@ -71,12 +70,10 @@ class Model(ConfigurationEntry):
     """
 
     def __init__(self, name: str, model_type: ModelType, processors: int,
-                 verbosity: ModelVerbosity = None, **kwargs):
+                 verbose: bool = False, **attributes):
         self.name = name
         self.type = model_type
         self.__processors = processors
-        self.verbosity = verbosity if verbosity is not None else ModelVerbosity.MINIMUM
-        self.attributes = kwargs
 
         self.__start_processor = None
 
@@ -86,6 +83,11 @@ class Model(ConfigurationEntry):
         self.connections = []
 
         self.entry_type = str(self.type.value)
+
+        self.attributes = {
+            'Verbosity': ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM,
+            **attributes
+        }
 
     def connect(self, other: 'Model', method: RemapMethod = None):
         self.connections.append(Connection(self, other, method))
@@ -136,23 +138,19 @@ class Model(ConfigurationEntry):
         if self.next is not None:
             self.next.previous = self
 
-    def __getitem__(self, attribute: str) -> Any:
-        return self.attributes[attribute]
-
     def __str__(self) -> str:
-        attributes = [
-            f'{attribute} = {value if not isinstance(value, Enum) else value.value}'
-            for attribute, value in [('Verbosity', self.verbosity)] +
-                                    list(self.attributes.items())
-        ]
-
         return '\n'.join([
             f'{self.entry_type}_model:                      {self.name}',
             f'{self.entry_type}_petlist_bounds:             {self.start_processor} {self.end_processor}',
             f'{self.entry_type}_attributes::',
-            indent('\n'.join(attributes), INDENTATION),
+            indent('\n'.join([
+                f'{attribute} = {value if not isinstance(value, Enum) else value.value}'
+                for attribute, value in self.attributes.items()
+            ]), INDENTATION),
             '::'
         ])
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}("{self.name}", {self.type}, {self.processors}, {self.verbosity})'
+        kwargs = [f'{key}={value}'
+                  for key, value in self.attributes.items()]
+        return f'{self.__class__.__name__}("{self.name}", {self.type}, {self.processors}, {", ".join(kwargs)})'

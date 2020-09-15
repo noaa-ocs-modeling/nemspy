@@ -1,125 +1,121 @@
 from datetime import timedelta
-import pathlib
-from typing import Union, List, Dict
+from os import PathLike
 
-from .model.base import ModelEntry, ModelType
-from .model.earth import EarthModel
-from .model.ocean import OceanModel
-from .model.atmospheric import AtmosphericModel
-from .model.waves import WaveModel
-from .model.hydrological import HydrologicalModel
-from .configuration import ModelSequence
-from .verbosity import ModelVerbosity
+from .configuration import Configuration, ModelSequence
+from .model.base import Model, ModelType, ModelVerbosity, RemapMethod
 
 
-class NEMS:
+class ModelingSystem:
+    """
+    NEMS interface with configuration file output
+    """
 
-    header = '#############################################\n' \
-             '####  NEMS Run-Time Configuration File  #####\n' \
-             '#############################################'
+    def __init__(self, interval: timedelta, verbose: bool = False, **models):
+        """
+        create a NEMS interface from the given interval and models
 
-    def __init__(
-            self,
-            ocean: OceanModel = None,
-            waves: WaveModel = None,
-            atmospheric: AtmosphericModel = None,
-            hydrological: HydrologicalModel = None,
-            verbosity: ModelVerbosity = ModelVerbosity.MAXIMUM
-    ):
-        self.ocean = ocean
-        self.waves = waves
-        self.atmospheric = atmospheric
-        self.hydrological = hydrological
-        self.verbosity = verbosity
-        self.sequences: List[ModelSequence] = []
+        :param interval: time interval of top-level run sequence
+        :param verbose: verbosity in NEMS configuration
+        :param atmospheric: atmospheric wind model
+        :param wave: oceanic wave model
+        :param ocean: oceanic circulation model
+        :param hydrological: terrestrial water model
+        """
 
-    def __str__(self):
-        return f'{self.header}\n' \
-               f'{str(self.earth)}\n' + \
-               "\n".join([str(seq) for seq in self.sequences])
+        self.__interval = interval
+        self.__verbosity = ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM
 
-    def add_sequence(self, duration: timedelta) -> ModelSequence:
-        seq = ModelSequence(
-            duration,
-            **self.models
-            )
-        self.sequences.append(seq)
-        return seq
+        self.__models = {}
+        for model_type, model in models.items():
+            model_types = {entry.name.lower() for entry in ModelType}
+            if model_type in model_types:
+                if isinstance(model, Model):
+                    if model.type.name.lower() == model_type:
+                        self.__models[model_type] = model
+                    else:
+                        raise ValueError(f'given model type ("{model_type}") '
+                                         f'does not match that of the provided '
+                                         f'model ("{model.type.name.lower()}")')
+                else:
+                    raise ValueError(f'value must be of type {Model}')
+            else:
+                raise ValueError(f'unexpected model type "{model_type}"; '
+                                 f'must be one of {model_types}')
 
-    def write(self, filename: Union[str, pathlib.Path],
-              overwrite: bool = False):
-        raise NotImplementedError
+        self.__configuration = Configuration(ModelSequence(self.interval,
+                                                           **self.__models))
 
     @property
-    def earth(self):
-        return EarthModel(self.verbosity, **self.models)
+    def interval(self) -> timedelta:
+        """
+        run sequence interval
+        """
+
+        return self.__interval
+
+    @interval.setter
+    def interval(self, interval: timedelta):
+        self.__interval = interval
+        self.__configuration.sequence.interval = self.__interval
 
     @property
-    def ocean(self):
-        return self.__ocean
+    def models(self) -> [Model]:
+        """
+        models in execution order
+        """
 
-    @ocean.setter
-    def ocean(self, ocean: Union[None, OceanModel]):
-        if ocean is not None:
-            assert isinstance(ocean, OceanModel)
-        self.__ocean = ocean
+        return self.__configuration.sequence.models
 
-    @property
-    def waves(self):
-        return self.__waves
+    def connect(self, source: str, destination: str, method: str = None):
+        """
+        couple two models with an information exchange pathway
 
-    @waves.setter
-    def waves(self, waves: Union[None, WaveModel]):
-        if waves is not None:
-            assert isinstance(waves, WaveModel)
-        self.__waves = waves
+        :param source: model providing information (from `models.ModelType`)
+        :param destination: model receiving information (from `models.ModelType`)
+        :param method: remapping method (from `models.RemapMethod`)
+        """
 
-    @property
-    def atmospheric(self):
-        return self.__atmospheric
-
-    @atmospheric.setter
-    def atmospheric(self, atmospheric: Union[None, AtmosphericModel]):
-        if atmospheric is not None:
-            assert isinstance(atmospheric, AtmosphericModel)
-        self.__atmospheric = atmospheric
+        if method is not None:
+            method = RemapMethod[method.upper()]
+        self.__configuration.sequence.connect(ModelType[source.upper()],
+                                              ModelType[destination.upper()],
+                                              method)
 
     @property
-    def hydrological(self):
-        return self.__hydrological
+    def connections(self) -> [str]:
+        """
+        string representations of coupling connections in format `'WAV -> HYD   :remapMethod=redist'`
+        """
 
-    @hydrological.setter
-    def hydrological(self, hydrological: Union[None, HydrologicalModel]):
-        if hydrological is not None:
-            assert isinstance(hydrological, HydrologicalModel)
-        self.__hydrological = hydrological
+        return [str(connection)
+                for connection in self.__configuration.sequence.connections]
+
+    def write(self, filename: PathLike, overwrite: bool = False):
+        """
+        write NEMS / NUOPC configuration to the given filename
+
+        :param filename: path to output file
+        :param overwrite: whether to overwrite and existing file
+        """
+
+        self.__configuration.write(filename, overwrite)
 
     @property
-    def verbosity(self):
-        return self.__verbosity
+    def verbose(self) -> bool:
+        return self.__verbosity is ModelVerbosity.MAXIMUM
 
-    @verbosity.setter
-    def verbosity(self, verbosity: ModelVerbosity):
-        if verbosity is None:
-            verbosity = ModelVerbosity.MAXIMUM
-        self.__verbosity = verbosity
+    @verbose.setter
+    def verbose(self, verbose: bool):
+        self.__verbosity = ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM
+        self.__configuration.sequence.verbosity = self.__verbosity
 
-    @property
-    def models(self) -> Dict[str, ModelEntry]:
-        models: Dict[ModelType, ModelEntry] = {}
-        models[ModelType.OCEAN] = self.ocean
-        models[ModelType.WAVES] = self.waves
-        models[ModelType.ATMOSPHERIC] = self.atmospheric
-        models[ModelType.HYDROLOGICAL] = self.hydrological
-        return {model_type.name.lower(): model
-                for model_type, model in models.items()}
+    def __getitem__(self, model_type: str) -> Model:
+        return self.__models[model_type]
 
-    # @models.setter
-    # def models(self, models):
-    #     if len(models) == 0:
-    #         raise TypeError('Must specify at least one model.')
-    #     self.__models = models
+    def __str__(self) -> str:
+        return str(self.__configuration)
 
-    # @property
-    # def configuration(self):
-    #     return NEMSConfiguration(self.sequences)
+    def __repr__(self) -> str:
+        models = [f'{model_type}={repr(model)}'
+                  for model_type, model in self.__models.items()]
+        return f'{self.__class__.__name__}({repr(self.interval)}, {", ".join(models)})'

@@ -1,5 +1,6 @@
 from datetime import timedelta
-from functools import lru_cache
+from enum import Enum
+import os
 from os import PathLike
 from textwrap import indent
 from typing import Iterator, Tuple
@@ -19,13 +20,21 @@ class Earth(ConfigurationEntry):
     entry_type = 'EARTH'
 
     def __init__(self, verbosity: ModelVerbosity = None, **kwargs):
-        self.verbosity = verbosity if verbosity is None else ModelVerbosity.MINIMUM
+        if verbosity is None:
+            verbosity = ModelVerbosity.MINIMUM
+
         self.__models = {model_type: None for model_type in ModelType}
+
+        self.attributes = {}
         for key, value in kwargs.items():
             key = key.upper()
             if key in {entry.name for entry in ModelType}:
                 if isinstance(value, Model):
                     self[ModelType[key]] = value
+            else:
+                self.attributes[key] = value
+
+        self.attributes['Verbosity'] = verbosity
 
     @property
     def models(self):
@@ -49,24 +58,32 @@ class Earth(ConfigurationEntry):
             yield model_type, model
 
     def __str__(self) -> str:
+        attributes = [
+            f'{attribute} = {value if not isinstance(value, Enum) else value.value}'
+            for attribute, value in self.attributes.items()
+        ]
+
         return '\n'.join([
-            f'{self.entry_type}_component_list: {" ".join(model_type.value for model_type in self.models)}',
+            f'{self.entry_type}_component_list: {" ".join(model_type.value for model_type, model in self.models.items() if model is not None)}',
             f'{self.entry_type}_attributes::',
-            indent(f'Verbosity = {self.verbosity.value}', INDENTATION),
+            indent('\n'.join(attributes), INDENTATION),
             '::'
         ])
 
     def __repr__(self) -> str:
-        models = [f'{model_type.name}={repr(model)}'
-                  for model_type, model in self.models.items()]
-        return f'{self.__class__.__name__}({self.verbosity}, {", ".join(models)})'
+        kwargs = [f'{model_type.name}={repr(model)}'
+                  for model_type, model in self.models.items()] + \
+                 [f'{key}={value}'
+                  for key, value in self.attributes.items()]
+        return f'{self.__class__.__name__}({self.attributes["Verbosity"]}, {", ".join(kwargs)})'
 
 
 class ModelSequence(ConfigurationEntry):
     entry_type = 'Run Sequence'
 
-    def __init__(self, duration: timedelta, **kwargs):
-        self.duration = duration
+    def __init__(self, interval: timedelta, verbose: bool = False, **kwargs):
+        self.interval = interval
+        self.verbosity = ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM
 
         self.__models = {}
         for key, value in kwargs.items():
@@ -87,7 +104,6 @@ class ModelSequence(ConfigurationEntry):
         self.connections = []
 
     @property
-    @lru_cache(maxsize=1)
     def models(self) -> [Model]:
         return [model for model_type, model in self.__models.items()
                 if model_type in self]
@@ -96,13 +112,22 @@ class ModelSequence(ConfigurationEntry):
                 method: RemapMethod = None):
         if method is None:
             method = RemapMethod.REDISTRIBUTE
-        self.connections.append(Connection(self[source], self[destination],
-                                           method))
+        if source not in self.__models:
+            raise ValueError(f'no {source.name} model in sequence')
+        if destination not in self.__models:
+            raise ValueError(f'no {destination.name} model in sequence')
+        self.connections.append(Connection(source, destination, method))
 
     @property
     def earth(self) -> Earth:
-        return Earth(ModelVerbosity.MAXIMUM, **{model.type.name: model
-                                                for model in self.models})
+        return Earth(self.verbosity, **{model.type.name: model
+                                        for model in self.models})
+
+    def append(self, model: Model):
+        if model is not None:
+            if len(self.models) > 0:
+                self.models[-1].next = model
+            self[model.type] = model
 
     def __getitem__(self, model_type: ModelType) -> Model:
         return self.__models[model_type]
@@ -128,7 +153,7 @@ class ModelSequence(ConfigurationEntry):
             [str(connection) for connection in self.connections] + \
             [model_type.value for model_type in self.__models])
         block = '\n'.join([
-            f'@{self.duration / timedelta(seconds=1):.0f}',
+            f'@{self.interval / timedelta(seconds=1):.0f}',
             indent(block, INDENTATION),
             '@'
         ])
@@ -140,22 +165,26 @@ class ModelSequence(ConfigurationEntry):
 
     def __repr__(self) -> str:
         models = [f'{model.type.name}={repr(model)}' for model in self.models]
-        return f'{self.__class__.__name__}({repr(self.duration)}, {", ".join(models)})'
+        return f'{self.__class__.__name__}({repr(self.interval)}, {", ".join(models)})'
 
 
 class Configuration:
     def __init__(self, model_sequence: ModelSequence):
-        self.model_sequence = model_sequence
-
-    def write(self, filename: PathLike):
-        with open(filename, 'w') as output_file:
-            output_file.write(str(self))
+        self.sequence = model_sequence
 
     @property
-    @lru_cache(maxsize=1)
     def entries(self) -> [ConfigurationEntry]:
-        return [self.model_sequence.earth, *self.model_sequence.models,
-                self.model_sequence]
+        return [self.sequence.earth, *self.sequence.models, self.sequence]
+
+    def write(self, filename: PathLike, overwrite: bool = False):
+        exists = os.path.exists(filename)
+        if exists:
+            LOGGER.warning(f'{"overwriting" if overwrite else "skipping"} '
+                           f'existing file "{filename}"')
+        if not exists or overwrite:
+            with open(filename, 'w') as output_file:
+                LOGGER.debug(f'writing NEMS configuration to "{filename}"')
+                output_file.write(str(self))
 
     def __iter__(self) -> Iterator[ConfigurationEntry]:
         for entry in self.entries:
@@ -175,4 +204,4 @@ class Configuration:
                          for entry in self.entries)
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({repr(self.model_sequence)})'
+        return f'{self.__class__.__name__}({repr(self.sequence)})'

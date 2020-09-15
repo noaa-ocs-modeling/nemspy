@@ -9,8 +9,8 @@ class OceanModel(Model):
     abstract implementation of a generic oceanic model
     """
 
-    def __init__(self, name: str, processes: int, **kwargs):
-        super().__init__(name, ModelType.OCEAN, processes, **kwargs)
+    def __init__(self, name: str, processors: int, **kwargs):
+        super().__init__(name, ModelType.OCEAN, processors, **kwargs)
 
 
 class ADCIRC(OceanModel):
@@ -19,8 +19,8 @@ class ADCIRC(OceanModel):
     http://adcirc.org
     """
 
-    def __init__(self, processes: int, **kwargs):
-        super().__init__('adcirc', processes, **kwargs)
+    def __init__(self, processors: int, **kwargs):
+        super().__init__('adcirc', processors, **kwargs)
 
 
 class SCHISM(OceanModel):
@@ -29,7 +29,7 @@ class SCHISM(OceanModel):
     http://ccrm.vims.edu/schismweb/
     """
 
-    def __init__(self, processes: int, **kwargs):
-        super().__init__('schism', processes, **kwargs)
+    def __init__(self, processors: int, **kwargs):
+        super().__init__('schism', processors, **kwargs)
         raise NotImplementedError(
             f'unsupported model "{self.__class__.__name__}"')

@@ -1,22 +1,21 @@
 import unittest
 
-from nemspy.model.atmospheric import AtmosphericMesh
-from nemspy.model.base import ModelVerbosity
+from nemspy.model.atmosphere import AtmosphericMesh
 from nemspy.model.ocean import ADCIRC
-from nemspy.model.wave import WaveMesh
+from nemspy.model.waves import WaveMesh
 
 
 class TestModel(unittest.TestCase):
     def test_model(self):
-        model = AtmosphericMesh(1, verbosity=ModelVerbosity.MINIMUM,
-                                test='test2')
+        model = AtmosphericMesh(1, verbose=False, test='value', test2=5)
 
         self.assertEqual(str(model),
                          'ATM_model:                      atmesh\n' \
                          'ATM_petlist_bounds:             0 0\n' \
                          'ATM_attributes::\n' \
                          '  Verbosity = min\n' \
-                         '  test = test2\n' \
+                         '  test = value\n' \
+                         '  test2 = 5\n' \
                          '::')
 
     def test_processors(self):

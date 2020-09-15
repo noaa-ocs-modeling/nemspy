@@ -9,18 +9,20 @@ class WaveModel(Model):
     abstract implementation of a generic wave model
     """
 
-    def __init__(self, name: str, processes: int, **kwargs):
-        super().__init__(name, ModelType.WAVE, processes, **kwargs)
+    def __init__(self, name: str, processors: int, **kwargs):
+        super().__init__(name, ModelType.WAVE, processors, **kwargs)
 
 
-class WaveMeshData(WaveModel):
+class WaveMesh(WaveModel):
     """
     WaveWatch III mesh reference
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, processors: int = None, **kwargs):
+        if processors is None:
+            processors = 1
         # Uses ww3data as name but the implementation is model agnostic
-        super().__init__('ww3data', 1, **kwargs)
+        super().__init__('ww3data', processors, **kwargs)
 
 
 class WaveWatch3(WaveModel):
@@ -29,8 +31,8 @@ class WaveWatch3(WaveModel):
     https://polar.ncep.noaa.gov/waves/wavewatch/
     """
 
-    def __init__(self, processes: int, **kwargs):
-        super().__init__('ww3', processes, **kwargs)
+    def __init__(self, processors: int, **kwargs):
+        super().__init__('ww3', processors, **kwargs)
 
 
 class SWAN(WaveModel):
@@ -39,5 +41,5 @@ class SWAN(WaveModel):
     http://swanmodel.sourceforge.net/
     """
 
-    def __init__(self, processes: int, **kwargs):
-        super().__init__('swan', processes, **kwargs)
+    def __init__(self, processors: int, **kwargs):
+        super().__init__('swan', processors, **kwargs)

@@ -1,30 +1,20 @@
 #! /usr/bin/env python
 from datetime import timedelta
 
-from nemspy import NEMS, model
-
-
-def main():
-    nems = NEMS()
-    print(str(nems))
-    nems.ocean = model.ocean.ADCIRC(300)
-    nems.add_sequence(timedelta(hours=1))
-    print(str(nems))
-    # earth.ocean = model.ocean.ADCIRC(300)
-    # earth.atmospheric = model.atmospheric.AtmosphericMeshData()
-    # earth.wave = model.wave.WaveMeshData()
-    # earth.hydrological = model.hydrologic.NationalWaterModel(300)
-    # nems = earth.add_sequence(timedelta(hours=1))
-    # nems.connect('atm', 'ocn')
-    # nems.connect('wav', 'ocn')
-    # nems.connect('atm', 'hyd')
-    # nems.connect('wav', 'hyd')
-    # nems.connect('ocn', 'hyd')
-    # The order of execution is implied by the connectors.
-    # The back end needs to analyze the connectors and write out the execution
-    # order correctly. The user does not need to specify execution order.
-    # nems.write('nems.configure')
-
+from nemspy import ModelingSystem
+from nemspy.model.atmosphere import AtmosphericMesh
+from nemspy.model.hydrology import NationalWaterModel
+from nemspy.model.ocean import ADCIRC
+from nemspy.model.waves import WaveMesh
 
 if __name__ == '__main__':
-    main()
+    nems = ModelingSystem(timedelta(hours=1), ocean=ADCIRC(300),
+                          wave=WaveMesh(),
+                          atmospheric=AtmosphericMesh(),
+                          hydrological=NationalWaterModel(769))
+    nems.connect('atmospheric', 'ocean')
+    nems.connect('wave', 'ocean')
+    nems.connect('atmospheric', 'hydrological')
+    nems.connect('wave', 'hydrological')
+    nems.connect('ocean', 'hydrological')
+    nems.write('nems.configure')
