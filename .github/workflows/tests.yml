@@ -14,18 +14,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Retrieve packages from cache
-        uses: actions/cache@v1
+      - name: Restore cached dependencies
+        uses: actions/cache@v2
         with:
-          path: ~/conda_pkgs_dir
-          key: ${{ runner.os }}-conda-${{ hashFiles('environment.yml') }}
-      - name: Create and activate conda environment
-        uses: conda-incubator/setup-miniconda@v1.7.0
-        with:
-          activate-environment: nemspy
-          python-version: ${{ matrix.python-version }}
-          environment-file: environment.yml
-          use-only-tar-bz2: true
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('setup.py') }}
+          restore-keys: ${{ runner.os }}-pip-${{ matrix.python-version }}-
+      - name: Install dependencies
+        run: pip install -e .[dev]
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
