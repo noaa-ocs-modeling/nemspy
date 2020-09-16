@@ -38,7 +38,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: dist_${{ runner.os }}_${{ runner.architecture }}_${{ runner.python-version }}.whl
-          path: dist/nemspy-${{ VERSION }}-py3-none-any.whl
+          path: dist/nemspy-$VERSION-py3-none-any.whl
       - name: Publish package to PyPi
         env:
           TWINE_USERNAME: __token__
@@ -59,4 +59,4 @@ jobs:
       - name: Install wheel
         run: |
           python -m pip install --upgrade pip
-          pip install dist/nemspy-${{ VERSION }}-py3-none-any.whl
+          pip install dist/nemspy-$VERSION-py3-none-any.whl
