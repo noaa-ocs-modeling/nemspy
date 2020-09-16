@@ -20,8 +20,10 @@ class TestConfiguration(unittest.TestCase):
                               wave=WaveMesh(1))
         nems.connect('wave', 'ocean')
 
-        self.assertRaises(ValueError, nems.connect, 'atmospheric', 'ocean')
-        self.assertRaises(ValueError, nems.connect, 'wave', 'hydrological')
+        with self.assertRaises(ValueError):
+            nems.connect('atmospheric', 'ocean')
+        with self.assertRaises(ValueError):
+            nems.connect('wave', 'hydrological')
         self.assertEqual(nems.connections,
                          ['WAV -> OCN   :remapMethod=redist'])
 

@@ -95,18 +95,32 @@ class ModelSequence(ConfigurationEntry):
                 for model_type, model in value:
                     self[model_type] = model
 
-        # set start and end processors
-        for model_index, model in enumerate(self):
-            next_model_index = model_index + 1
-            if next_model_index < len(self):
-                model.next = self.models[next_model_index]
-
         self.connections = []
+        self.__update_processors()
 
     @property
     def models(self) -> [Model]:
         return [model for model_type, model in self.__models.items()
                 if model_type in self]
+
+    @property
+    def sequence(self):
+        return list(self.__models)
+
+    @sequence.setter
+    def sequence(self, sequence: [ModelType]):
+        if sequence != list(self.__models):
+            if len(sequence) != len(self):
+                raise ValueError(f'given length {len(sequence)} differs from '
+                                 f'sequence length {len(self)}')
+            for model_type in sequence:
+                if model_type not in self:
+                    raise ValueError(f'{model_type} not in sequence '
+                                     f'{self.sequence}')
+            models = self.__models
+            self.__models = {model_type: models[model_type]
+                             for model_type in sequence}
+            self.__update_processors()
 
     def connect(self, source: ModelType, destination: ModelType,
                 method: RemapMethod = None):
@@ -128,6 +142,20 @@ class ModelSequence(ConfigurationEntry):
             if len(self.models) > 0:
                 self.models[-1].next = model
             self[model.type] = model
+
+    def __update_processors(self):
+        # set start and end processors
+        models = self.models
+        for model_index, model in enumerate(models):
+            if model_index == 0 and model.previous is not None:
+                model.previous.next = None
+                model.previous = None
+            if model_index == len(self) and model.next is not None:
+                model.next.previous = None
+                model.next = None
+            next_model_index = model_index + 1
+            if next_model_index < len(self):
+                model.next = models[next_model_index]
 
     def __getitem__(self, model_type: ModelType) -> Model:
         return self.__models[model_type]
@@ -164,13 +192,14 @@ class ModelSequence(ConfigurationEntry):
         ])
 
     def __repr__(self) -> str:
-        models = [f'{model.type.name}={repr(model)}' for model in self.models]
+        models = [f'{model.type.name.lower()}={repr(model)}'
+                  for model in self.models]
         return f'{self.__class__.__name__}({repr(self.interval)}, {", ".join(models)})'
 
 
 class Configuration:
-    def __init__(self, model_sequence: ModelSequence):
-        self.sequence = model_sequence
+    def __init__(self, sequence: ModelSequence):
+        self.sequence = sequence
 
     @property
     def entries(self) -> [ConfigurationEntry]:

@@ -66,6 +66,20 @@ class ModelingSystem:
 
         return self.__configuration.sequence.models
 
+    @property
+    def sequence(self) -> [str]:
+        """
+        model execution order
+        """
+
+        return [model_type.name.lower()
+                for model_type in self.__configuration.sequence.sequence]
+
+    @sequence.setter
+    def sequence(self, sequence: [str]):
+        self.__configuration.sequence.sequence = [ModelType[model_type.upper()]
+                                                  for model_type in sequence]
+
     def connect(self, source: str, destination: str, method: str = None):
         """
         couple two models with an information exchange pathway

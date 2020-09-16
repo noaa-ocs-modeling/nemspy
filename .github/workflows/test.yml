@@ -3,7 +3,7 @@ name: tests
 on: [ push ]
 
 jobs:
-  test:
+  tests:
     name: Python ${{ matrix.python-version }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
