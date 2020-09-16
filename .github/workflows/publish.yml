@@ -16,8 +16,6 @@ jobs:
         uses: actions/checkout@v2
       - name: Set up Python
         uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
       - name: Restore cached dependencies
         uses: actions/cache@v2
         with:
@@ -30,15 +28,11 @@ jobs:
           pip install dunamai setuptools wheel twine
       - name: Build package
         run: python setup.py sdist bdist_wheel
-      - uses: mtkennerly/dunamai-action@v1
-        with:
-          install: none
-          env-var: VERSION
       - name: Upload wheel
         uses: actions/upload-artifact@v2
         with:
-          name: dist_${{ runner.os }}_${{ runner.architecture }}_${{ runner.python-version }}.whl
-          path: dist/nemspy-$VERSION-py3-none-any.whl
+          name: dist_${{ runner.os }}_${{ runner.architecture }}_${{ runner.python-version }}
+          path: dist
       - name: Publish package to PyPi
         env:
           TWINE_USERNAME: __token__
@@ -46,17 +40,17 @@ jobs:
         run: twine upload dist/* --verbose
   install:
     name: test install
+    needs: publish
     runs-on: ubuntu-latest
     steps:
       - name: Set up Python
         uses: actions/setup-python@v2
+      - name: Checkout repository
+          uses: actions/checkout@v2
+      - uses: mtkennerly/dunamai-action@v1
         with:
-          python-version: '3.x'
-      - name: Download wheel
-        uses: actions/download-artifact@v2
-        with:
-          name: dist_${{ runner.os }}_${{ runner.architecture }}_${{ runner.python-version }}.whl
+          env-var: VERSION
       - name: Install wheel
         run: |
           python -m pip install --upgrade pip
-          pip install dist/nemspy-$VERSION-py3-none-any.whl
+          pip install nemspy==$VERSION
