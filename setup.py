@@ -16,6 +16,7 @@ setup(
     packages=find_packages(),
     python_requires='>=3.8',
     setup_requires=['dunamai', 'setuptools>=41.2'],
+    install_requires=['dunamai'],
     extras_require={'dev': ['coverage', 'dunamai', 'flake8', 'nose']},
     test_suite='nose.collector'
 )
