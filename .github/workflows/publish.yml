@@ -31,9 +31,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install dunamai
+          pip install dunamai setuptools
+      - name: Build and publish
+        run: |
+          rm -rf ./dist
+          python setup.py sdist
       - name: Deploy to PyPI
         uses: casperdcl/deploy-pypi@v1
         with:
           password: ${{ secrets.pypi_token }}
-          build: true
