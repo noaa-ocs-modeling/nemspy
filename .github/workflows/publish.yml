@@ -9,7 +9,7 @@ on:
 
 jobs:
   publish:
-    name: Deployment
+    name: deployment
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
