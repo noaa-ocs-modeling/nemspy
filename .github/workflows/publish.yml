@@ -30,13 +30,33 @@ jobs:
           pip install dunamai setuptools wheel twine
       - name: Build package
         run: python setup.py sdist bdist_wheel
+      - uses: mtkennerly/dunamai-action@v1
+        with:
+          install: none
+          env-var: VERSION
       - name: Upload wheel
         uses: actions/upload-artifact@v2
         with:
-          name: wheel
-          path: dist/*.whl
+          name: dist_${{ runner.os }}_${{ runner.architecture }}_${{ runner.python-version }}.whl
+          path: dist/nemspy-${{ VERSION }}-py3-none-any.whl
       - name: Publish package to PyPi
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: twine upload dist/* --verbose
+  install:
+    name: test install
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Download wheel
+        uses: actions/download-artifact@v2
+        with:
+          name: dist_${{ runner.os }}_${{ runner.architecture }}_${{ runner.python-version }}.whl
+      - name: Install wheel
+        run: |
+          python -m pip install --upgrade pip
+          pip install dist/nemspy-${{ VERSION }}-py3-none-any.whl
