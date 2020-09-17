@@ -80,17 +80,12 @@ class Model(ConfigurationEntry):
         self.previous = None
         self.next = None
 
-        self.connections = []
-
         self.entry_type = str(self.type.value)
 
         self.attributes = {
             'Verbosity': ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM,
             **attributes
         }
-
-    def connect(self, other: 'Model', method: RemapMethod = None):
-        self.connections.append(Connection(self, other, method))
 
     @property
     def processors(self) -> int:
@@ -139,13 +134,21 @@ class Model(ConfigurationEntry):
             self.next.previous = self
 
     def __str__(self) -> str:
+        attributes = {}
+        for attribute, value in self.attributes.items():
+            if isinstance(value, Enum):
+                value = value.value
+            elif isinstance(value, bool):
+                value = f'{value}'.lower()
+            attributes[attribute] = value
+
         return '\n'.join([
             f'{self.entry_type}_model:                      {self.name}',
             f'{self.entry_type}_petlist_bounds:             {self.start_processor} {self.end_processor}',
             f'{self.entry_type}_attributes::',
             indent('\n'.join([
-                f'{attribute} = {value if not isinstance(value, Enum) else value.value}'
-                for attribute, value in self.attributes.items()
+                f'{attribute} = {value}'
+                for attribute, value in attributes.items()
             ]), INDENTATION),
             '::'
         ])

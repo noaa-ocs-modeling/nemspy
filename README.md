@@ -13,19 +13,26 @@ from datetime import timedelta
 from nemspy import ModelingSystem
 from nemspy.model import ADCIRC, AtmosphericMesh, NationalWaterModel, WaveMesh
 
+# returning interval of main run sequence
 interval = timedelta(hours=1)
-ocean_model = ADCIRC(300)
+
+# model entries
+ocean_model = ADCIRC(processors=300, verbose=True, DumpFields=False)
 wave_mesh = WaveMesh()
 atmospheric_mesh = AtmosphericMesh()
-hydrological_model = NationalWaterModel(769)
+hydrological_model = NationalWaterModel(processors=769, DebugFlag=0)
 
+# instantiate model system with a specified order of execution
 nems = ModelingSystem(interval, ocean=ocean_model, wave=wave_mesh, atmospheric=atmospheric_mesh, hydrological=hydrological_model)
+
+# form connections between models using `.connect()`
 nems.connect('atmospheric', 'ocean')
 nems.connect('wave', 'ocean')
 nems.connect('atmospheric', 'hydrological')
 nems.connect('wave', 'hydrological')
 nems.connect('ocean', 'hydrological')
 
+# write configuration to file
 nems.write('nems.configure')
 ```
 
@@ -41,32 +48,34 @@ EARTH_attributes::
   Verbosity = min
 ::
 
-# ATM #
-ATM_model:                      atmesh
-ATM_petlist_bounds:             0 0
-ATM_attributes::
-  Verbosity = min
+# OCN #
+OCN_model:                      adcirc
+OCN_petlist_bounds:             0 299
+OCN_attributes::
+  Verbosity = max
+  DumpFields = false
 ::
 
 # WAV #
 WAV_model:                      ww3data
-WAV_petlist_bounds:             1 1
+WAV_petlist_bounds:             300 300
 WAV_attributes::
   Verbosity = min
 ::
 
-# OCN #
-OCN_model:                      adcirc
-OCN_petlist_bounds:             2 12
-OCN_attributes::
+# ATM #
+ATM_model:                      atmesh
+ATM_petlist_bounds:             301 301
+ATM_attributes::
   Verbosity = min
 ::
 
 # HYD #
 HYD_model:                      nwm
-HYD_petlist_bounds:             13 781
+HYD_petlist_bounds:             302 1070
 HYD_attributes::
   Verbosity = min
+  DebugFlag = 0
 ::
 
 # Run Sequence #
@@ -77,9 +86,9 @@ runSeq::
     ATM -> HYD   :remapMethod=redist
     WAV -> HYD   :remapMethod=redist
     OCN -> HYD   :remapMethod=redist
-    ATM
-    WAV
     OCN
+    WAV
+    ATM
     HYD
   @
 ::
