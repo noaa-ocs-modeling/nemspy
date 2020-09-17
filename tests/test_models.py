@@ -2,8 +2,8 @@ from datetime import timedelta
 import unittest
 
 from nemspy.configuration import ModelSequence
-from nemspy.model import ModelType
 from nemspy.model.atmosphere import AtmosphericMesh
+from nemspy.model.base import ModelType
 from nemspy.model.ocean import ADCIRC
 from nemspy.model.waves import WaveMesh
 
