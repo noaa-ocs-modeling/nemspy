@@ -13,11 +13,15 @@ from nemspy.model.ocean import ADCIRC
 from nemspy.model.waves import WaveMesh
 from nemspy.utilities import repository_root
 
+REFERENCE_DIRECTORY = repository_root() / 'tests/reference'
+ATMOSPHERIC_MESH_FILENAME = REFERENCE_DIRECTORY / 'wind_atm_fin_ch_time_vec.nc'
+WAVE_MESH_FILENAME = REFERENCE_DIRECTORY / 'ww3.Constant.20151214_sxy_ike_date.nc'
+
 
 class TestConfiguration(unittest.TestCase):
     def test_connection(self):
         nems = ModelingSystem(timedelta(hours=1), ocean=ADCIRC(11),
-                              wave=WaveMesh(1))
+                              wave=WaveMesh(WAVE_MESH_FILENAME))
         nems.connect('wave', 'ocean')
 
         with self.assertRaises(ValueError):
@@ -29,8 +33,10 @@ class TestConfiguration(unittest.TestCase):
 
     def test_configuration(self):
         nems = ModelingSystem(timedelta(hours=1),
-                              atmospheric=AtmosphericMesh(),
-                              wave=WaveMesh(), ocean=ADCIRC(11),
+                              atmospheric=AtmosphericMesh(
+                                  ATMOSPHERIC_MESH_FILENAME),
+                              wave=WaveMesh(WAVE_MESH_FILENAME),
+                              ocean=ADCIRC(11),
                               hydrological=NationalWaterModel(769))
         nems.connect('atmospheric', 'ocean')
         nems.connect('wave', 'ocean')
@@ -38,12 +44,12 @@ class TestConfiguration(unittest.TestCase):
         nems.connect('wave', 'hydrological')
         nems.connect('ocean', 'hydrological')
 
+        reference_filename = REFERENCE_DIRECTORY / 'nems.configure'
         with tempfile.TemporaryDirectory() as temporary_directory:
-            temporary_filename = Path(temporary_directory) / 'test.configure'
-            nems.write(temporary_filename)
-            with open(temporary_filename) as temporary_file:
-                with open(repository_root() /
-                          'tests/reference/nems.configure') as reference_file:
+            nems.write(temporary_directory)
+            test_filename = Path(temporary_directory) / 'nems.configure'
+            with open(test_filename) as temporary_file:
+                with open(reference_filename) as reference_file:
                     self.assertEqual(temporary_file.read(),
                                      reference_file.read())
 

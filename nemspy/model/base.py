@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 from enum import Enum
+from os import PathLike
+from pathlib import Path
 from textwrap import indent
 
 from nemspy.utilities import get_logger
@@ -64,6 +66,20 @@ class ConfigurationEntry(ABC):
         raise NotImplementedError
 
 
+class ModelMesh(ABC):
+    def __init__(self, mesh_type: ModelType, filename: PathLike):
+        if not isinstance(filename, Path):
+            filename = Path(filename)
+
+        self.mesh_type = mesh_type
+        self.filename = filename
+
+    @property
+    def mesh_entry(self) -> str:
+        return f' {self.mesh_type.value.lower()}_dir: {self.filename.parent}\n' \
+               f' {self.mesh_type.value.lower()}_nam: {self.filename.name}'
+
+
 class Model(ConfigurationEntry):
     """
     abstract implementation of a generic model
@@ -72,7 +88,7 @@ class Model(ConfigurationEntry):
     def __init__(self, name: str, model_type: ModelType, processors: int,
                  verbose: bool = False, **attributes):
         self.name = name
-        self.type = model_type
+        self.model_type = model_type
         self.__processors = processors
 
         self.__start_processor = None
@@ -80,7 +96,7 @@ class Model(ConfigurationEntry):
         self.previous = None
         self.next = None
 
-        self.entry_type = str(self.type.value)
+        self.entry_type = str(self.model_type.value)
 
         self.attributes = {
             'Verbosity': ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM,
@@ -156,4 +172,4 @@ class Model(ConfigurationEntry):
     def __repr__(self) -> str:
         kwargs = [f'{key}={value}'
                   for key, value in self.attributes.items()]
-        return f'{self.__class__.__name__}("{self.name}", {self.type}, {self.processors}, {", ".join(kwargs)})'
+        return f'{self.__class__.__name__}("{self.name}", {self.model_type}, {self.processors}, {", ".join(kwargs)})'

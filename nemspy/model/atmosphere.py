@@ -1,4 +1,6 @@
-from .base import Model, ModelType
+from os import PathLike
+
+from .base import Model, ModelMesh, ModelType
 from ..utilities import get_logger
 
 LOGGER = get_logger('model.atmos')
@@ -13,15 +15,16 @@ class AtmosphericModel(Model):
         super().__init__(name, ModelType.ATMOSPHERIC, processors, **kwargs)
 
 
-class AtmosphericMesh(AtmosphericModel):
+class AtmosphericMesh(AtmosphericModel, ModelMesh):
     """
     Atmospheric Mesh (ATMesh) reference
     """
 
-    def __init__(self, processors: int = None, **kwargs):
+    def __init__(self, filename: PathLike, processors: int = None, **kwargs):
         if processors is None:
             processors = 1
-        super().__init__('atmesh', processors, **kwargs)
+        AtmosphericModel.__init__(self, 'atmesh', processors, **kwargs)
+        ModelMesh.__init__(self, self.model_type, filename)
 
 
 class HWRF(AtmosphericModel):

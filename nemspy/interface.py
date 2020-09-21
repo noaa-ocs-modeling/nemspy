@@ -30,12 +30,12 @@ class ModelingSystem:
             model_types = {entry.name.lower() for entry in ModelType}
             if model_type in model_types:
                 if isinstance(model, Model):
-                    if model.type.name.lower() == model_type:
+                    if model.model_type.name.lower() == model_type:
                         self.__models[model_type] = model
                     else:
                         raise ValueError(f'given model type ("{model_type}") '
                                          f'does not match that of the provided '
-                                         f'model ("{model.type.name.lower()}")')
+                                         f'model ("{model.model_type.name.lower()}")')
                 else:
                     raise ValueError(f'value must be of type {Model}')
             else:
@@ -104,15 +104,15 @@ class ModelingSystem:
         return [str(connection)
                 for connection in self.__configuration.sequence.connections]
 
-    def write(self, filename: PathLike, overwrite: bool = False):
+    def write(self, directory: PathLike, overwrite: bool = False):
         """
-        write NEMS / NUOPC configuration to the given filename
+        write NEMS / NUOPC configuration to the given directory
 
-        :param filename: path to output file
-        :param overwrite: whether to overwrite and existing file
+        :param directory: path to output directory
+        :param overwrite: whether to overwrite existing files
         """
 
-        self.__configuration.write(filename, overwrite)
+        self.__configuration.write(directory, overwrite)
 
     @property
     def verbose(self) -> bool:

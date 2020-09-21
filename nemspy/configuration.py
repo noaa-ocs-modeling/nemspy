@@ -1,18 +1,18 @@
 from datetime import timedelta
 from enum import Enum
-import os
 from os import PathLike
+from pathlib import Path
 from textwrap import indent
 from typing import Iterator, Tuple
 
-from .model.base import ConfigurationEntry, Connection, INDENTATION, Model, \
-    ModelType, ModelVerbosity, RemapMethod
+from .model.base import ConfigurationEntry, Connection, INDENTATION, \
+    Model, ModelMesh, ModelType, ModelVerbosity, RemapMethod
 from .utilities import get_logger
 
 LOGGER = get_logger('configuration')
 
 
-class Earth(ConfigurationEntry):
+class EarthEntry(ConfigurationEntry):
     """
     multi-model coupling container
     """
@@ -44,7 +44,7 @@ class Earth(ConfigurationEntry):
         return self.__models[model_type]
 
     def __setitem__(self, model_type: ModelType, model: Model):
-        assert model_type == model.type
+        assert model_type == model.model_type
         if self.__models[model_type] is not None:
             LOGGER.warning(f'overwriting existing "{model_type.name}" model: '
                            f'{repr(self[model_type])}')
@@ -91,7 +91,7 @@ class ModelSequence(ConfigurationEntry):
             if key in {entry.name for entry in ModelType} and \
                     isinstance(value, Model):
                 self[ModelType[key]] = value
-            elif key == 'EARTH' and isinstance(value, Earth):
+            elif key == 'EARTH' and isinstance(value, EarthEntry):
                 for model_type, model in value:
                     self[model_type] = model
 
@@ -133,15 +133,15 @@ class ModelSequence(ConfigurationEntry):
         self.connections.append(Connection(source, destination, method))
 
     @property
-    def earth(self) -> Earth:
-        return Earth(self.verbosity, **{model.type.name: model
-                                        for model in self.models})
+    def earth(self) -> EarthEntry:
+        return EarthEntry(self.verbosity, **{model.model_type.name: model
+                                             for model in self.models})
 
     def append(self, model: Model):
         if model is not None:
             if len(self.models) > 0:
                 self.models[-1].next = model
-            self[model.type] = model
+            self[model.model_type] = model
 
     def __update_processors(self):
         # set start and end processors
@@ -161,7 +161,7 @@ class ModelSequence(ConfigurationEntry):
         return self.__models[model_type]
 
     def __setitem__(self, model_type: ModelType, model: Model):
-        assert model_type == model.type
+        assert model_type == model.model_type
         if model_type in self.__models:
             LOGGER.warning(f'overwriting existing "{model_type.name}" model')
         self.__models[model_type] = model
@@ -192,7 +192,7 @@ class ModelSequence(ConfigurationEntry):
         ])
 
     def __repr__(self) -> str:
-        models = [f'{model.type.name.lower()}={repr(model)}'
+        models = [f'{model.model_type.name.lower()}={repr(model)}'
                   for model in self.models]
         return f'{self.__class__.__name__}({repr(self.interval)}, {", ".join(models)})'
 
@@ -205,15 +205,48 @@ class Configuration:
     def entries(self) -> [ConfigurationEntry]:
         return [self.sequence.earth, *self.sequence.models, self.sequence]
 
-    def write(self, filename: PathLike, overwrite: bool = False):
-        exists = os.path.exists(filename)
-        if exists:
-            LOGGER.warning(f'{"overwriting" if overwrite else "skipping"} '
-                           f'existing file "{filename}"')
-        if not exists or overwrite:
-            with open(filename, 'w') as output_file:
-                LOGGER.debug(f'writing NEMS configuration to "{filename}"')
-                output_file.write(str(self))
+    @property
+    def meshes(self) -> [ModelMesh]:
+        return [entry for entry in self.entries
+                if isinstance(entry, ModelMesh)]
+
+    @property
+    def configuration_string(self) -> str:
+        return '#############################################\n' \
+               '####  NEMS Run-Time Configuration File  #####\n' \
+               '#############################################\n' \
+               '\n' + \
+               '\n'.join(f'# {entry.entry_type} #\n'
+                         f'{entry}\n'
+                         for entry in self.entries)
+
+    @property
+    def meshes_string(self) -> str:
+        return '\n'.join([mesh.mesh_entry for mesh in self.meshes])
+
+    def write(self, directory: PathLike, overwrite: bool = False):
+        if not isinstance(directory, Path):
+            directory = Path(directory)
+
+        configure_filename = directory / 'nems.configure'
+        meshes_filename = directory / 'atm_namelist.rc'
+        # (directory / 'config.rc').symlink_to(meshes_filename)
+
+        LOGGER.debug(f'writing NEMS configuration to "{configure_filename}"')
+        LOGGER.debug(f'writing mesh filenames to "{meshes_filename}"')
+
+        output_filenames = {
+            configure_filename: self.configuration_string,
+            meshes_filename: self.meshes_string + '\n'
+        }
+
+        for filename, file_contents in output_filenames.items():
+            if filename.exists():
+                LOGGER.warning(f'{"overwriting" if overwrite else "skipping"} '
+                               f'existing file "{filename}"')
+            if not filename.exists() or overwrite:
+                with open(filename, 'w') as output_file:
+                    output_file.write(file_contents)
 
     def __iter__(self) -> Iterator[ConfigurationEntry]:
         for entry in self.entries:
@@ -222,15 +255,6 @@ class Configuration:
     def __getitem__(self, entry_type: type) -> [ConfigurationEntry]:
         return [entry for entry in self.entries
                 if isinstance(entry, entry_type)]
-
-    def __str__(self) -> str:
-        return '#############################################\n' \
-               '####  NEMS Run-Time Configuration File  #####\n' \
-               '#############################################\n' \
-               '\n' + \
-               '\n'.join(f'# {entry.entry_type} #\n'
-                         f'{entry}\n'
-                         for entry in self.entries)
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({repr(self.sequence)})'

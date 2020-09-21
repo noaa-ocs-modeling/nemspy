@@ -1,4 +1,6 @@
-from .base import Model, ModelType
+from os import PathLike
+
+from .base import Model, ModelMesh, ModelType
 from ..utilities import get_logger
 
 LOGGER = get_logger('model.wave')
@@ -13,16 +15,17 @@ class WaveModel(Model):
         super().__init__(name, ModelType.WAVE, processors, **kwargs)
 
 
-class WaveMesh(WaveModel):
+class WaveMesh(WaveModel, ModelMesh):
     """
     WaveWatch III mesh reference
     """
 
-    def __init__(self, processors: int = None, **kwargs):
+    def __init__(self, filename: PathLike, processors: int = None, **kwargs):
         if processors is None:
             processors = 1
         # Uses ww3data as name but the implementation is model agnostic
-        super().__init__('ww3data', processors, **kwargs)
+        WaveModel.__init__(self, 'ww3data', processors, **kwargs)
+        ModelMesh.__init__(self, self.model_type, filename)
 
 
 class WaveWatch3(WaveModel):
