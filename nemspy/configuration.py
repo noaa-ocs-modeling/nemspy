@@ -211,7 +211,7 @@ class Configuration:
                 if isinstance(entry, ModelMesh)]
 
     @property
-    def configuration_string(self) -> str:
+    def configuration(self) -> str:
         return '#############################################\n' \
                '####  NEMS Run-Time Configuration File  #####\n' \
                '#############################################\n' \
@@ -221,23 +221,27 @@ class Configuration:
                          for entry in self.entries)
 
     @property
-    def meshes_string(self) -> str:
+    def mesh_configuration(self) -> str:
         return '\n'.join([mesh.mesh_entry for mesh in self.meshes])
 
     def write(self, directory: PathLike, overwrite: bool = False):
         if not isinstance(directory, Path):
             directory = Path(directory)
 
-        configure_filename = directory / 'nems.configure'
-        meshes_filename = directory / 'atm_namelist.rc'
-        # (directory / 'config.rc').symlink_to(meshes_filename)
+        nems_configuration_filename = directory / 'nems.configure'
+        mesh_configuration_filename = directory / 'config.rc'
+        # model_configuration_filename = directory / 'model_configure'
+        # atmospheric_namelist_filename = directory / 'atm_namelist.rc'
+        # atmospheric_namelist_filename.symlink_to(model_configuration_filename)
 
-        LOGGER.debug(f'writing NEMS configuration to "{configure_filename}"')
-        LOGGER.debug(f'writing mesh filenames to "{meshes_filename}"')
+        LOGGER.debug(f'writing NEMS configuration to '
+                     f'"{nems_configuration_filename}"')
+        LOGGER.debug(f'writing mesh filenames to '
+                     f'"{mesh_configuration_filename}"')
 
         output_filenames = {
-            configure_filename: self.configuration_string,
-            meshes_filename: self.meshes_string + '\n'
+            nems_configuration_filename: self.configuration,
+            mesh_configuration_filename: self.mesh_configuration + '\n'
         }
 
         for filename, file_contents in output_filenames.items():

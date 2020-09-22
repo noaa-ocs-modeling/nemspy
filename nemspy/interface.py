@@ -77,6 +77,10 @@ class ModelingSystem:
 
     @sequence.setter
     def sequence(self, sequence: [str]):
+        model_types = [model_type.name.lower() for model_type in ModelType]
+        for model_type in sequence:
+            if model_type.lower() not in model_types:
+                raise ValueError(f'"{model_type}" not in {model_types}')
         self.__configuration.sequence.sequence = [ModelType[model_type.upper()]
                                                   for model_type in sequence]
 
@@ -89,14 +93,12 @@ class ModelingSystem:
         :param method: remapping method (from `models.RemapMethod`)
         """
 
-        model_types = [model_type.name.lower()
-                       for model_type in ModelType]
-        remap_methods = [remap_method.name.lower()
-                         for remap_method in RemapMethod]
+        model_types = [model_type.name.lower() for model_type in ModelType]
+        remap_methods = [remap.name.lower() for remap in RemapMethod]
 
-        if source not in model_types:
+        if source.lower() not in model_types:
             raise ValueError(f'"{source}" not in {model_types}')
-        if destination not in model_types:
+        if destination.lower() not in model_types:
             raise ValueError(f'"{destination}" not in {model_types}')
         if method is not None:
             if method.lower() not in remap_methods:
