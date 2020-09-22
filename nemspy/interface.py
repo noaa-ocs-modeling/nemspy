@@ -89,8 +89,20 @@ class ModelingSystem:
         :param method: remapping method (from `models.RemapMethod`)
         """
 
+        model_types = [model_type.name.lower()
+                       for model_type in ModelType]
+        remap_methods = [remap_method.name.lower()
+                         for remap_method in RemapMethod]
+
+        if source not in model_types:
+            raise ValueError(f'"{source}" not in {model_types}')
+        if destination not in model_types:
+            raise ValueError(f'"{destination}" not in {model_types}')
         if method is not None:
+            if method.lower() not in remap_methods:
+                raise ValueError(f'"{method}" not in {remap_methods}')
             method = RemapMethod[method.upper()]
+
         self.__configuration.sequence.connect(ModelType[source.upper()],
                                               ModelType[destination.upper()],
                                               method)
