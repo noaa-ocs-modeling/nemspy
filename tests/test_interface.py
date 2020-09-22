@@ -18,7 +18,7 @@ ATMOSPHERIC_MESH_FILENAME = REFERENCE_DIRECTORY / 'wind_atm_fin_ch_time_vec.nc'
 WAVE_MESH_FILENAME = REFERENCE_DIRECTORY / 'ww3.Constant.20151214_sxy_ike_date.nc'
 
 
-class TestConfiguration(unittest.TestCase):
+class TestInterface(unittest.TestCase):
     def test_interface(self):
         hour = timedelta(hours=1)
         atmospheric_mesh = AtmosphericMesh(ATMOSPHERIC_MESH_FILENAME)

@@ -10,7 +10,7 @@ ATMOSPHERIC_MESH_FILENAME = REFERENCE_DIRECTORY / 'wind_atm_fin_ch_time_vec.nc'
 WAVE_MESH_FILENAME = REFERENCE_DIRECTORY / 'ww3.Constant.20151214_sxy_ike_date.nc'
 
 
-class TestModel(unittest.TestCase):
+class TestModels(unittest.TestCase):
     def test_model(self):
         model = AtmosphericMesh(ATMOSPHERIC_MESH_FILENAME, verbose=False,
                                 test='value', test2=5)
