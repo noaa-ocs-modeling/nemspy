@@ -231,6 +231,8 @@ class NEMSConfigurationFile(ConfigurationFile):
         if not isinstance(directory, Path):
             directory = Path(directory)
 
+        directory = directory.expanduser()
+
         filename = directory / self.name
 
         if filename.exists():
@@ -262,6 +264,8 @@ class MeshFile(ConfigurationFile):
     def write(self, directory: PathLike, overwrite: bool = False):
         if not isinstance(directory, Path):
             directory = Path(directory)
+
+        directory = directory.expanduser()
 
         filename = directory / self.name
 
@@ -296,6 +300,8 @@ class ModelConfigurationFile(ConfigurationFile):
         if not isinstance(directory, Path):
             directory = Path(directory)
 
+        directory = directory.expanduser()
+
         filename = directory / self.name
 
         if filename.exists():
@@ -315,7 +321,7 @@ class ModelConfigurationFile(ConfigurationFile):
                 output_file.write(str(self))
 
     def __str__(self) -> str:
-        duration_hours = self.duration / timedelta(hours=1)
+        duration_hours = round(self.duration / timedelta(hours=1))
         return '\n'.join([
             'core: gfs',
             'print_esmf:     .true.',

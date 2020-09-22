@@ -118,7 +118,7 @@ class TestInterface(unittest.TestCase):
         self.assertEqual(models[2].start_processor, 12)
         self.assertEqual(models[2].end_processor, 12)
 
-    def test_configuration_file(self):
+    def test_configuration_files(self):
         start_time = datetime(2020, 6, 1)
         duration = timedelta(days=1)
         interval = timedelta(hours=1)
