@@ -1,7 +1,8 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from os import PathLike
 
-from .configuration import Configuration, ModelSequence
+from .configuration import MeshFile, ModelConfigurationFile, ModelSequence, \
+    NEMSConfigurationFile
 from .model.base import Model, ModelType, ModelVerbosity, RemapMethod
 
 
@@ -10,10 +11,13 @@ class ModelingSystem:
     NEMS interface with configuration file output
     """
 
-    def __init__(self, interval: timedelta, verbose: bool = False, **models):
+    def __init__(self, start_time: datetime, duration: timedelta,
+                 interval: timedelta, verbose: bool = False, **models):
         """
         create a NEMS interface from the given interval and models
 
+        :param start_time: time at which to start
+        :param duration: total time to run models
         :param interval: time interval of top-level run sequence
         :param verbose: verbosity in NEMS configuration
         :param atmospheric: atmospheric wind model
@@ -38,8 +42,12 @@ class ModelingSystem:
                 raise ValueError(f'unexpected model type "{model_type}"; '
                                  f'must be one of {model_types}')
 
-        self.__configuration = Configuration(ModelSequence(interval, verbose,
-                                                           **self.__models))
+        self.__sequence = ModelSequence(interval, verbose, **self.__models)
+        self.__configuration_files = [
+            NEMSConfigurationFile(self.__sequence),
+            MeshFile(self.__sequence),
+            ModelConfigurationFile(start_time, duration, self.__sequence)
+        ]
 
     @property
     def interval(self) -> timedelta:
@@ -47,11 +55,11 @@ class ModelingSystem:
         run sequence interval
         """
 
-        return self.__configuration.sequence.interval
+        return self.__sequence.interval
 
     @interval.setter
     def interval(self, interval: timedelta):
-        self.__configuration.sequence.interval = interval
+        self.__sequence.interval = interval
 
     @property
     def models(self) -> [Model]:
@@ -59,7 +67,7 @@ class ModelingSystem:
         models in execution order
         """
 
-        return self.__configuration.sequence.models
+        return self.__sequence.entries
 
     @property
     def sequence(self) -> [str]:
@@ -68,7 +76,7 @@ class ModelingSystem:
         """
 
         return [model_type.name.lower()
-                for model_type in self.__configuration.sequence.sequence]
+                for model_type in self.__sequence.sequence]
 
     @sequence.setter
     def sequence(self, sequence: [str]):
@@ -76,8 +84,8 @@ class ModelingSystem:
         for model_type in sequence:
             if model_type.lower() not in model_types:
                 raise ValueError(f'"{model_type}" not in {model_types}')
-        self.__configuration.sequence.sequence = [ModelType[model_type.upper()]
-                                                  for model_type in sequence]
+        self.__sequence.sequence = [ModelType[model_type.upper()]
+                                    for model_type in sequence]
 
     def connect(self, source: str, destination: str, method: str = None):
         """
@@ -100,9 +108,9 @@ class ModelingSystem:
                 raise ValueError(f'"{method}" not in {remap_methods}')
             method = RemapMethod[method.upper()]
 
-        self.__configuration.sequence.connect(ModelType[source.upper()],
-                                              ModelType[destination.upper()],
-                                              method)
+        self.__sequence.connect(ModelType[source.upper()],
+                                ModelType[destination.upper()],
+                                method)
 
     @property
     def connections(self) -> [str]:
@@ -111,7 +119,12 @@ class ModelingSystem:
         """
 
         return [str(connection)
-                for connection in self.__configuration.sequence.connections]
+                for connection in self.__sequence.connections]
+
+    @property
+    def configuration(self) -> {str: str}:
+        return {configuration_file.name: str(configuration_file)
+                for configuration_file in self.__configuration_files}
 
     def write(self, directory: PathLike, overwrite: bool = False):
         """
@@ -121,21 +134,19 @@ class ModelingSystem:
         :param overwrite: whether to overwrite existing files
         """
 
-        self.__configuration.write(directory, overwrite)
+        for configuration_file in self.__configuration_files:
+            configuration_file.write(directory, overwrite)
 
     @property
     def verbose(self) -> bool:
-        return self.__configuration.sequence.verbosity is ModelVerbosity.MAXIMUM
+        return self.__sequence.verbosity is ModelVerbosity.MAXIMUM
 
     @verbose.setter
     def verbose(self, verbose: bool):
-        self.__configuration.sequence.verbosity = ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM
+        self.__sequence.verbosity = ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM
 
     def __getitem__(self, model_type: str) -> Model:
         return self.__models[model_type]
-
-    def __str__(self) -> str:
-        return str(self.__configuration)
 
     def __repr__(self) -> str:
         models = [f'{model_type}={repr(model)}'

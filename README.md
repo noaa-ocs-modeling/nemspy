@@ -18,8 +18,8 @@ interval = timedelta(hours=1)
 
 # model entries
 ocean_model = ADCIRC(processors=300, verbose=True, DumpFields=False)
-wave_mesh = WaveMesh()
-atmospheric_mesh = AtmosphericMesh()
+wave_mesh = WaveMesh('~/ww3.Constant.20151214_sxy_ike_date.nc')
+atmospheric_mesh = AtmosphericMesh('~/wind_atm_fin_ch_time_vec.nc')
 hydrological_model = NationalWaterModel(processors=769, DebugFlag=0)
 
 # instantiate model system with a specified order of execution

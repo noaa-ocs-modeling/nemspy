@@ -74,8 +74,7 @@ class ModelMesh(ABC):
         self.mesh_type = mesh_type
         self.filename = filename
 
-    @property
-    def mesh_entry(self) -> str:
+    def __str__(self) -> str:
         return f' {self.mesh_type.value.lower()}_dir: {self.filename.parent}\n' \
                f' {self.mesh_type.value.lower()}_nam: {self.filename.name}'
 
