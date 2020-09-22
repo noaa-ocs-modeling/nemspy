@@ -36,12 +36,18 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: twine upload dist/* --verbose
   install:
-    name: test wheel installation
     needs: deploy
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+      os: [ ubuntu-latest, windows-latest ]
+      python-version: [ 3.8 ]
+    name: test wheel in Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Install Python
         uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Retrieve version from repository
