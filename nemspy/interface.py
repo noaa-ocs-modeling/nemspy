@@ -22,9 +22,6 @@ class ModelingSystem:
         :param hydrological: terrestrial water model
         """
 
-        self.__interval = interval
-        self.__verbosity = ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM
-
         self.__models = {}
         for model_type, model in models.items():
             model_types = {entry.name.lower() for entry in ModelType}
@@ -33,16 +30,15 @@ class ModelingSystem:
                     if model.model_type.name.lower() == model_type:
                         self.__models[model_type] = model
                     else:
-                        raise ValueError(f'given model type ("{model_type}") '
-                                         f'does not match that of the provided '
-                                         f'model ("{model.model_type.name.lower()}")')
+                        raise ValueError(f'"{model.name}" model is not '
+                                         f'type "{model_type}"')
                 else:
                     raise ValueError(f'value must be of type {Model}')
             else:
                 raise ValueError(f'unexpected model type "{model_type}"; '
                                  f'must be one of {model_types}')
 
-        self.__configuration = Configuration(ModelSequence(self.interval,
+        self.__configuration = Configuration(ModelSequence(interval, verbose,
                                                            **self.__models))
 
     @property
@@ -51,12 +47,11 @@ class ModelingSystem:
         run sequence interval
         """
 
-        return self.__interval
+        return self.__configuration.sequence.interval
 
     @interval.setter
     def interval(self, interval: timedelta):
-        self.__interval = interval
-        self.__configuration.sequence.interval = self.__interval
+        self.__configuration.sequence.interval = interval
 
     @property
     def models(self) -> [Model]:
@@ -130,12 +125,11 @@ class ModelingSystem:
 
     @property
     def verbose(self) -> bool:
-        return self.__verbosity is ModelVerbosity.MAXIMUM
+        return self.__configuration.sequence.verbosity is ModelVerbosity.MAXIMUM
 
     @verbose.setter
     def verbose(self, verbose: bool):
-        self.__verbosity = ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM
-        self.__configuration.sequence.verbosity = self.__verbosity
+        self.__configuration.sequence.verbosity = ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM
 
     def __getitem__(self, model_type: str) -> Model:
         return self.__models[model_type]

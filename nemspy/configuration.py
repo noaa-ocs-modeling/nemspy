@@ -202,12 +202,8 @@ class Configuration:
         self.sequence = sequence
 
     @property
-    def entries(self) -> [ConfigurationEntry]:
-        return [self.sequence.earth, *self.sequence.models, self.sequence]
-
-    @property
     def meshes(self) -> [ModelMesh]:
-        return [entry for entry in self.entries
+        return [entry for entry in self
                 if isinstance(entry, ModelMesh)]
 
     @property
@@ -218,7 +214,7 @@ class Configuration:
                '\n' + \
                '\n'.join(f'# {entry.entry_type} #\n'
                          f'{entry}\n'
-                         for entry in self.entries)
+                         for entry in self)
 
     @property
     def mesh_configuration(self) -> str:
@@ -253,12 +249,12 @@ class Configuration:
                     output_file.write(file_contents)
 
     def __iter__(self) -> Iterator[ConfigurationEntry]:
-        for entry in self.entries:
+        for entry in [self.sequence.earth, *self.sequence.models,
+                      self.sequence]:
             yield entry
 
     def __getitem__(self, entry_type: type) -> [ConfigurationEntry]:
-        return [entry for entry in self.entries
-                if isinstance(entry, entry_type)]
+        return [entry for entry in self if isinstance(entry, entry_type)]
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({repr(self.sequence)})'
