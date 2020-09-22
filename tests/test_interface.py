@@ -30,6 +30,11 @@ class TestConfiguration(unittest.TestCase):
                               wave=wave_mesh, ocean=ocean_model,
                               hydrological=hydrological_model)
 
+        self.assertIs(nems['atmospheric'], atmospheric_mesh)
+        self.assertIs(nems['wave'], wave_mesh)
+        self.assertIs(nems['ocean'], ocean_model)
+        self.assertIs(nems['hydrological'], hydrological_model)
+
         self.assertEqual(nems.interval, hour)
         self.assertEqual(nems.verbose, False)
 
@@ -39,11 +44,6 @@ class TestConfiguration(unittest.TestCase):
 
         self.assertEqual(nems.interval, half_hour)
         self.assertEqual(nems.verbose, True)
-
-        self.assertIs(nems['atmospheric'], atmospheric_mesh)
-        self.assertIs(nems['wave'], wave_mesh)
-        self.assertIs(nems['ocean'], ocean_model)
-        self.assertIs(nems['hydrological'], hydrological_model)
 
     def test_connection(self):
         hour = timedelta(hours=1)
