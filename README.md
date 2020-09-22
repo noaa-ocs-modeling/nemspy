@@ -8,12 +8,14 @@ This repository implements the [National Unified Operational Prediction Capabili
 
 #### Usage:
 ```python
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from nemspy import ModelingSystem
 from nemspy.model import ADCIRC, AtmosphericMesh, NationalWaterModel, WaveMesh
 
 # returning interval of main run sequence
+start_time = datetime(2020, 6, 1)
+duration = timedelta(days=1)
 interval = timedelta(hours=1)
 
 # model entries
@@ -23,7 +25,10 @@ atmospheric_mesh = AtmosphericMesh('~/wind_atm_fin_ch_time_vec.nc')
 hydrological_model = NationalWaterModel(processors=769, DebugFlag=0)
 
 # instantiate model system with a specified order of execution
-nems = ModelingSystem(interval, ocean=ocean_model, wave=wave_mesh, atmospheric=atmospheric_mesh, hydrological=hydrological_model)
+nems = ModelingSystem(start_time, duration, interval, 
+                      ocean=ocean_model, wave=wave_mesh, 
+                      atmospheric=atmospheric_mesh, 
+                      hydrological=hydrological_model)
 
 # form connections between models using `.connect()`
 nems.connect('atmospheric', 'ocean')
