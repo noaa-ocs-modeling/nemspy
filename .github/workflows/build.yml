@@ -19,10 +19,10 @@ jobs:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ runner.python-version }}-${{ hashFiles('setup.py') }}
           restore-keys: ${{ runner.os }}-pip-${{ runner.python-version }}-
+      - name: Update pip
+        run: python -m pip install --upgrade pip
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install dunamai setuptools wheel twine
+        run: pip install dunamai setuptools wheel twine
       - name: Build package
         run: python setup.py sdist bdist_wheel
       - name: Upload wheel
@@ -44,17 +44,23 @@ jobs:
     name: test wheel in Python ${{ matrix.python-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
       - name: Install Python
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Restore cached dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ runner.python-version }}-${{ hashFiles('setup.py') }}
+          restore-keys: ${{ runner.os }}-pip-${{ runner.python-version }}-
+      - name: Update pip
+        run: python -m pip install --upgrade pip
       - name: Retrieve version from repository
         uses: mtkennerly/dunamai-action@v1
         with:
           env-var: VERSION
       - name: Install wheel
-        run: |
-          python -m pip install --upgrade pip
-          pip install nemspy==$VERSION
+        run: pip install nemspy==$VERSION
