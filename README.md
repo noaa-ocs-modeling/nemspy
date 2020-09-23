@@ -1,8 +1,8 @@
 # NEMSpy
-### configuration for the NOAA Environmental Modeling System (NEMS)
-
 [![tests](https://github.com/noaa-ocs-modeling/NEMSpy/workflows/tests/badge.svg)](https://github.com/noaa-ocs-modeling/NEMSpy/actions?query=workflow%3Atests)
 [![build](https://github.com/noaa-ocs-modeling/NEMSpy/workflows/build/badge.svg)](https://github.com/noaa-ocs-modeling/NEMSpy/actions?query=workflow%3Abuild)
+[![version](https://img.shields.io/pypi/v/nemspy)](https://pypi.org/project/nemspy)
+[![license](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 NEMSpy generates configuration files (`nems.configure`, `config.rc`, `model_configure`, `atm_namelist.rc`) 
 for coupled modeling applications run with a compiled NEMS binary (not included). 
