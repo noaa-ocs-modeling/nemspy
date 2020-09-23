@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from os import PathLike
 
 from .configuration import MeshFile, ModelConfigurationFile, ModelSequence, \
-    NEMSConfigurationFile
+    NEMSConfigurationFile, ensure_directory
 from .model.base import Model, ModelType, ModelVerbosity, RemapMethod
 
 
@@ -134,6 +134,7 @@ class ModelingSystem:
         :param overwrite: whether to overwrite existing files
         """
 
+        directory = ensure_directory(directory)
         for configuration_file in self.__configuration_files:
             configuration_file.write(directory, overwrite)
 

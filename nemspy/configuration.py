@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum
-from os import PathLike
+from os import PathLike, makedirs
 from pathlib import Path
 from textwrap import indent
 from typing import Iterator, Tuple
@@ -228,11 +228,7 @@ class NEMSConfigurationFile(ConfigurationFile):
     name = 'nems.configure'
 
     def write(self, directory: PathLike, overwrite: bool = False):
-        if not isinstance(directory, Path):
-            directory = Path(directory)
-
-        directory = directory.expanduser()
-
+        directory = ensure_directory(directory)
         filename = directory / self.name
 
         if filename.exists():
@@ -262,11 +258,7 @@ class MeshFile(ConfigurationFile):
     name = 'config.rc'
 
     def write(self, directory: PathLike, overwrite: bool = False):
-        if not isinstance(directory, Path):
-            directory = Path(directory)
-
-        directory = directory.expanduser()
-
+        directory = ensure_directory(directory)
         filename = directory / self.name
 
         if filename.exists():
@@ -297,11 +289,7 @@ class ModelConfigurationFile(ConfigurationFile):
         super().__init__(sequence)
 
     def write(self, directory: PathLike, overwrite: bool = False):
-        if not isinstance(directory, Path):
-            directory = Path(directory)
-
-        directory = directory.expanduser()
-
+        directory = ensure_directory(directory)
         filename = directory / self.name
 
         if filename.exists():
@@ -437,3 +425,14 @@ class ModelConfigurationFile(ConfigurationFile):
             '',
             '#jwend'
         ])
+
+
+def ensure_directory(directory: PathLike) -> Path:
+    if not isinstance(directory, Path):
+        directory = Path(directory)
+    directory = directory.expanduser()
+    if directory.is_file():
+        directory = directory.parent
+    if not directory.exists():
+        makedirs(directory, exist_ok=True)
+    return directory

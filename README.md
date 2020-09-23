@@ -83,7 +83,8 @@ WAV_attributes::
 OCN_model:                      adcirc
 OCN_petlist_bounds:             2 12
 OCN_attributes::
-  Verbosity = min
+  Verbosity = max
+  DumpFields = false
 ::
 
 # HYD #
@@ -91,6 +92,7 @@ HYD_model:                      nwm
 HYD_petlist_bounds:             13 781
 HYD_attributes::
   Verbosity = min
+  DebugFlag = 0
 ::
 
 # Run Sequence #
