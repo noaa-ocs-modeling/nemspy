@@ -1,10 +1,14 @@
 # NEMSpy
-### Python wrapper for the NOAA Environmental Modeling System
+### configuration for the NOAA Environmental Modeling System (NEMS)
 
 [![tests](https://github.com/noaa-ocs-modeling/NEMSpy/workflows/tests/badge.svg)](https://github.com/noaa-ocs-modeling/NEMSpy/actions?query=workflow%3Atests)
 [![build](https://github.com/noaa-ocs-modeling/NEMSpy/workflows/build/badge.svg)](https://github.com/noaa-ocs-modeling/NEMSpy/actions?query=workflow%3Abuild)
 
-This repository implements the [National Unified Operational Prediction Capability (NUOPC)](https://www.earthsystemcog.org/projects/nuopc/).
+NEMSpy generates configuration files (`nems.configure`, `config.rc`, `model_configure`, `atm_namelist.rc`) 
+for coupled modeling applications run with a compiled NEMS binary (not included). 
+
+NEMS implements the [National Unified Operational Prediction Capability (NUOPC)](https://www.earthsystemcog.org/projects/nuopc/), 
+and configuration files built for NEMS will also work for most NUOPC applications.
 
 #### Usage:
 ```python
@@ -13,22 +17,27 @@ from datetime import datetime, timedelta
 from nemspy import ModelingSystem
 from nemspy.model import ADCIRC, AtmosphericMesh, NationalWaterModel, WaveMesh
 
-# returning interval of main run sequence
+# model run time
 start_time = datetime(2020, 6, 1)
 duration = timedelta(days=1)
+
+# returning interval of main run sequence
 interval = timedelta(hours=1)
+
+# directory to which configuration files should be written
 output_directory = '~/nems_configuration/'
 
 # model entries
-ocean_model = ADCIRC(processors=300, verbose=True, DumpFields=False)
-wave_mesh = WaveMesh('~/ww3.Constant.20151214_sxy_ike_date.nc')
 atmospheric_mesh = AtmosphericMesh('~/wind_atm_fin_ch_time_vec.nc')
+wave_mesh = WaveMesh('~/ww3.Constant.20151214_sxy_ike_date.nc')
+ocean_model = ADCIRC(processors=11, verbose=True, DumpFields=False)
 hydrological_model = NationalWaterModel(processors=769, DebugFlag=0)
 
 # instantiate model system with a specified order of execution
-nems = ModelingSystem(start_time, duration, interval, 
-                      ocean=ocean_model, wave=wave_mesh, 
-                      atmospheric=atmospheric_mesh, 
+nems = ModelingSystem(start_time, duration, interval,
+                      atmospheric=atmospheric_mesh,
+                      wave=wave_mesh, 
+                      ocean=ocean_model,
                       hydrological=hydrological_model)
 
 # form connections between models using `.connect()`
@@ -38,7 +47,7 @@ nems.connect('atmospheric', 'hydrological')
 nems.connect('wave', 'hydrological')
 nems.connect('ocean', 'hydrological')
 
-# write configuration to file
+# write configuration files to the given directory
 nems.write(output_directory)
 ```
 
@@ -56,34 +65,32 @@ EARTH_attributes::
   Verbosity = min
 ::
 
-# OCN #
-OCN_model:                      adcirc
-OCN_petlist_bounds:             0 299
-OCN_attributes::
-  Verbosity = max
-  DumpFields = false
+# ATM #
+ATM_model:                      atmesh
+ATM_petlist_bounds:             0 0
+ATM_attributes::
+  Verbosity = min
 ::
 
 # WAV #
 WAV_model:                      ww3data
-WAV_petlist_bounds:             300 300
+WAV_petlist_bounds:             1 1
 WAV_attributes::
   Verbosity = min
 ::
 
-# ATM #
-ATM_model:                      atmesh
-ATM_petlist_bounds:             301 301
-ATM_attributes::
+# OCN #
+OCN_model:                      adcirc
+OCN_petlist_bounds:             2 12
+OCN_attributes::
   Verbosity = min
 ::
 
 # HYD #
 HYD_model:                      nwm
-HYD_petlist_bounds:             302 1070
+HYD_petlist_bounds:             13 781
 HYD_attributes::
   Verbosity = min
-  DebugFlag = 0
 ::
 
 # Run Sequence #
@@ -94,9 +101,9 @@ runSeq::
     ATM -> HYD   :remapMethod=redist
     WAV -> HYD   :remapMethod=redist
     OCN -> HYD   :remapMethod=redist
-    OCN
-    WAV
     ATM
+    WAV
+    OCN
     HYD
   @
 ::
