@@ -35,20 +35,37 @@ hydrological_model = NationalWaterModel(processors=769, DebugFlag=0)
 
 # instantiate model system with a specified order of execution
 nems = ModelingSystem(start_time, duration, interval,
-                      atmospheric=atmospheric_mesh,
-                      wave=wave_mesh, 
-                      ocean=ocean_model,
-                      hydrological=hydrological_model)
+                      atm=atmospheric_mesh,
+                      wav=wave_mesh,
+                      ocn=ocean_model,
+                      hyd=hydrological_model)
 
-# form connections between models using `.connect()`
-nems.connect('atmospheric', 'ocean')
-nems.connect('wave', 'ocean')
-nems.connect('atmospheric', 'hydrological')
-nems.connect('wave', 'hydrological')
-nems.connect('ocean', 'hydrological')
+# form connections between models
+nems.connect('WAV', 'OCN')
+nems.connect('ATM', 'HYD')
+nems.connect('WAV', 'HYD')
+
+# form mediations between models with custom functions
+nems.mediate('ATM', 'OCN', ['MedPhase_atm_ocn_flux'])
+nems.mediate('HYD', None)
+nems.mediate(None, 'OCN', ['MedPhase_prep_ocn'], processors=2)
+
+# define execution order
+nems.sequence = [
+    'MED -> OCN',
+    'ATM',
+    'ATM -> MED -> OCN',
+    'WAV -> OCN',
+    'OCN',
+    'WAV',
+    'ATM -> HYD',
+    'WAV -> HYD',
+    'HYD',
+    'HYD -> MED'
+]
 
 # write configuration files to the given directory
-nems.write(output_directory)
+nems.write(output_directory, overwrite=True)
 ```
 
 #### Output:
@@ -60,22 +77,22 @@ nems.write(output_directory)
 #############################################
 
 # EARTH #
-EARTH_component_list: ATM WAV OCN HYD
+EARTH_component_list: ATM WAV OCN HYD MED
 EARTH_attributes::
+  Verbosity = min
+::
+
+# MED #
+MED_model:                      implicit
+MED_petlist_bounds:             0 1
+MED_attributes::
   Verbosity = min
 ::
 
 # ATM #
 ATM_model:                      atmesh
-ATM_petlist_bounds:             0 0
+ATM_petlist_bounds:             2 2
 ATM_attributes::
-  Verbosity = min
-::
-
-# WAV #
-WAV_model:                      ww3data
-WAV_petlist_bounds:             1 1
-WAV_attributes::
   Verbosity = min
 ::
 
@@ -87,9 +104,16 @@ OCN_attributes::
   DumpFields = false
 ::
 
+# WAV #
+WAV_model:                      ww3data
+WAV_petlist_bounds:             13 13
+WAV_attributes::
+  Verbosity = min
+::
+
 # HYD #
 HYD_model:                      nwm
-HYD_petlist_bounds:             13 781
+HYD_petlist_bounds:             14 782
 HYD_attributes::
   Verbosity = min
   DebugFlag = 0
@@ -98,15 +122,20 @@ HYD_attributes::
 # Run Sequence #
 runSeq::
   @3600
-    ATM -> OCN   :remapMethod=redist
+
+    MED MedPhase_prep_ocn
+    MED -> OCN   :remapMethod=redist
+    ATM
+    ATM -> MED   :remapMethod=redist
+    MED MedPhase_atm_ocn_flux
+    MED -> OCN   :remapMethod=redist
     WAV -> OCN   :remapMethod=redist
+    OCN
+    WAV
     ATM -> HYD   :remapMethod=redist
     WAV -> HYD   :remapMethod=redist
-    OCN -> HYD   :remapMethod=redist
-    ATM
-    WAV
-    OCN
     HYD
+    HYD -> MED   :remapMethod=redist
   @
 ::
 ```
@@ -133,7 +162,7 @@ fhrot:                   0
 namelist:                atm_namelist
 total_member:            1
 grib_input:              0
-PE_MEMBER01:             782
+PE_MEMBER01:             784
 PE_MEMBER02
 PE_MEMBER03
 PE_MEMBER04

@@ -14,6 +14,7 @@ class TestModels(unittest.TestCase):
     def test_model(self):
         model = AtmosphericMesh(ATMOSPHERIC_MESH_FILENAME, verbose=False,
                                 test='value', test2=5)
+        model.start_processor = 0
 
         self.assertEqual(str(model),
                          'ATM_model:                      atmesh\n' \
@@ -29,15 +30,17 @@ class TestModels(unittest.TestCase):
         model_2 = WaveMesh(WAVE_MESH_FILENAME)
         model_3 = ADCIRC(11)
 
-        self.assertEqual(model_1.start_processor, 0)
-        self.assertEqual(model_1.end_processor, 0)
-        self.assertEqual(model_2.start_processor, 0)
-        self.assertEqual(model_2.end_processor, 0)
-        self.assertEqual(model_3.start_processor, 0)
-        self.assertEqual(model_3.end_processor, 10)
-
         model_1.next = model_2
         model_2.next = model_3
+
+        self.assertIs(model_1.start_processor, None)
+        self.assertIs(model_1.end_processor, None)
+        self.assertIs(model_2.start_processor, None)
+        self.assertIs(model_2.end_processor, None)
+        self.assertIs(model_3.start_processor, None)
+        self.assertIs(model_3.end_processor, None)
+
+        model_1.start_processor = 0
 
         self.assertEqual(model_1.start_processor, 0)
         self.assertEqual(model_1.end_processor, 0)
