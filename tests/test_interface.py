@@ -9,12 +9,14 @@ import unittest
 from nemspy import ModelingSystem
 from nemspy.model.atmosphere import AtmosphericMesh
 from nemspy.model.hydrology import NationalWaterModel
+from nemspy.model.ice import IceMesh
 from nemspy.model.ocean import ADCIRC
 from nemspy.model.waves import WaveMesh
 from nemspy.utilities import repository_root
 
 REFERENCE_DIRECTORY = repository_root() / 'tests/reference'
 ATMOSPHERIC_MESH_FILENAME = '~/wind_atm_fin_ch_time_vec.nc'
+ICE_MESH_FILENAME = '~/sea_ice.nc'
 WAVE_MESH_FILENAME = '~/ww3.Constant.20151214_sxy_ike_date.nc'
 
 
@@ -26,17 +28,20 @@ class TestInterface(unittest.TestCase):
         atmospheric_mesh = AtmosphericMesh(ATMOSPHERIC_MESH_FILENAME)
         wave_mesh = WaveMesh(WAVE_MESH_FILENAME)
         ocean_model = ADCIRC(11)
-        hydrological_model = NationalWaterModel(769)
 
         nems = ModelingSystem(start_time, duration, interval,
-                              atmospheric=atmospheric_mesh,
-                              wave=wave_mesh, ocean=ocean_model,
-                              hydrological=hydrological_model)
+                              atm=atmospheric_mesh,
+                              wav=wave_mesh,
+                              ocn=ocean_model)
 
-        self.assertIs(nems['atmospheric'], atmospheric_mesh)
-        self.assertIs(nems['wave'], wave_mesh)
-        self.assertIs(nems['ocean'], ocean_model)
-        self.assertIs(nems['hydrological'], hydrological_model)
+        self.assertIs(nems['ATM'], atmospheric_mesh)
+        self.assertIs(nems['WAV'], wave_mesh)
+        self.assertIs(nems['OCN'], ocean_model)
+
+        with self.assertRaises(KeyError):
+            nems['HYD']
+        with self.assertRaises(KeyError):
+            nems['nonexistent']
 
         self.assertEqual(nems.interval, interval)
         self.assertEqual(nems.verbose, False)
@@ -56,20 +61,68 @@ class TestInterface(unittest.TestCase):
         wave_mesh = WaveMesh(WAVE_MESH_FILENAME)
 
         nems = ModelingSystem(start_time, duration, interval,
-                              ocean=ocean_model, wave=wave_mesh)
-        nems.connect('wave', 'ocean')
+                              ocn=ocean_model,
+                              wav=wave_mesh)
+        nems.connect('WAV', 'OCN')
 
-        with self.assertRaises(ValueError):
-            nems.connect('atmospheric', 'ocean')
-        with self.assertRaises(ValueError):
-            nems.connect('wave', 'hydrological')
-        with self.assertRaises(ValueError):
-            nems.connect('wave', 'nonexistent')
-        with self.assertRaises(ValueError):
-            nems.connect('wave', 'ocean', 'nonexistent')
+        with self.assertRaises(KeyError):
+            nems.connect('ATM', 'OCN')
+        with self.assertRaises(KeyError):
+            nems.connect('WAV', 'HYD')
+        with self.assertRaises(KeyError):
+            nems.connect('WAV', 'nonexistent')
+        with self.assertRaises(KeyError):
+            nems.connect('WAV', 'OCN', 'nonexistent')
 
         self.assertEqual(nems.connections,
                          ['WAV -> OCN   :remapMethod=redist'])
+
+    def test_mediation(self):
+        start_time = datetime(2020, 6, 1)
+        duration = timedelta(days=1)
+        interval = timedelta(hours=1)
+        atmospheric_mesh = AtmosphericMesh(ATMOSPHERIC_MESH_FILENAME)
+        ice_mesh = IceMesh(ICE_MESH_FILENAME)
+        ocean_model = ADCIRC(11)
+
+        nems = ModelingSystem(start_time, duration, interval,
+                              ice=ice_mesh,
+                              ocn=ocean_model,
+                              atm=atmospheric_mesh)
+
+        nems.connect('OCN', 'MED')
+        nems.mediate('ATM', 'ICE', ['MedPhase_prep_ice'])
+        nems.mediate('ICE', None, ['MedPhase_atm_ocn_flux',
+                                   'MedPhase_accum_fast'])
+        nems.mediate(None, 'OCN', ['MedPhase_prep_ocn'])
+
+        nems.sequence = [
+            'ATM',
+            'ATM -> MED -> ICE',
+            'ICE',
+            'ICE -> MED',
+            'MED -> OCN',
+            'OCN',
+            'OCN -> MED'
+        ]
+
+        with self.assertRaises(KeyError):
+            nems.connect('HYD', 'OCN')
+        with self.assertRaises(KeyError):
+            nems.connect('WAV', 'nonexistent')
+        with self.assertRaises(KeyError):
+            nems.connect('WAV', 'OCN', 'nonexistent')
+
+        self.assertEqual(nems.connections,
+                         ['ATM -> MED   :remapMethod=redist\n'
+                          'MED MedPhase_prep_ice\n'
+                          'MED -> ICE   :remapMethod=redist',
+                          'ICE -> MED   :remapMethod=redist\n'
+                          'MED MedPhase_atm_ocn_flux\n'
+                          'MED MedPhase_accum_fast',
+                          'MED MedPhase_prep_ocn\n'
+                          'MED -> OCN   :remapMethod=redist',
+                          'OCN -> MED   :remapMethod=redist'])
 
     def test_sequence(self):
         start_time = datetime(2020, 6, 1)
@@ -80,10 +133,9 @@ class TestInterface(unittest.TestCase):
         ocean_model = ADCIRC(11)
 
         nems = ModelingSystem(start_time, duration, interval,
-                              atmospheric=atmospheric_mesh,
-                              wave=wave_mesh, ocean=ocean_model)
-
-        self.assertEqual(nems.sequence, ['atmospheric', 'wave', 'ocean'])
+                              atm=atmospheric_mesh,
+                              wav=wave_mesh,
+                              ocn=ocean_model)
 
         models = nems.models
 
@@ -94,20 +146,18 @@ class TestInterface(unittest.TestCase):
         self.assertEqual(models[2].start_processor, 2)
         self.assertEqual(models[2].end_processor, 12)
 
-        with self.assertRaises(ValueError):
-            nems.sequence = []
-        with self.assertRaises(ValueError):
-            nems.sequence = ['atmospheric']
-        with self.assertRaises(ValueError):
-            nems.sequence = ['hydrological']
-        with self.assertRaises(ValueError):
+        self.assertEqual(nems.sequence, ['ATM', 'WAV', 'OCN'])
+        with self.assertRaises(KeyError):
+            nems.sequence = ['HYD']
+        with self.assertRaises(KeyError):
             nems.sequence = ['nonexistent']
+        with self.assertRaises(KeyError):
+            nems.sequence = ['OCN', 'ATM', 'WAV', 'WAV -> OCN ']
+        self.assertEqual(nems.sequence, ['ATM', 'WAV', 'OCN'])
 
-        self.assertEqual(nems.sequence, ['atmospheric', 'wave', 'ocean'])
+        nems.sequence = ['OCN', 'ATM', 'WAV']
 
-        nems.sequence = ['ocean', 'atmospheric', 'wave']
-
-        self.assertEqual(nems.sequence, ['ocean', 'atmospheric', 'wave'])
+        self.assertEqual(nems.sequence, ['OCN', 'ATM', 'WAV'])
 
         models = nems.models
 
@@ -128,14 +178,29 @@ class TestInterface(unittest.TestCase):
         hydrological_model = NationalWaterModel(769)
 
         nems = ModelingSystem(start_time, duration, interval,
-                              atmospheric=atmospheric_mesh,
-                              wave=wave_mesh, ocean=ocean_model,
-                              hydrological=hydrological_model)
-        nems.connect('atmospheric', 'ocean')
-        nems.connect('wave', 'ocean')
-        nems.connect('atmospheric', 'hydrological')
-        nems.connect('wave', 'hydrological')
-        nems.connect('ocean', 'hydrological')
+                              atm=atmospheric_mesh,
+                              wav=wave_mesh,
+                              ocn=ocean_model,
+                              hyd=hydrological_model)
+        nems.connect('ATM', 'OCN')
+        nems.connect('WAV', 'OCN')
+        nems.connect('ATM', 'HYD')
+        nems.connect('WAV', 'HYD')
+        nems.connect('OCN', 'HYD')
+
+        sequence = [
+            'ATM -> OCN',
+            'WAV -> OCN',
+            'ATM -> HYD',
+            'WAV -> HYD',
+            'OCN -> HYD',
+            'ATM',
+            'WAV',
+            'OCN',
+            'HYD'
+        ]
+
+        nems.sequence = sequence
 
         with tempfile.TemporaryDirectory() as temporary_directory:
             temporary_directory = Path(temporary_directory)

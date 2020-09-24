@@ -7,13 +7,14 @@ from textwrap import indent
 from typing import Iterator, Tuple
 
 from .model.base import ConfigurationEntry, Connection, INDENTATION, \
-    Model, ModelMesh, ModelType, ModelVerbosity, RemapMethod
+    Mediation, Mediator, Model, ModelMesh, ModelType, ModelVerbosity, \
+    RemapMethod, SequenceEntry
 from .utilities import get_logger
 
 LOGGER = get_logger('configuration')
 
 
-class EarthEntry(ConfigurationEntry):
+class Earth(ConfigurationEntry):
     """
     multi-model coupling container
     """
@@ -60,12 +61,14 @@ class EarthEntry(ConfigurationEntry):
 
     def __str__(self) -> str:
         attributes = [
-            f'{attribute} = {value if not isinstance(value, Enum) else value.value}'
+            f'{attribute} = ' \
+            f'{value if not isinstance(value, Enum) else value.value}'
             for attribute, value in self.attributes.items()
         ]
 
         return '\n'.join([
-            f'{self.entry_type}_component_list: {" ".join(model_type.value for model_type, model in self.models.items() if model is not None)}',
+            f'{self.entry_type}_component_list: '
+            f'{" ".join(model_type.value for model_type, model in self.models.items() if model is not None)}',
             f'{self.entry_type}_attributes::',
             indent('\n'.join(attributes), INDENTATION),
             '::'
@@ -79,116 +82,183 @@ class EarthEntry(ConfigurationEntry):
         return f'{self.__class__.__name__}({self.attributes["Verbosity"]}, {", ".join(kwargs)})'
 
 
-class ModelSequence(ConfigurationEntry):
+class RunSequence(ConfigurationEntry, SequenceEntry):
     entry_type = 'Run Sequence'
 
     def __init__(self, interval: timedelta, verbose: bool = False, **kwargs):
         self.interval = interval
-        self.verbosity = ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM
+        self.verbosity = ModelVerbosity.MAXIMUM \
+            if verbose else ModelVerbosity.MINIMUM
 
         self.__models = {}
         for key, value in kwargs.items():
             key = key.upper()
-            if key in {entry.name for entry in ModelType} and \
-                    isinstance(value, Model):
-                self[ModelType[key]] = value
-            elif key == 'EARTH' and isinstance(value, EarthEntry):
+            model_types = [model_type.value for model_type in ModelType]
+            if key in model_types and isinstance(value, Model):
+                self.__models[ModelType(key)] = value
+            elif key == 'EARTH' and isinstance(value, Earth):
                 for model_type, model in value:
-                    self[model_type] = model
+                    self.__models[model_type] = model
 
-        self.connections = []
-        self.__sequence()
+        self.__sequence = [model for model in self.models
+                           if model.model_type != ModelType.MEDIATOR]
+        self.__link_models()
+
+    def append(self, entry: SequenceEntry):
+        if isinstance(entry, Model):
+            model_type = entry.model_type
+            if model_type in self.__models:
+                del self.__models[model_type]
+                self[entry.model_type] = entry
+        self.__sequence.append(entry)
+
+    def extend(self, sequence: [SequenceEntry]):
+        for entry in sequence:
+            self.append(entry)
 
     @property
-    def entries(self) -> [Model]:
-        return [model for model_type, model in self.__models.items()
-                if model_type in self]
-
-    @property
-    def sequence(self):
-        return list(self.__models)
+    def sequence(self) -> [SequenceEntry]:
+        return self.__sequence
 
     @sequence.setter
-    def sequence(self, sequence: [ModelType]):
-        if sequence != list(self.__models):
-            if len(sequence) != len(self):
-                raise ValueError(f'given length {len(sequence)} differs from '
-                                 f'sequence length {len(self)}')
-            for model_type in sequence:
-                if model_type not in self:
-                    raise ValueError(f'{model_type} not in sequence '
-                                     f'{self.sequence}')
-            models = self.__models
-            self.__models = {model_type: models[model_type]
-                             for model_type in sequence}
-            self.__sequence()
+    def sequence(self, sequence: [SequenceEntry]):
+        sequence = list(sequence)
+        if sequence != self.__sequence:
+            mediator = self.mediator
+            self.__models = {}
+            if mediator is not None:
+                self.mediator = mediator
+            for entry in sequence:
+                if isinstance(entry, Model):
+                    model_type = entry.model_type
+                    if model_type in self.__models:
+                        raise TypeError(f'duplicate model type '
+                                        f'"{model_type.name}" in given sequence')
+                    self.__models[model_type] = entry
+            self.__link_models()
+            self.__sequence = sequence
 
-    def connect(self, source: ModelType, destination: ModelType,
-                method: RemapMethod = None):
+    def connect(self, source: ModelType, target: ModelType,
+                method: RemapMethod = None, **kwargs):
         if method is None:
             method = RemapMethod.REDISTRIBUTE
+        if ModelType.MEDIATOR in [source, target] and \
+                self.mediator is None:
+            self.mediator = Mediator('implicit', **kwargs)
         if source not in self.__models:
-            raise ValueError(f'no {source.name} model in sequence')
-        if destination not in self.__models:
-            raise ValueError(f'no {destination.name} model in sequence')
-        self.connections.append(Connection(source, destination, method))
+            raise KeyError(f'no {source.name} model in sequence')
+        if target not in self.__models:
+            raise KeyError(f'no {target.name} model in sequence')
+        self.append(Connection(self[source], self[target],
+                               method))
 
     @property
-    def earth(self) -> EarthEntry:
-        return EarthEntry(self.verbosity, **{model.model_type.name: model
-                                             for model in self.entries})
+    def connections(self) -> [Connection]:
+        return [entry for entry in self.sequence
+                if isinstance(entry, Connection)]
 
-    def append(self, model: Model):
-        if model is not None:
-            if len(self.entries) > 0:
-                self.entries[-1].next = model
-            self[model.model_type] = model
+    @property
+    def mediator(self) -> Mediator:
+        if ModelType.MEDIATOR in self:
+            return self.__models[ModelType.MEDIATOR]
+        else:
+            return None
+
+    @mediator.setter
+    def mediator(self, mediator: Mediator):
+        self[ModelType.MEDIATOR] = mediator
+
+    def mediate(self, source: ModelType = None, target: ModelType = None,
+                functions: [str] = None, method: RemapMethod = None,
+                processors: int = None, **attributes):
+
+        if self.mediator is None:
+            self.mediator = Mediator('implicit', processors, **attributes)
+        else:
+            self.mediator.attributes.update(attributes)
+        if processors is not None:
+            # increase mediation processor assignment if required
+            if self.mediator.processors < processors:
+                self.mediator.processors = processors
+
+        if source is not None:
+            source = self[source]
+        if target is not None:
+            target = self[target]
+
+        self.append(Mediation(source, self.mediator, target, functions,
+                              method))
+
+    @property
+    def mediations(self) -> [Mediation]:
+        return [entry for entry in self.sequence
+                if isinstance(entry, Mediation)]
+
+    @property
+    def earth(self) -> Earth:
+        return Earth(self.verbosity, **{model.model_type.name: model
+                                        for model in self.models})
 
     @property
     def processors(self) -> int:
         return sum(model.processors for model in self.__models.values())
 
-    def __sequence(self):
+    def __link_models(self):
         """ link entries and assign processors """
-        models = self.entries
+        models = self.models
         for model_index, model in enumerate(models):
             if model_index == 0 and model.previous is not None:
                 model.previous.next = None
                 model.previous = None
-            if model_index == len(self) and model.next is not None:
-                model.next.previous = None
+            if model.next is not None:
                 model.next = None
             next_model_index = model_index + 1
-            if next_model_index < len(self):
+            if next_model_index < len(models):
                 model.next = models[next_model_index]
-
-    def __getitem__(self, model_type: ModelType) -> Model:
-        return self.__models[model_type]
+        models[0].start_processor = 0
 
     def __setitem__(self, model_type: ModelType, model: Model):
         assert model_type == model.model_type
         if model_type in self.__models:
-            LOGGER.warning(f'overwriting existing "{model_type.name}" model')
+            existing_model = self.__models[model_type]
+            LOGGER.warning(f'overwriting {model_type.name} model '
+                           f'"{existing_model}" with "{model}"')
+            self.__sequence.remove(self.__sequence.index(existing_model))
         self.__models[model_type] = model
-        self.__sequence()
+        self.__link_models()
 
-    def __contains__(self, model_type: ModelType):
-        return model_type in self.__models
+    def __getitem__(self, model_type: ModelType) -> Model:
+        return self.__models[model_type]
+
+    @property
+    def models(self) -> [Model]:
+        models = [model for model_type, model in self.__models.items()
+                  if model_type in self and
+                  model_type is not ModelType.MEDIATOR]
+        if self.mediator is not None:
+            models.insert(0, self.mediator)
+        return models
 
     def __iter__(self) -> Iterator[Model]:
-        for model in self.entries:
+        for model in self.models:
             yield model
 
+    def __contains__(self, model_type: ModelType) -> bool:
+        return model_type in self.__models
+
     def __len__(self) -> int:
-        return len(self.entries)
+        return len(self.sequence)
+
+    @property
+    def sequence_entry(self) -> str:
+        return str(self)
 
     def __str__(self) -> str:
-        block = '\n'.join(
-            [str(connection) for connection in self.connections] + \
-            [model_type.value for model_type in self.__models])
         block = '\n'.join([
             f'@{self.interval / timedelta(seconds=1):.0f}',
-            indent(block, INDENTATION),
+            indent('\n'.join(entry.sequence_entry
+                             for entry in self.__sequence),
+                   INDENTATION),
             '@'
         ])
         return '\n'.join([
@@ -199,14 +269,15 @@ class ModelSequence(ConfigurationEntry):
 
     def __repr__(self) -> str:
         models = [f'{model.model_type.name.lower()}={repr(model)}'
-                  for model in self.entries]
-        return f'{self.__class__.__name__}({repr(self.interval)}, {", ".join(models)})'
+                  for model in self.models]
+        return f'{self.__class__.__name__}({repr(self.interval)}, ' \
+               f'{", ".join(models)})'
 
 
 class ConfigurationFile(ABC):
     name: str = NotImplementedError
 
-    def __init__(self, sequence: ModelSequence):
+    def __init__(self, sequence: RunSequence):
         self.sequence = sequence
 
     def __getitem__(self, entry_type: type) -> [ConfigurationEntry]:
@@ -239,9 +310,12 @@ class NEMSConfigurationFile(ConfigurationFile):
             with open(filename, 'w') as output_file:
                 output_file.write(str(self))
 
+    @property
+    def entries(self) -> [ConfigurationEntry]:
+        return [self.sequence.earth, *self.sequence.models, self.sequence]
+
     def __iter__(self) -> Iterator[ConfigurationEntry]:
-        for entry in [self.sequence.earth, *self.sequence.entries,
-                      self.sequence]:
+        for entry in self.entries:
             yield entry
 
     def __str__(self) -> str:
@@ -269,9 +343,13 @@ class MeshFile(ConfigurationFile):
             with open(filename, 'w') as output_file:
                 output_file.write(str(self))
 
-    def __iter__(self) -> Iterator[ModelMesh]:
-        for entry in [entry for entry in self.sequence
-                      if isinstance(entry, ModelMesh)]:
+    @property
+    def entries(self) -> [ModelMesh]:
+        return [entry for entry in self.sequence
+                if isinstance(entry, ModelMesh)]
+
+    def __iter__(self) -> Iterator[ConfigurationEntry]:
+        for entry in self.entries:
             yield entry
 
     def __str__(self) -> str:
@@ -283,7 +361,7 @@ class ModelConfigurationFile(ConfigurationFile):
     name = 'model_configure'
 
     def __init__(self, start_time: datetime, duration: timedelta,
-                 sequence: ModelSequence):
+                 sequence: RunSequence):
         self.start_time = start_time
         self.duration = duration
         super().__init__(sequence)
@@ -347,10 +425,16 @@ class ModelConfigurationFile(ConfigurationFile):
             '',
             '# For stochastic perturbed runs -  added by Dhou and Wyang',
             '--------------------------------------------------------',
-            '#  ENS_SPS, logical control for application of stochastic perturbation scheme',
-            '#  HH_START, start hour of forecast, and modified ADVANCECOUNT_SETUP',
-            '#  HH_INCREASE and HH_FINAL are fcst hour increment and end hour of forecast',
-            '#  ADVANCECOUNT_SETUP is an integer indicating the number of time steps between integration_start and the time when model state is saved for the _ini of the GEFS_Coupling, currently is 0h.',
+            '#  ENS_SPS, logical control for application of stochastic '
+            'perturbation scheme',
+            '#  HH_START, start hour of forecast, and modified '
+            'ADVANCECOUNT_SETUP',
+            '#  HH_INCREASE and HH_FINAL are fcst hour increment and end '
+            'hour of forecast',
+            '#  ADVANCECOUNT_SETUP is an integer indicating the number of '
+            'time steps between integration_start and the time when model '
+            'state is saved for the _ini of the GEFS_Coupling, currently is '
+            '0h.',
             '',
             'HH_INCREASE:             600',
             'HH_FINAL:                600',
@@ -398,7 +482,8 @@ class ModelConfigurationFile(ConfigurationFile):
             '###############################',
             '',
             '',
-            'quilting:                .false.   #For asynchronous quilting/history writes',
+            'quilting:                .false.   #For asynchronous '
+            'quilting/history writes',
             'read_groups:             0',
             'read_tasks_per_group:    0',
             'write_groups:            1',
@@ -407,11 +492,15 @@ class ModelConfigurationFile(ConfigurationFile):
             'num_file:                3                   #',
             'filename_base:           \'SIG.F\' \'SFC.F\' \'FLX.F\'',
             'file_io_form:            \'bin4\' \'bin4\' \'bin4\'',
-            'file_io:                 \'DEFERRED\' \'DEFERRED\' \'DEFERRED\' \'DEFERRED\'  #',
-            'write_dopost:            .false.          # True--> run do on quilt',
-            'post_gribversion:        grib1      # True--> grib version for post output files',
+            'file_io:                 \'DEFERRED\' \'DEFERRED\' \'DEFERRED\' '
+            '\'DEFERRED\'  #',
+            'write_dopost:            .false.          # True--> run do on '
+            'quilt',
+            'post_gribversion:        grib1      # True--> grib version for '
+            'post output files',
             'gocart_aer2post:         .false.',
-            'write_nemsioflag:        .TRUE.       # True--> Write nemsio run history files',
+            'write_nemsioflag:        .TRUE.       # True--> Write nemsio '
+            'run history files',
             'nfhout:                  3',
             'nfhout_hf:               1',
             'nfhmax_hf:               0',
