@@ -64,3 +64,4 @@ jobs:
           env-var: VERSION
       - name: Install wheel
         run: pip install nemspy==$VERSION
+        shell: bash
