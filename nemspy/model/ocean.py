@@ -31,5 +31,4 @@ class SCHISM(OceanModel):
 
     def __init__(self, processors: int, **kwargs):
         super().__init__('schism', processors, **kwargs)
-        raise NotImplementedError(
-            f'unsupported model "{self.__class__.__name__}"')
+        raise NotImplementedError(f'unsupported model "{self.__class__.__name__}"')

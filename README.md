@@ -2,6 +2,7 @@
 [![tests](https://github.com/noaa-ocs-modeling/NEMSpy/workflows/tests/badge.svg)](https://github.com/noaa-ocs-modeling/NEMSpy/actions?query=workflow%3Atests)
 [![build](https://github.com/noaa-ocs-modeling/NEMSpy/workflows/build/badge.svg)](https://github.com/noaa-ocs-modeling/NEMSpy/actions?query=workflow%3Abuild)
 [![version](https://img.shields.io/pypi/v/nemspy)](https://pypi.org/project/nemspy)
+[![oitnb](https://sourceforge.net/p/oitnb/code/ci/default/tree/_doc/_static/oitnb.svg?format=raw)](https://sourceforge.net/p/oitnb/code)
 [![license](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 NEMSpy generates configuration files (`nems.configure`, `config.rc`, `model_configure`, `atm_namelist.rc`) 
@@ -34,11 +35,15 @@ ocean_model = ADCIRC(processors=11, verbose=True, DumpFields=False)
 hydrological_model = NationalWaterModel(processors=769, DebugFlag=0)
 
 # instantiate model system with a specified order of execution
-nems = ModelingSystem(start_time, duration, interval,
-                      atm=atmospheric_mesh,
-                      wav=wave_mesh,
-                      ocn=ocean_model,
-                      hyd=hydrological_model)
+nems = ModelingSystem(
+    start_time,
+    duration,
+    interval,
+    atm=atmospheric_mesh,
+    wav=wave_mesh,
+    ocn=ocean_model,
+    hyd=hydrological_model,
+)
 
 # form connections between models
 nems.connect('WAV', 'OCN')
@@ -61,7 +66,7 @@ nems.sequence = [
     'ATM -> HYD',
     'WAV -> HYD',
     'HYD',
-    'HYD -> MED'
+    'HYD -> MED',
 ]
 
 # write configuration files to the given directory

@@ -21,11 +21,15 @@ if __name__ == '__main__':
     hydrological_model = NationalWaterModel(processors=769, DebugFlag=0)
 
     # instantiate model system with a specified order of execution
-    nems = ModelingSystem(start_time, duration, interval,
-                          atm=atmospheric_mesh,
-                          wav=wave_mesh,
-                          ocn=ocean_model,
-                          hyd=hydrological_model)
+    nems = ModelingSystem(
+        start_time,
+        duration,
+        interval,
+        atm=atmospheric_mesh,
+        wav=wave_mesh,
+        ocn=ocean_model,
+        hyd=hydrological_model,
+    )
 
     # form connections between models
     nems.connect('WAV', 'OCN')
@@ -48,7 +52,7 @@ if __name__ == '__main__':
         'ATM -> HYD',
         'WAV -> HYD',
         'HYD',
-        'HYD -> MED'
+        'HYD -> MED',
     ]
 
     # write configuration files to the given directory
