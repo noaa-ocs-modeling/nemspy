@@ -1,8 +1,14 @@
 from datetime import datetime, timedelta
 from os import PathLike
 
-from .configuration import ConfigurationFile, MeshFile, ModelConfigurationFile, \
-    NEMSConfigurationFile, RunSequence, ensure_directory
+from .configuration import (
+    ConfigurationFile,
+    MeshFile,
+    ModelConfigurationFile,
+    NEMSConfigurationFile,
+    RunSequence,
+    ensure_directory,
+)
 from .model.base import Model, ModelType, ModelVerbosity, RemapMethod
 
 
@@ -11,8 +17,14 @@ class ModelingSystem:
     NEMS interface with configuration file output
     """
 
-    def __init__(self, start_time: datetime, duration: timedelta,
-                 interval: timedelta, verbose: bool = False, **kwargs):
+    def __init__(
+            self,
+            start_time: datetime,
+            duration: timedelta,
+            interval: timedelta,
+            verbose: bool = False,
+            **kwargs,
+    ):
         """
         create a NEMS interface from the given interval and models
 
@@ -30,8 +42,7 @@ class ModelingSystem:
         self.start_time = start_time
         self.duration = duration
 
-        model_types = [model_type.value.lower()
-                       for model_type in ModelType]
+        model_types = [model_type.value.lower() for model_type in ModelType]
 
         models = {}
         for model_type, model in kwargs.items():
@@ -66,7 +77,9 @@ class ModelingSystem:
 
     @verbose.setter
     def verbose(self, verbose: bool):
-        self.__sequence.verbosity = ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM
+        self.__sequence.verbosity = (
+            ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM
+        )
 
     @property
     def models(self) -> [Model]:
@@ -87,8 +100,7 @@ class ModelingSystem:
     @sequence.setter
     def sequence(self, sequence: [str]):
         sequence_entries = []
-        entries = {entry.sequence_entry: entry
-                   for entry in self.__sequence.sequence}
+        entries = {entry.sequence_entry: entry for entry in self.__sequence.sequence}
         for entry in sequence:
             if entry.upper() in entries:
                 sequence_entries.append(entries[entry.upper()])
@@ -97,8 +109,7 @@ class ModelingSystem:
                 if len(models) == 2:
                     source, destination = models
                     for connection in self.__sequence.connections:
-                        if len(connection.models) == 3 and \
-                                None in connection.models:
+                        if len(connection.models) == 3 and None in connection.models:
                             connection_source, connection_destination = [
                                 model.model_type.value.upper()
                                 for model in connection.models
@@ -106,22 +117,25 @@ class ModelingSystem:
                             ]
                         elif len(connection.models) == 2:
                             connection_source, connection_destination = [
-                                model.model_type.value.upper()
-                                for model in connection.models
+                                model.model_type.value.upper() for model in connection.models
                             ]
                         else:
                             continue
-                        if source == connection_source and \
-                                destination == connection_destination:
+                        if (
+                                source == connection_source
+                                and destination == connection_destination
+                        ):
                             sequence_entries.append(connection)
                             break
                     else:
                         raise KeyError(f'"{entry}" not in {self.connections}')
                 elif len(models) == 3:
                     for mediation in self.__sequence.mediations:
-                        if models == [model.model_type.value
-                                      for model in mediation.models
-                                      if model is not None]:
+                        if models == [
+                            model.model_type.value
+                            for model in mediation.models
+                            if model is not None
+                        ]:
                             sequence_entries.append(mediation)
                             break
                     else:
@@ -151,8 +165,7 @@ class ModelingSystem:
                 raise KeyError(f'"{method}" not in {remap_methods}')
             method = RemapMethod(method.lower())
 
-        self.__sequence.connect(ModelType(source.upper()),
-                                ModelType(target.upper()), method)
+        self.__sequence.connect(ModelType(source.upper()), ModelType(target.upper()), method)
 
     @property
     def connections(self) -> [str]:
@@ -162,9 +175,15 @@ class ModelingSystem:
 
         return [str(connection) for connection in self.__sequence.connections]
 
-    def mediate(self, source: ModelType = None, target: ModelType = None,
-                functions: [str] = None, method: RemapMethod = None,
-                processors: int = None, **attributes):
+    def mediate(
+            self,
+            source: ModelType = None,
+            target: ModelType = None,
+            functions: [str] = None,
+            method: RemapMethod = None,
+            processors: int = None,
+            **attributes,
+    ):
         """
         create a mediation between one or two models and a mediator,
         with an arbitrary number of mediation functions
@@ -192,22 +211,22 @@ class ModelingSystem:
                 raise KeyError(f'"{method}" not in {remap_methods}')
             method = RemapMethod(method.lower())
 
-        self.__sequence.mediate(source, target, functions, method,
-                                processors, **attributes)
+        self.__sequence.mediate(source, target, functions, method, processors, **attributes)
 
     @property
     def __configuration_files(self) -> [ConfigurationFile]:
         return [
             NEMSConfigurationFile(self.__sequence),
             MeshFile(self.__sequence),
-            ModelConfigurationFile(self.start_time, self.duration,
-                                   self.__sequence)
+            ModelConfigurationFile(self.start_time, self.duration, self.__sequence),
         ]
 
     @property
     def configuration(self) -> {str: str}:
-        return {configuration_file.name: str(configuration_file)
-                for configuration_file in self.__configuration_files}
+        return {
+            configuration_file.name: str(configuration_file)
+            for configuration_file in self.__configuration_files
+        }
 
     def write(self, directory: PathLike, overwrite: bool = False):
         """
@@ -228,6 +247,5 @@ class ModelingSystem:
         return self.__sequence[ModelType(model_type.upper())]
 
     def __repr__(self) -> str:
-        models = [f'{model.model_type}={repr(model)}'
-                  for model in self.__sequence.models]
+        models = [f'{model.model_type}={repr(model)}' for model in self.__sequence.models]
         return f'{self.__class__.__name__}({repr(self.interval)}, {", ".join(models)})'

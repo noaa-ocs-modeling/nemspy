@@ -11,16 +11,19 @@ def repository_root(path: PathLike = None) -> str:
         path = Path(path)
     if path.is_file():
         path = path.parent
-    if '.git' in (child.name for child in
-                  path.iterdir()) or path == path.parent:
+    if '.git' in (child.name for child in path.iterdir()) or path == path.parent:
         return path
     else:
         return repository_root(path.parent)
 
 
-def get_logger(name: str, log_filename: PathLike = None,
-               file_level: int = None, console_level: int = None,
-               log_format: str = None) -> logging.Logger:
+def get_logger(
+        name: str,
+        log_filename: PathLike = None,
+        file_level: int = None,
+        console_level: int = None,
+        log_format: str = None,
+) -> logging.Logger:
     if file_level is None:
         file_level = logging.DEBUG
     if console_level is None:
@@ -53,8 +56,9 @@ def get_logger(name: str, log_filename: PathLike = None,
     if log_filename is not None:
         file_handler = logging.FileHandler(log_filename)
         file_handler.setLevel(file_level)
-        for existing_file_handler in [handler for handler in logger.handlers if
-                                      type(handler) is logging.FileHandler]:
+        for existing_file_handler in [
+            handler for handler in logger.handlers if type(handler) is logging.FileHandler
+        ]:
             logger.removeHandler(existing_file_handler)
         logger.addHandler(file_handler)
 

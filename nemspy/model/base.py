@@ -49,8 +49,10 @@ class ModelMesh(ABC):
         self.filename = filename
 
     def __str__(self) -> str:
-        return f' {self.mesh_type.value.lower()}_dir: {self.filename.parent}\n' \
-               f' {self.mesh_type.value.lower()}_nam: {self.filename.name}'
+        return (
+            f' {self.mesh_type.value.lower()}_dir: {self.filename.parent}\n'
+            f' {self.mesh_type.value.lower()}_nam: {self.filename.name}'
+        )
 
 
 class ConfigurationEntry(ABC):
@@ -84,8 +86,14 @@ class Model(ConfigurationEntry, SequenceEntry):
     abstract implementation of a generic model
     """
 
-    def __init__(self, name: str, model_type: ModelType, processors: int,
-                 verbose: bool = False, **attributes):
+    def __init__(
+            self,
+            name: str,
+            model_type: ModelType,
+            processors: int,
+            verbose: bool = False,
+            **attributes,
+    ):
         self.name = name
         self.model_type = model_type
         self.__processors = processors
@@ -99,7 +107,7 @@ class Model(ConfigurationEntry, SequenceEntry):
 
         self.attributes = {
             'Verbosity': ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM,
-            **attributes
+            **attributes,
         }
 
     @property
@@ -175,26 +183,28 @@ class Model(ConfigurationEntry, SequenceEntry):
                 value = f'{value}'.lower()
             attributes[attribute] = value
 
-        return '\n'.join([
-            f'{self.entry_type}_model:                      {self.name}',
-            f'{self.entry_type}_petlist_bounds:             {self.start_processor} {self.end_processor}',
-            f'{self.entry_type}_attributes::',
-            indent('\n'.join([
-                f'{attribute} = {value}'
-                for attribute, value in attributes.items()
-            ]), INDENTATION),
-            '::'
-        ])
+        return '\n'.join(
+            [
+                f'{self.entry_type}_model:                      {self.name}',
+                f'{self.entry_type}_petlist_bounds:             {self.start_processor} {self.end_processor}',
+                f'{self.entry_type}_attributes::',
+                indent(
+                    '\n'.join(
+                        [f'{attribute} = {value}' for attribute, value in attributes.items()]
+                    ),
+                    INDENTATION,
+                ),
+                '::',
+            ]
+        )
 
     def __repr__(self) -> str:
-        kwargs = [f'{key}={value}'
-                  for key, value in self.attributes.items()]
+        kwargs = [f'{key}={value}' for key, value in self.attributes.items()]
         return f'{self.__class__.__name__}({repr(self.name)}, {self.model_type}, {self.processors}, {", ".join(kwargs)})'
 
 
 class Connection(SequenceEntry):
-    def __init__(self, source: Model, target: Model,
-                 method: RemapMethod = None):
+    def __init__(self, source: Model, target: Model, method: RemapMethod = None):
         self.source = source
         self.target = target
         self.method = method if method is not None else RemapMethod.REDISTRIBUTE
@@ -205,9 +215,10 @@ class Connection(SequenceEntry):
 
     @property
     def sequence_entry(self) -> str:
-        return f'{self.source.entry_type} -> ' \
-               f'{self.target.entry_type}'.ljust(13) + \
-               f':remapMethod={self.method.value}'
+        return (
+                f'{self.source.entry_type} -> {self.target.entry_type}'.ljust(13)
+                + f':remapMethod={self.method.value}'
+        )
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({repr(self.source)}, {repr(self.target)}, {repr(self.method)})'
@@ -234,13 +245,21 @@ class MediationFunction(SequenceEntry):
 
 
 class Mediation(Connection):
-    def __init__(self, source: Model, mediator: Mediator, target: Model = None,
-                 functions: [str] = None, method: RemapMethod = None):
+    def __init__(
+            self,
+            source: Model,
+            mediator: Mediator,
+            target: Model = None,
+            functions: [str] = None,
+            method: RemapMethod = None,
+    ):
         if functions is None:
             functions = []
         self.mediator = mediator
-        self.functions = [MediationFunction(mediation_function, self.mediator)
-                          for mediation_function in functions]
+        self.functions = [
+            MediationFunction(mediation_function, self.mediator)
+            for mediation_function in functions
+        ]
         super().__init__(source, target, method)
 
     @property
@@ -251,18 +270,21 @@ class Mediation(Connection):
     def sequence_entry(self) -> str:
         output = ''
         if self.source is not None:
-            output += f'{self.source.entry_type} -> ' \
-                      f'{self.mediator.entry_type}'.ljust(13) + \
-                      f':remapMethod={self.method.value}'
+            output += (
+                    f'{self.source.entry_type} -> {self.mediator.entry_type}'.ljust(13)
+                    + f':remapMethod={self.method.value}'
+            )
             if len(self.functions) > 0:
                 output += '\n'
-        output += '\n'.join(mediation_function.sequence_entry
-                            for mediation_function in self.functions)
+        output += '\n'.join(
+            mediation_function.sequence_entry for mediation_function in self.functions
+        )
         if self.target is not None:
-            output += '\n' + \
-                      f'{self.mediator.entry_type} -> ' \
-                      f'{self.target.entry_type}'.ljust(13) + \
-                      f':remapMethod={self.method.value}'
+            output += (
+                    '\n'
+                    + f'{self.mediator.entry_type} -> {self.target.entry_type}'.ljust(13)
+                    + f':remapMethod={self.method.value}'
+            )
         return output
 
     def __repr__(self) -> str:

@@ -12,18 +12,21 @@ WAVE_MESH_FILENAME = REFERENCE_DIRECTORY / 'ww3.Constant.20151214_sxy_ike_date.n
 
 class TestModels(unittest.TestCase):
     def test_model(self):
-        model = AtmosphericMesh(ATMOSPHERIC_MESH_FILENAME, verbose=False,
-                                test='value', test2=5)
+        model = AtmosphericMesh(
+            ATMOSPHERIC_MESH_FILENAME, verbose=False, test='value', test2=5
+        )
         model.start_processor = 0
 
-        self.assertEqual(str(model),
-                         'ATM_model:                      atmesh\n' \
-                         'ATM_petlist_bounds:             0 0\n' \
-                         'ATM_attributes::\n' \
-                         '  Verbosity = min\n' \
-                         '  test = value\n' \
-                         '  test2 = 5\n' \
-                         '::')
+        self.assertEqual(
+            str(model),
+            'ATM_model:                      atmesh\n'
+            'ATM_petlist_bounds:             0 0\n'
+            'ATM_attributes::\n'
+            '  Verbosity = min\n'
+            '  test = value\n'
+            '  test2 = 5\n'
+            '::',
+        )
 
     def test_processors(self):
         model_1 = AtmosphericMesh(ATMOSPHERIC_MESH_FILENAME)
