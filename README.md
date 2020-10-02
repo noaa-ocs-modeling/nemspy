@@ -19,7 +19,6 @@ from nemspy import ModelingSystem
 from nemspy.model import (
     ADCIRCEntry,
     AtmosphericMeshEntry,
-    NationalWaterModelEntry,
     WaveMeshEntry,
 )
 
@@ -35,7 +34,6 @@ output_directory = '~/nems_configuration/'
 
 # model entries
 ocean_model = ADCIRCEntry(processors=11, verbose=True, DumpFields=False)
-hydrological_model = NationalWaterModelEntry(processors=769, DebugFlag=0)
 atmospheric_mesh = AtmosphericMeshEntry('~/wind_atm_fin_ch_time_vec.nc')
 wave_mesh = WaveMeshEntry('~/ww3.Constant.20151214_sxy_ike_date.nc')
 
@@ -45,33 +43,21 @@ nems = ModelingSystem(
     duration,
     interval,
     ocn=ocean_model,
-    hyd=hydrological_model,
     atm=atmospheric_mesh,
     wav=wave_mesh,
 )
 
 # form connections between models
+nems.connect('ATM', 'OCN')
 nems.connect('WAV', 'OCN')
-nems.connect('ATM', 'HYD')
-nems.connect('WAV', 'HYD')
-
-# form mediations between models with custom functions
-nems.mediate('ATM', 'OCN', ['MedPhase_atm_ocn_flux'])
-nems.mediate('HYD', None)
-nems.mediate(None, 'OCN', ['MedPhase_prep_ocn'], processors=2)
 
 # define execution order
 nems.sequence = [
-    'MED -> OCN',
-    'ATM',
-    'ATM -> MED -> OCN',
+    'ATM -> OCN',
     'WAV -> OCN',
-    'OCN',
+    'ATM',
     'WAV',
-    'ATM -> HYD',
-    'WAV -> HYD',
-    'HYD',
-    'HYD -> MED',
+    'OCN',
 ]
 
 # write configuration files to the given directory
