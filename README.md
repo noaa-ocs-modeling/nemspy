@@ -103,7 +103,7 @@ ATM_attributes::
 
 # OCN #
 OCN_model:                      adcirc
-OCN_petlist_bounds:             2 12
+OCN_petlist_bounds:             3 13
 OCN_attributes::
   Verbosity = max
   DumpFields = false
@@ -111,14 +111,14 @@ OCN_attributes::
 
 # WAV #
 WAV_model:                      ww3data
-WAV_petlist_bounds:             13 13
+WAV_petlist_bounds:             14 14
 WAV_attributes::
   Verbosity = min
 ::
 
 # HYD #
 HYD_model:                      nwm
-HYD_petlist_bounds:             14 782
+HYD_petlist_bounds:             15 783
 HYD_attributes::
   Verbosity = min
   DebugFlag = 0
@@ -127,7 +127,6 @@ HYD_attributes::
 # Run Sequence #
 runSeq::
   @3600
-
     MED MedPhase_prep_ocn
     MED -> OCN   :remapMethod=redist
     ATM

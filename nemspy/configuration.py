@@ -221,12 +221,12 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
     def __link_models(self):
         """ link entries and assign processors """
         models = self.models
-        for model_index, model in enumerate(models):
-            if model_index == 0 and model.previous is not None:
+        for model in models:
+            if model.previous is not None:
                 model.previous.next = None
-                model.previous = None
             if model.next is not None:
                 model.next = None
+        for model_index, model in enumerate(models):
             next_model_index = model_index + 1
             if next_model_index < len(models):
                 model.next = models[next_model_index]
