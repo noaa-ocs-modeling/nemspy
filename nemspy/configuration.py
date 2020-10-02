@@ -189,9 +189,10 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
             processors: int = None,
             **attributes,
     ):
-
+        if 'name' not in attributes:
+            attributes = 'mediator'
         if self.mediator is None:
-            self.mediator = MediatorEntry('implicit', processors, **attributes)
+            self.mediator = MediatorEntry(processors=processors, **attributes)
         else:
             self.mediator.attributes.update(attributes)
         if processors is not None:
