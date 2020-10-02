@@ -34,20 +34,20 @@ interval = timedelta(hours=1)
 output_directory = '~/nems_configuration/'
 
 # model entries
-atmospheric_mesh = AtmosphericMeshEntry('~/wind_atm_fin_ch_time_vec.nc')
-wave_mesh = WaveMeshEntry('~/ww3.Constant.20151214_sxy_ike_date.nc')
 ocean_model = ADCIRCEntry(processors=11, verbose=True, DumpFields=False)
 hydrological_model = NationalWaterModelEntry(processors=769, DebugFlag=0)
+atmospheric_mesh = AtmosphericMeshEntry('~/wind_atm_fin_ch_time_vec.nc')
+wave_mesh = WaveMeshEntry('~/ww3.Constant.20151214_sxy_ike_date.nc')
 
-# instantiate model system with a specified order of execution
+# instantiate model system with model entries
 nems = ModelingSystem(
     start_time,
     duration,
     interval,
-    atm=atmospheric_mesh,
-    wav=wave_mesh,
     ocn=ocean_model,
     hyd=hydrological_model,
+    atm=atmospheric_mesh,
+    wav=wave_mesh,
 )
 
 # form connections between models
