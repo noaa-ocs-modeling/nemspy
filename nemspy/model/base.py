@@ -40,7 +40,7 @@ class RemapMethod(Enum):
     REDISTRIBUTE = 'redist'
 
 
-class ModelMesh(ABC):
+class ModelMeshEntry(ABC):
     def __init__(self, mesh_type: ModelType, filename: PathLike):
         if not isinstance(filename, Path):
             filename = Path(filename)
@@ -81,7 +81,7 @@ class SequenceEntry(ABC):
         return self.sequence_entry
 
 
-class Model(ConfigurationEntry, SequenceEntry):
+class ModelEntry(ConfigurationEntry, SequenceEntry):
     """
     abstract implementation of a generic model
     """
@@ -143,11 +143,11 @@ class Model(ConfigurationEntry, SequenceEntry):
             return None
 
     @property
-    def previous(self) -> 'Model':
+    def previous(self) -> 'ModelEntry':
         return self.__previous
 
     @previous.setter
-    def previous(self, previous: 'Model'):
+    def previous(self, previous: 'ModelEntry'):
         if previous is None and self.previous is not None:
             self.previous.__next = None
         self.__previous = previous
@@ -159,11 +159,11 @@ class Model(ConfigurationEntry, SequenceEntry):
             self.start_processor = 0
 
     @property
-    def next(self) -> 'Model':
+    def next(self) -> 'ModelEntry':
         return self.__next
 
     @next.setter
-    def next(self, next: 'Model'):
+    def next(self, next: 'ModelEntry'):
         if next is None and self.next is not None:
             self.next.__previous = None
         self.__next = next
@@ -203,14 +203,14 @@ class Model(ConfigurationEntry, SequenceEntry):
         return f'{self.__class__.__name__}({repr(self.name)}, {self.model_type}, {self.processors}, {", ".join(kwargs)})'
 
 
-class Connection(SequenceEntry):
-    def __init__(self, source: Model, target: Model, method: RemapMethod = None):
+class ConnectionEntry(SequenceEntry):
+    def __init__(self, source: ModelEntry, target: ModelEntry, method: RemapMethod = None):
         self.source = source
         self.target = target
         self.method = method if method is not None else RemapMethod.REDISTRIBUTE
 
     @property
-    def models(self) -> [Model]:
+    def models(self) -> [ModelEntry]:
         return [self.source, self.target]
 
     @property
@@ -224,15 +224,15 @@ class Connection(SequenceEntry):
         return f'{self.__class__.__name__}({repr(self.source)}, {repr(self.target)}, {repr(self.method)})'
 
 
-class Mediator(Model):
+class MediatorEntry(ModelEntry):
     def __init__(self, name: str, processors: int = None, **attributes):
         if processors is None:
             processors = 1
         super().__init__(name, ModelType.MEDIATOR, processors, **attributes)
 
 
-class MediationFunction(SequenceEntry):
-    def __init__(self, name: str, mediator: Mediator):
+class MediationFunctionEntry(SequenceEntry):
+    def __init__(self, name: str, mediator: MediatorEntry):
         self.name = name
         self.mediator = mediator
 
@@ -244,12 +244,12 @@ class MediationFunction(SequenceEntry):
         return f'{self.__class__.__name__}({repr(self.name)}, {repr(self.mediator)})'
 
 
-class Mediation(Connection):
+class MediationEntry(ConnectionEntry):
     def __init__(
             self,
-            source: Model,
-            mediator: Mediator,
-            target: Model = None,
+            source: ModelEntry,
+            mediator: MediatorEntry,
+            target: ModelEntry = None,
             functions: [str] = None,
             method: RemapMethod = None,
     ):
@@ -257,13 +257,13 @@ class Mediation(Connection):
             functions = []
         self.mediator = mediator
         self.functions = [
-            MediationFunction(mediation_function, self.mediator)
+            MediationFunctionEntry(mediation_function, self.mediator)
             for mediation_function in functions
         ]
         super().__init__(source, target, method)
 
     @property
-    def models(self) -> [Model]:
+    def models(self) -> [ModelEntry]:
         return [self.source, self.mediator, self.target]
 
     @property

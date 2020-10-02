@@ -8,12 +8,12 @@ from typing import Iterator, Tuple
 
 from .model.base import (
     ConfigurationEntry,
-    Connection,
+    ConnectionEntry,
     INDENTATION,
-    Mediation,
-    Mediator,
-    Model,
-    ModelMesh,
+    MediationEntry,
+    MediatorEntry,
+    ModelEntry,
+    ModelMeshEntry,
     ModelType,
     ModelVerbosity,
     RemapMethod,
@@ -41,7 +41,7 @@ class Earth(ConfigurationEntry):
         for key, value in kwargs.items():
             key = key.upper()
             if key in {entry.name for entry in ModelType}:
-                if isinstance(value, Model):
+                if isinstance(value, ModelEntry):
                     self[ModelType[key]] = value
             else:
                 self.attributes[key] = value
@@ -52,10 +52,10 @@ class Earth(ConfigurationEntry):
     def models(self):
         return self.__models
 
-    def __getitem__(self, model_type: ModelType) -> Model:
+    def __getitem__(self, model_type: ModelType) -> ModelEntry:
         return self.__models[model_type]
 
-    def __setitem__(self, model_type: ModelType, model: Model):
+    def __setitem__(self, model_type: ModelType, model: ModelEntry):
         assert model_type == model.model_type
         if self.__models[model_type] is not None:
             LOGGER.warning(
@@ -66,7 +66,7 @@ class Earth(ConfigurationEntry):
     def __contains__(self, model_type: ModelType):
         return model_type in self.__models
 
-    def __iter__(self) -> Iterator[Tuple[ModelType, Model]]:
+    def __iter__(self) -> Iterator[Tuple[ModelType, ModelEntry]]:
         for model_type, model in self.models.items():
             yield model_type, model
 
@@ -106,7 +106,7 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
         for key, value in kwargs.items():
             key = key.upper()
             model_types = [model_type.value for model_type in ModelType]
-            if key in model_types and isinstance(value, Model):
+            if key in model_types and isinstance(value, ModelEntry):
                 self.__models[ModelType(key)] = value
             elif key == 'EARTH' and isinstance(value, Earth):
                 for model_type, model in value:
@@ -118,7 +118,7 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
         self.__link_models()
 
     def append(self, entry: SequenceEntry):
-        if isinstance(entry, Model):
+        if isinstance(entry, ModelEntry):
             model_type = entry.model_type
             if model_type in self.__models:
                 del self.__models[model_type]
@@ -142,7 +142,7 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
             if mediator is not None:
                 self.mediator = mediator
             for entry in sequence:
-                if isinstance(entry, Model):
+                if isinstance(entry, ModelEntry):
                     model_type = entry.model_type
                     if model_type in self.__models:
                         raise TypeError(
@@ -158,26 +158,26 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
         if method is None:
             method = RemapMethod.REDISTRIBUTE
         if ModelType.MEDIATOR in [source, target] and self.mediator is None:
-            self.mediator = Mediator('implicit', **kwargs)
+            self.mediator = MediatorEntry('implicit', **kwargs)
         if source not in self.__models:
             raise KeyError(f'no {source.name} model in sequence')
         if target not in self.__models:
             raise KeyError(f'no {target.name} model in sequence')
-        self.append(Connection(self[source], self[target], method))
+        self.append(ConnectionEntry(self[source], self[target], method))
 
     @property
-    def connections(self) -> [Connection]:
-        return [entry for entry in self.sequence if isinstance(entry, Connection)]
+    def connections(self) -> [ConnectionEntry]:
+        return [entry for entry in self.sequence if isinstance(entry, ConnectionEntry)]
 
     @property
-    def mediator(self) -> Mediator:
+    def mediator(self) -> MediatorEntry:
         if ModelType.MEDIATOR in self:
             return self.__models[ModelType.MEDIATOR]
         else:
             return None
 
     @mediator.setter
-    def mediator(self, mediator: Mediator):
+    def mediator(self, mediator: MediatorEntry):
         self[ModelType.MEDIATOR] = mediator
 
     def mediate(
@@ -191,7 +191,7 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
     ):
 
         if self.mediator is None:
-            self.mediator = Mediator('implicit', processors, **attributes)
+            self.mediator = MediatorEntry('implicit', processors, **attributes)
         else:
             self.mediator.attributes.update(attributes)
         if processors is not None:
@@ -204,11 +204,11 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
         if target is not None:
             target = self[target]
 
-        self.append(Mediation(source, self.mediator, target, functions, method))
+        self.append(MediationEntry(source, self.mediator, target, functions, method))
 
     @property
-    def mediations(self) -> [Mediation]:
-        return [entry for entry in self.sequence if isinstance(entry, Mediation)]
+    def mediations(self) -> [MediationEntry]:
+        return [entry for entry in self.sequence if isinstance(entry, MediationEntry)]
 
     @property
     def earth(self) -> Earth:
@@ -232,7 +232,7 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
                 model.next = models[next_model_index]
         models[0].start_processor = 0
 
-    def __setitem__(self, model_type: ModelType, model: Model):
+    def __setitem__(self, model_type: ModelType, model: ModelEntry):
         assert model_type == model.model_type
         if model_type in self.__models:
             existing_model = self.__models[model_type]
@@ -243,11 +243,11 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
         self.__models[model_type] = model
         self.__link_models()
 
-    def __getitem__(self, model_type: ModelType) -> Model:
+    def __getitem__(self, model_type: ModelType) -> ModelEntry:
         return self.__models[model_type]
 
     @property
-    def models(self) -> [Model]:
+    def models(self) -> [ModelEntry]:
         models = [
             model
             for model_type, model in self.__models.items()
@@ -257,7 +257,7 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
             models.insert(0, self.mediator)
         return models
 
-    def __iter__(self) -> Iterator[Model]:
+    def __iter__(self) -> Iterator[ModelEntry]:
         for model in self.models:
             yield model
 
@@ -359,15 +359,15 @@ class MeshFile(ConfigurationFile):
                 output_file.write(str(self))
 
     @property
-    def entries(self) -> [ModelMesh]:
-        return [entry for entry in self.sequence if isinstance(entry, ModelMesh)]
+    def entries(self) -> [ModelMeshEntry]:
+        return [entry for entry in self.sequence if isinstance(entry, ModelMeshEntry)]
 
     def __iter__(self) -> Iterator[ConfigurationEntry]:
         for entry in self.entries:
             yield entry
 
     def __str__(self) -> str:
-        return '\n'.join([ModelMesh.__str__(model_mesh) for model_mesh in self]) + '\n'
+        return '\n'.join([ModelMeshEntry.__str__(model_mesh) for model_mesh in self]) + '\n'
 
 
 class ModelConfigurationFile(ConfigurationFile):

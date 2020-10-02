@@ -1,10 +1,10 @@
-from .base import Model, ModelType
+from .base import ModelEntry, ModelType
 from ..utilities import get_logger
 
 LOGGER = get_logger('model.hydro')
 
 
-class HydrologicalModel(Model):
+class HydrologicalModelEntry(ModelEntry):
     """
     abstract implementation of a generic hydrological model
     """
@@ -13,7 +13,7 @@ class HydrologicalModel(Model):
         super().__init__(name, ModelType.HYDROLOGICAL, processors, **kwargs)
 
 
-class NationalWaterModel(HydrologicalModel):
+class NationalWaterModelEntry(HydrologicalModelEntry):
     """
     National Water Model
     https://water.noaa.gov/about/nwm

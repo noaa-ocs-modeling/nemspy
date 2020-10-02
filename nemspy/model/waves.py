@@ -1,12 +1,12 @@
 from os import PathLike
 
-from .base import Model, ModelMesh, ModelType
+from .base import ModelEntry, ModelMeshEntry, ModelType
 from ..utilities import get_logger
 
 LOGGER = get_logger('model.wave')
 
 
-class WaveModel(Model):
+class WaveModelEntry(ModelEntry):
     """
     abstract implementation of a generic wave model
     """
@@ -15,7 +15,7 @@ class WaveModel(Model):
         super().__init__(name, ModelType.WAVE, processors, **kwargs)
 
 
-class WaveMesh(WaveModel, ModelMesh):
+class WaveMeshEntry(WaveModelEntry, ModelMeshEntry):
     """
     WaveWatch III mesh reference
     """
@@ -24,11 +24,11 @@ class WaveMesh(WaveModel, ModelMesh):
         if processors is None:
             processors = 1
         # Uses ww3data as name but the implementation is model agnostic
-        WaveModel.__init__(self, 'ww3data', processors, **kwargs)
-        ModelMesh.__init__(self, self.model_type, filename)
+        WaveModelEntry.__init__(self, 'ww3data', processors, **kwargs)
+        ModelMeshEntry.__init__(self, self.model_type, filename)
 
 
-class WaveWatch3(WaveModel):
+class WaveWatch3Entry(WaveModelEntry):
     """
     WaveWatch III model
     https://polar.ncep.noaa.gov/waves/wavewatch/
@@ -38,7 +38,7 @@ class WaveWatch3(WaveModel):
         super().__init__('ww3', processors, **kwargs)
 
 
-class SWAN(WaveModel):
+class SWANEntry(WaveModelEntry):
     """
     SWAN wave model
     http://swanmodel.sourceforge.net/

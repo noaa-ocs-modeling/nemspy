@@ -1,12 +1,12 @@
 from os import PathLike
 
-from .base import Model, ModelMesh, ModelType
+from .base import ModelEntry, ModelMeshEntry, ModelType
 from ..utilities import get_logger
 
 LOGGER = get_logger('model.wave')
 
 
-class IceModel(Model):
+class IceModelEntry(ModelEntry):
     """
     abstract implementation of a generic ice model
     """
@@ -15,7 +15,7 @@ class IceModel(Model):
         super().__init__(name, ModelType.ICE, processors, **kwargs)
 
 
-class IceMesh(IceModel, ModelMesh):
+class IceMeshEntry(IceModelEntry, ModelMeshEntry):
     """
     Ice model mesh reference
     """
@@ -24,5 +24,5 @@ class IceMesh(IceModel, ModelMesh):
         if processors is None:
             processors = 1
         # Uses ww3data as name but the implementation is model agnostic
-        IceModel.__init__(self, 'icemesh', processors, **kwargs)
-        ModelMesh.__init__(self, self.model_type, filename)
+        IceModelEntry.__init__(self, 'icemesh', processors, **kwargs)
+        ModelMeshEntry.__init__(self, self.model_type, filename)

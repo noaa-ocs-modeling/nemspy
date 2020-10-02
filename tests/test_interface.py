@@ -7,11 +7,11 @@ import tempfile
 import unittest
 
 from nemspy import ModelingSystem
-from nemspy.model.atmosphere import AtmosphericMesh
-from nemspy.model.hydrology import NationalWaterModel
-from nemspy.model.ice import IceMesh
-from nemspy.model.ocean import ADCIRC
-from nemspy.model.waves import WaveMesh
+from nemspy.model.atmosphere import AtmosphericMeshEntry
+from nemspy.model.hydrology import NationalWaterModelEntry
+from nemspy.model.ice import IceMeshEntry
+from nemspy.model.ocean import ADCIRCEntry
+from nemspy.model.waves import WaveMeshEntry
 from nemspy.utilities import repository_root
 
 REFERENCE_DIRECTORY = repository_root() / 'tests/reference'
@@ -25,9 +25,9 @@ class TestInterface(unittest.TestCase):
         start_time = datetime(2020, 6, 1)
         duration = timedelta(days=1)
         interval = timedelta(hours=1)
-        atmospheric_mesh = AtmosphericMesh(ATMOSPHERIC_MESH_FILENAME)
-        wave_mesh = WaveMesh(WAVE_MESH_FILENAME)
-        ocean_model = ADCIRC(11)
+        atmospheric_mesh = AtmosphericMeshEntry(ATMOSPHERIC_MESH_FILENAME)
+        wave_mesh = WaveMeshEntry(WAVE_MESH_FILENAME)
+        ocean_model = ADCIRCEntry(11)
 
         nems = ModelingSystem(
             start_time,
@@ -61,8 +61,8 @@ class TestInterface(unittest.TestCase):
         start_time = datetime(2020, 6, 1)
         duration = timedelta(days=1)
         interval = timedelta(hours=1)
-        ocean_model = ADCIRC(11)
-        wave_mesh = WaveMesh(WAVE_MESH_FILENAME)
+        ocean_model = ADCIRCEntry(11)
+        wave_mesh = WaveMeshEntry(WAVE_MESH_FILENAME)
 
         nems = ModelingSystem(start_time, duration, interval, ocn=ocean_model, wav=wave_mesh)
         nems.connect('WAV', 'OCN')
@@ -82,9 +82,9 @@ class TestInterface(unittest.TestCase):
         start_time = datetime(2020, 6, 1)
         duration = timedelta(days=1)
         interval = timedelta(hours=1)
-        atmospheric_mesh = AtmosphericMesh(ATMOSPHERIC_MESH_FILENAME)
-        ice_mesh = IceMesh(ICE_MESH_FILENAME)
-        ocean_model = ADCIRC(11)
+        atmospheric_mesh = AtmosphericMeshEntry(ATMOSPHERIC_MESH_FILENAME)
+        ice_mesh = IceMeshEntry(ICE_MESH_FILENAME)
+        ocean_model = ADCIRCEntry(11)
 
         nems = ModelingSystem(
             start_time, duration, interval, ice=ice_mesh, ocn=ocean_model, atm=atmospheric_mesh
@@ -130,9 +130,9 @@ class TestInterface(unittest.TestCase):
         start_time = datetime(2020, 6, 1)
         duration = timedelta(days=1)
         interval = timedelta(hours=1)
-        atmospheric_mesh = AtmosphericMesh(ATMOSPHERIC_MESH_FILENAME)
-        wave_mesh = WaveMesh(WAVE_MESH_FILENAME)
-        ocean_model = ADCIRC(11)
+        atmospheric_mesh = AtmosphericMeshEntry(ATMOSPHERIC_MESH_FILENAME)
+        wave_mesh = WaveMeshEntry(WAVE_MESH_FILENAME)
+        ocean_model = ADCIRCEntry(11)
 
         nems = ModelingSystem(
             start_time,
@@ -178,10 +178,10 @@ class TestInterface(unittest.TestCase):
         start_time = datetime(2020, 6, 1)
         duration = timedelta(days=1)
         interval = timedelta(hours=1)
-        atmospheric_mesh = AtmosphericMesh(ATMOSPHERIC_MESH_FILENAME)
-        wave_mesh = WaveMesh(WAVE_MESH_FILENAME)
-        ocean_model = ADCIRC(11)
-        hydrological_model = NationalWaterModel(769)
+        atmospheric_mesh = AtmosphericMeshEntry(ATMOSPHERIC_MESH_FILENAME)
+        wave_mesh = WaveMeshEntry(WAVE_MESH_FILENAME)
+        ocean_model = ADCIRCEntry(11)
+        hydrological_model = NationalWaterModelEntry(769)
 
         nems = ModelingSystem(
             start_time,

@@ -1,5 +1,5 @@
-from .atmosphere import AtmosphericMesh, AtmosphericModel
-from .base import Model
-from .hydrology import HydrologicalModel, NationalWaterModel
-from .ocean import ADCIRC, OceanModel, SCHISM
-from .waves import SWAN, WaveMesh, WaveModel, WaveWatch3
+from .atmosphere import AtmosphericMeshEntry, AtmosphericModelEntry
+from .base import ModelEntry
+from .hydrology import HydrologicalModelEntry, NationalWaterModelEntry
+from .ocean import ADCIRCEntry, OceanModelEntry, SCHISMEntry
+from .waves import SWANEntry, WaveMeshEntry, WaveModelEntry, WaveWatch3Entry

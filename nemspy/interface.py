@@ -9,7 +9,7 @@ from .configuration import (
     RunSequence,
     ensure_directory,
 )
-from .model.base import Model, ModelType, ModelVerbosity, RemapMethod
+from .model.base import ModelEntry, ModelType, ModelVerbosity, RemapMethod
 
 
 class ModelingSystem:
@@ -47,7 +47,7 @@ class ModelingSystem:
         models = {}
         for model_type, model in kwargs.items():
             if model_type in model_types:
-                if isinstance(model, Model):
+                if isinstance(model, ModelEntry):
                     if model.model_type.value.lower() == model_type:
                         models[model_type.upper()] = model
                     else:
@@ -82,7 +82,7 @@ class ModelingSystem:
         )
 
     @property
-    def models(self) -> [Model]:
+    def models(self) -> [ModelEntry]:
         """
         models in execution order
         """
@@ -240,7 +240,7 @@ class ModelingSystem:
         for configuration_file in self.__configuration_files:
             configuration_file.write(directory, overwrite)
 
-    def __getitem__(self, model_type: str) -> Model:
+    def __getitem__(self, model_type: str) -> ModelEntry:
         model_types = [model_type.value.upper() for model_type in ModelType]
         if model_type.upper() not in model_types:
             raise KeyError(f'"{model_type}" not in {model_types}')

@@ -16,7 +16,12 @@ and configuration files built for NEMS will also work for most NUOPC application
 from datetime import datetime, timedelta
 
 from nemspy import ModelingSystem
-from nemspy.model import ADCIRC, AtmosphericMesh, NationalWaterModel, WaveMesh
+from nemspy.model import (
+    ADCIRCEntry,
+    AtmosphericMeshEntry,
+    NationalWaterModelEntry,
+    WaveMeshEntry,
+)
 
 # model run time
 start_time = datetime(2020, 6, 1)
@@ -29,10 +34,10 @@ interval = timedelta(hours=1)
 output_directory = '~/nems_configuration/'
 
 # model entries
-atmospheric_mesh = AtmosphericMesh('~/wind_atm_fin_ch_time_vec.nc')
-wave_mesh = WaveMesh('~/ww3.Constant.20151214_sxy_ike_date.nc')
-ocean_model = ADCIRC(processors=11, verbose=True, DumpFields=False)
-hydrological_model = NationalWaterModel(processors=769, DebugFlag=0)
+atmospheric_mesh = AtmosphericMeshEntry('~/wind_atm_fin_ch_time_vec.nc')
+wave_mesh = WaveMeshEntry('~/ww3.Constant.20151214_sxy_ike_date.nc')
+ocean_model = ADCIRCEntry(processors=11, verbose=True, DumpFields=False)
+hydrological_model = NationalWaterModelEntry(processors=769, DebugFlag=0)
 
 # instantiate model system with a specified order of execution
 nems = ModelingSystem(

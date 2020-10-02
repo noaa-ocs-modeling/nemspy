@@ -1,10 +1,10 @@
-from .base import Model, ModelType
+from .base import ModelEntry, ModelType
 from ..utilities import get_logger
 
 LOGGER = get_logger('model.ocean')
 
 
-class OceanModel(Model):
+class OceanModelEntry(ModelEntry):
     """
     abstract implementation of a generic oceanic model
     """
@@ -13,7 +13,7 @@ class OceanModel(Model):
         super().__init__(name, ModelType.OCEAN, processors, **kwargs)
 
 
-class ADCIRC(OceanModel):
+class ADCIRCEntry(OceanModelEntry):
     """
     Advanced Circulation (ADCIRC) model
     http://adcirc.org
@@ -23,7 +23,7 @@ class ADCIRC(OceanModel):
         super().__init__('adcirc', processors, **kwargs)
 
 
-class SCHISM(OceanModel):
+class SCHISMEntry(OceanModelEntry):
     """
     Semi-implicit Cross-scale Hydroscience Integrated System Model (SCHISM)
     http://ccrm.vims.edu/schismweb/

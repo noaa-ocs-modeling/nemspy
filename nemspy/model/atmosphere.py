@@ -1,12 +1,12 @@
 from os import PathLike
 
-from .base import Model, ModelMesh, ModelType
+from .base import ModelEntry, ModelMeshEntry, ModelType
 from ..utilities import get_logger
 
 LOGGER = get_logger('model.atmos')
 
 
-class AtmosphericModel(Model):
+class AtmosphericModelEntry(ModelEntry):
     """
     abstract implementation of a generic atmospheric model
     """
@@ -15,7 +15,7 @@ class AtmosphericModel(Model):
         super().__init__(name, ModelType.ATMOSPHERIC, processors, **kwargs)
 
 
-class AtmosphericMesh(AtmosphericModel, ModelMesh):
+class AtmosphericMeshEntry(AtmosphericModelEntry, ModelMeshEntry):
     """
     Atmospheric Mesh (ATMesh) reference
     """
@@ -23,11 +23,11 @@ class AtmosphericMesh(AtmosphericModel, ModelMesh):
     def __init__(self, filename: PathLike, processors: int = None, **kwargs):
         if processors is None:
             processors = 1
-        AtmosphericModel.__init__(self, 'atmesh', processors, **kwargs)
-        ModelMesh.__init__(self, self.model_type, filename)
+        AtmosphericModelEntry.__init__(self, 'atmesh', processors, **kwargs)
+        ModelMeshEntry.__init__(self, self.model_type, filename)
 
 
-class HWRF(AtmosphericModel):
+class HWRFEntry(AtmosphericModelEntry):
     """
     Hurricane Weather Research and Forecasting (HWRF) model
     https://en.wikipedia.org/wiki/Hurricane_Weather_Research_and_Forecasting_Model
