@@ -228,17 +228,20 @@ class ModelingSystem:
             for configuration_file in self.__configuration_files
         }
 
-    def write(self, directory: PathLike, overwrite: bool = False):
+    def write(
+        self, directory: PathLike, overwrite: bool = False, include_version: bool = True
+    ):
         """
         write NEMS / NUOPC configuration to the given directory
 
         :param directory: path to output directory
-        :param overwrite: whether to overwrite existing files
+        :param overwrite: overwrite existing files
+        :param include_version: include the NEMSpy version in a comment
         """
 
         directory = ensure_directory(directory)
         for configuration_file in self.__configuration_files:
-            configuration_file.write(directory, overwrite)
+            configuration_file.write(directory, overwrite, include_version)
 
     def __getitem__(self, model_type: str) -> ModelEntry:
         model_types = [model_type.value.upper() for model_type in ModelType]

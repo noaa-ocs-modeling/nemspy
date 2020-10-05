@@ -214,7 +214,7 @@ class TestInterface(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as temporary_directory:
             temporary_directory = Path(temporary_directory)
-            nems.write(temporary_directory)
+            nems.write(temporary_directory, overwrite=True, include_version=False)
             for test_filename in temporary_directory.iterdir():
                 reference_filename = REFERENCE_DIRECTORY / test_filename.name
                 with open(test_filename) as test_file:
