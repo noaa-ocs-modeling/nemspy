@@ -1,53 +1,7 @@
 total_member:            1
 print_esmf:              .true.
 namelist:                atm_namelist
-total_member:            1
-grib_input:              0
 PE_MEMBER01:             782
-PE_MEMBER02
-PE_MEMBER03
-PE_MEMBER04
-PE_MEMBER05
-PE_MEMBER06
-PE_MEMBER07
-PE_MEMBER08
-PE_MEMBER09
-PE_MEMBER10
-PE_MEMBER11
-PE_MEMBER12
-PE_MEMBER13
-PE_MEMBER14
-PE_MEMBER15
-PE_MEMBER16
-PE_MEMBER17
-PE_MEMBER18
-PE_MEMBER19:
-PE_MEMBER20:
-PE_MEMBER21:
-
-# For stochastic perturbed runs -  added by Dhou and Wyang
---------------------------------------------------------
-#  ENS_SPS, logical control for application of stochastic perturbation scheme
-#  HH_START, start hour of forecast, and modified ADVANCECOUNT_SETUP
-#  HH_INCREASE and HH_FINAL are fcst hour increment and end hour of forecast
-#  ADVANCECOUNT_SETUP is an integer indicating the number of time steps between integration_start and the time when model state is saved for the _ini of the GEFS_Coupling, currently is 0h.
-
-HH_INCREASE:             600
-HH_FINAL:                600
-HH_START:                0
-ADVANCECOUNT_SETUP:      0
-
-ENS_SPS:                 .false.
-HOUTASPS:                10000
-
-#ESMF_State_Namelist +++++++++++++++
-
-RUN_CONTINUE:            .false.
-
-#
-dt_int:                  900
-dt_num:                  0
-dt_den:                  1
 start_year:              2020
 start_month:             6
 start_day:               1

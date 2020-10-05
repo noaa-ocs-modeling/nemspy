@@ -135,12 +135,12 @@ class TestInterface(unittest.TestCase):
         ocean_model = ADCIRCEntry(11)
 
         nems = ModelingSystem(
-            start_time,
-            duration,
-            interval,
-            atm=atmospheric_mesh,
-            wav=wave_mesh,
-            ocn=ocean_model,
+                start_time,
+                duration,
+                interval,
+                atm=atmospheric_mesh,
+                wav=wave_mesh,
+                ocn=ocean_model,
         )
 
         models = nems.models
