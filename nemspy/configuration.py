@@ -153,7 +153,7 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
             self.__sequence = sequence
 
     def connect(
-            self, source: ModelType, target: ModelType, method: RemapMethod = None, **kwargs
+        self, source: ModelType, target: ModelType, method: RemapMethod = None, **kwargs
     ):
         if method is None:
             method = RemapMethod.REDISTRIBUTE
@@ -181,17 +181,18 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
         self[ModelType.MEDIATOR] = mediator
 
     def mediate(
-            self,
-            source: ModelType = None,
-            target: ModelType = None,
-            functions: [str] = None,
-            method: RemapMethod = None,
-            processors: int = None,
-            **attributes,
+        self,
+        source: ModelType = None,
+        target: ModelType = None,
+        functions: [str] = None,
+        method: RemapMethod = None,
+        processors: int = None,
+        **attributes,
     ):
-
+        if 'name' not in attributes:
+            attributes['name'] = 'mediator'
         if self.mediator is None:
-            self.mediator = MediatorEntry('implicit', processors, **attributes)
+            self.mediator = MediatorEntry(processors=processors, **attributes)
         else:
             self.mediator.attributes.update(attributes)
         if processors is not None:
@@ -335,10 +336,10 @@ class NEMSConfigurationFile(ConfigurationFile):
 
     def __str__(self) -> str:
         return (
-                '#############################################\n'
-                '####  NEMS Run-Time Configuration File  #####\n'
-                '#############################################\n'
-                '\n' + '\n'.join(f'# {entry.entry_type} #\n' f'{entry}\n' for entry in self)
+            '#############################################\n'
+            '####  NEMS Run-Time Configuration File  #####\n'
+            '#############################################\n'
+            '\n' + '\n'.join(f'# {entry.entry_type} #\n' f'{entry}\n' for entry in self)
         )
 
 
@@ -401,130 +402,34 @@ class ModelConfigurationFile(ConfigurationFile):
 
     def __str__(self) -> str:
         duration_hours = round(self.duration / timedelta(hours=1))
-        return '\n'.join(
-            [
-                'core: gfs',
-                'print_esmf:     .true.',
-                '',
-                'nhours_dfini=0',
-                '',
-                '#nam_atm +++++++++++++++++++++++++++',
-                'nlunit:                  35',
-                'deltim:                  900.0',
-                'fhrot:                   0',
-                'namelist:                atm_namelist',
-                'total_member:            1',
-                'grib_input:              0',
-                f'PE_MEMBER01:             {self.sequence.processors}',
-                'PE_MEMBER02',
-                'PE_MEMBER03',
-                'PE_MEMBER04',
-                'PE_MEMBER05',
-                'PE_MEMBER06',
-                'PE_MEMBER07',
-                'PE_MEMBER08',
-                'PE_MEMBER09',
-                'PE_MEMBER10',
-                'PE_MEMBER11',
-                'PE_MEMBER12',
-                'PE_MEMBER13',
-                'PE_MEMBER14',
-                'PE_MEMBER15',
-                'PE_MEMBER16',
-                'PE_MEMBER17',
-                'PE_MEMBER18',
-                'PE_MEMBER19:',
-                'PE_MEMBER20:',
-                'PE_MEMBER21:',
-                '',
-                '# For stochastic perturbed runs -  added by Dhou and Wyang',
-                '--------------------------------------------------------',
-                '#  ENS_SPS, logical control for application of stochastic '
-                'perturbation scheme',
-                '#  HH_START, start hour of forecast, and modified ' 'ADVANCECOUNT_SETUP',
-                '#  HH_INCREASE and HH_FINAL are fcst hour increment and end '
-                'hour of forecast',
-                '#  ADVANCECOUNT_SETUP is an integer indicating the number of '
-                'time steps between integration_start and the time when model '
-                'state is saved for the _ini of the GEFS_Coupling, currently is '
-                '0h.',
-                '',
-                'HH_INCREASE:             600',
-                'HH_FINAL:                600',
-                'HH_START:                0',
-                'ADVANCECOUNT_SETUP:      0',
-                '',
-                'ENS_SPS:                 .false.',
-                'HOUTASPS:                10000',
-                '',
-                '#ESMF_State_Namelist +++++++++++++++',
-                '',
-                'RUN_CONTINUE:            .false.',
-                '',
-                '#',
-                'dt_int:                  900',
-                'dt_num:                  0',
-                'dt_den:                  1',
-                f'start_year:              {self.start_time.year}',
-                f'start_month:             {self.start_time.month}',
-                f'start_day:               {self.start_time.day}',
-                f'start_hour:              {self.start_time.hour}',
-                f'start_minute:            {self.start_time.minute}',
-                f'start_second:            {self.start_time.second}',
-                f'nhours_fcst:             {duration_hours:.0f}',
-                'restart:                 .false.',
-                f'nhours_fcst1:            {duration_hours:.0f}',
-                'im:                      192',
-                'jm:                      94',
-                'global:                  .true.',
-                'nhours_dfini:            0',
-                'adiabatic:               .false.',
-                'lsoil:                   4',
-                'passive_tracer:          .true.',
-                'dfilevs:                 64',
-                'ldfiflto:                .true.',
-                'num_tracers:             3',
-                'ldfi_grd:                .false.',
-                'lwrtgrdcmp:              .false.',
-                'nemsio_in:               .false.',
-                '',
-                '',
-                '#jwstart added quilt',
-                '###############################',
-                '#### Specify the I/O tasks ####',
-                '###############################',
-                '',
-                '',
-                'quilting:                .false.   #For asynchronous '
-                'quilting/history writes',
-                'read_groups:             0',
-                'read_tasks_per_group:    0',
-                'write_groups:            1',
-                'write_tasks_per_group:   3',
-                '',
-                'num_file:                3                   #',
-                "filename_base:           'SIG.F' 'SFC.F' 'FLX.F'",
-                "file_io_form:            'bin4' 'bin4' 'bin4'",
-                "file_io:                 'DEFERRED' 'DEFERRED' 'DEFERRED' " "'DEFERRED'  #",
-                'write_dopost:            .false.          # True--> run do on ' 'quilt',
-                'post_gribversion:        grib1      # True--> grib version for '
-                'post output files',
-                'gocart_aer2post:         .false.',
-                'write_nemsioflag:        .TRUE.       # True--> Write nemsio '
-                'run history files',
-                'nfhout:                  3',
-                'nfhout_hf:               1',
-                'nfhmax_hf:               0',
-                'nsout:                   0',
-                '',
-                'io_recl:                 100',
-                "io_position:             ' '",
-                "io_action:               'WRITE'",
-                "io_delim:                ' '",
-                "io_pad:                  ' '",
-                '',
-                '#jwend',
-            ]
+        return (
+            '\n'.join(
+                [
+                    'total_member:            1',
+                    'print_esmf:              .true.',
+                    'namelist:                atm_namelist',
+                    f'PE_MEMBER01:             {self.sequence.processors}',
+                    f'start_year:              {self.start_time.year}',
+                    f'start_month:             {self.start_time.month}',
+                    f'start_day:               {self.start_time.day}',
+                    f'start_hour:              {self.start_time.hour}',
+                    f'start_minute:            {self.start_time.minute}',
+                    f'start_second:            {self.start_time.second}',
+                    f'nhours_fcst:             {duration_hours:.0f}',
+                    'RUN_CONTINUE:            .false.',
+                    'ENS_SPS:                 .false.',
+                    # 'dt_atmos:                   @[DT_ATMOS]'
+                    # 'atm_coupling_interval_sec:  @[coupling_interval_fast_sec]'
+                    #
+                    # 'iatm: @[IATM]'
+                    # 'jatm: @[JATM]'
+                    #
+                    # 'cdate0: @[CDATE]'
+                    # 'nfhout: @[NFHOUT]'
+                    # 'filename_base: @[FILENAME_BASE]'
+                ]
+            )
+            + '\n'
         )
 
 

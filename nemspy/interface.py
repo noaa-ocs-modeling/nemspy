@@ -18,12 +18,12 @@ class ModelingSystem:
     """
 
     def __init__(
-            self,
-            start_time: datetime,
-            duration: timedelta,
-            interval: timedelta,
-            verbose: bool = False,
-            **kwargs,
+        self,
+        start_time: datetime,
+        duration: timedelta,
+        interval: timedelta,
+        verbose: bool = False,
+        **kwargs,
     ):
         """
         create a NEMS interface from the given interval and models
@@ -122,8 +122,8 @@ class ModelingSystem:
                         else:
                             continue
                         if (
-                                source == connection_source
-                                and destination == connection_destination
+                            source == connection_source
+                            and destination == connection_destination
                         ):
                             sequence_entries.append(connection)
                             break
@@ -176,13 +176,13 @@ class ModelingSystem:
         return [str(connection) for connection in self.__sequence.connections]
 
     def mediate(
-            self,
-            source: ModelType = None,
-            target: ModelType = None,
-            functions: [str] = None,
-            method: RemapMethod = None,
-            processors: int = None,
-            **attributes,
+        self,
+        source: ModelType = None,
+        target: ModelType = None,
+        functions: [str] = None,
+        method: RemapMethod = None,
+        processors: int = None,
+        **attributes,
     ):
         """
         create a mediation between one or two models and a mediator,

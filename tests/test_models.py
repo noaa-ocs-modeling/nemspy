@@ -18,7 +18,6 @@ class TestModels(unittest.TestCase):
         model.start_processor = 0
 
         self.assertEqual(
-            str(model),
             'ATM_model:                      atmesh\n'
             'ATM_petlist_bounds:             0 0\n'
             'ATM_attributes::\n'
@@ -26,6 +25,7 @@ class TestModels(unittest.TestCase):
             '  test = value\n'
             '  test2 = 5\n'
             '::',
+            str(model),
         )
 
     def test_processors(self):
@@ -45,22 +45,22 @@ class TestModels(unittest.TestCase):
 
         model_1.start_processor = 0
 
-        self.assertEqual(model_1.start_processor, 0)
-        self.assertEqual(model_1.end_processor, 0)
-        self.assertEqual(model_2.start_processor, 1)
-        self.assertEqual(model_2.end_processor, 1)
-        self.assertEqual(model_3.start_processor, 2)
-        self.assertEqual(model_3.end_processor, 12)
+        self.assertEqual(0, model_1.start_processor)
+        self.assertEqual(0, model_1.end_processor)
+        self.assertEqual(1, model_2.start_processor)
+        self.assertEqual(1, model_2.end_processor)
+        self.assertEqual(2, model_3.start_processor)
+        self.assertEqual(12, model_3.end_processor)
 
         model_2.processors = 3
         model_1.processors = 4
 
-        self.assertEqual(model_1.start_processor, 0)
-        self.assertEqual(model_1.end_processor, 3)
-        self.assertEqual(model_2.start_processor, 4)
-        self.assertEqual(model_2.end_processor, 6)
-        self.assertEqual(model_3.start_processor, 7)
-        self.assertEqual(model_3.end_processor, 17)
+        self.assertEqual(0, model_1.start_processor)
+        self.assertEqual(3, model_1.end_processor)
+        self.assertEqual(4, model_2.start_processor)
+        self.assertEqual(6, model_2.end_processor)
+        self.assertEqual(7, model_3.start_processor)
+        self.assertEqual(17, model_3.end_processor)
 
 
 if __name__ == '__main__':

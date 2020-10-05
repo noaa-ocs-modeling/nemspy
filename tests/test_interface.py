@@ -145,34 +145,34 @@ class TestInterface(unittest.TestCase):
 
         models = nems.models
 
-        self.assertEqual(models[0].start_processor, 0)
-        self.assertEqual(models[0].end_processor, 0)
-        self.assertEqual(models[1].start_processor, 1)
-        self.assertEqual(models[1].end_processor, 1)
-        self.assertEqual(models[2].start_processor, 2)
-        self.assertEqual(models[2].end_processor, 12)
+        self.assertEqual(0, models[0].start_processor)
+        self.assertEqual(0, models[0].end_processor)
+        self.assertEqual(1, models[1].start_processor)
+        self.assertEqual(1, models[1].end_processor)
+        self.assertEqual(2, models[2].start_processor)
+        self.assertEqual(12, models[2].end_processor)
 
-        self.assertEqual(nems.sequence, ['ATM', 'WAV', 'OCN'])
+        self.assertEqual(['ATM', 'WAV', 'OCN'], nems.sequence)
         with self.assertRaises(KeyError):
             nems.sequence = ['HYD']
         with self.assertRaises(KeyError):
             nems.sequence = ['nonexistent']
         with self.assertRaises(KeyError):
             nems.sequence = ['OCN', 'ATM', 'WAV', 'WAV -> OCN ']
-        self.assertEqual(nems.sequence, ['ATM', 'WAV', 'OCN'])
+        self.assertEqual(['ATM', 'WAV', 'OCN'], nems.sequence)
 
         nems.sequence = ['OCN', 'ATM', 'WAV']
 
-        self.assertEqual(nems.sequence, ['OCN', 'ATM', 'WAV'])
+        self.assertEqual(['OCN', 'ATM', 'WAV'], nems.sequence)
 
         models = nems.models
 
-        self.assertEqual(models[0].start_processor, 0)
-        self.assertEqual(models[0].end_processor, 10)
-        self.assertEqual(models[1].start_processor, 11)
-        self.assertEqual(models[1].end_processor, 11)
-        self.assertEqual(models[2].start_processor, 12)
-        self.assertEqual(models[2].end_processor, 12)
+        self.assertEqual(0, models[0].start_processor)
+        self.assertEqual(10, models[0].end_processor)
+        self.assertEqual(11, models[1].start_processor)
+        self.assertEqual(11, models[1].end_processor)
+        self.assertEqual(12, models[2].start_processor)
+        self.assertEqual(12, models[2].end_processor)
 
     def test_configuration_files(self):
         start_time = datetime(2020, 6, 1)
@@ -219,7 +219,7 @@ class TestInterface(unittest.TestCase):
                 reference_filename = REFERENCE_DIRECTORY / test_filename.name
                 with open(test_filename) as test_file:
                     with open(reference_filename) as reference_file:
-                        self.assertEqual(test_file.read(), reference_file.read())
+                        self.assertEqual(reference_file.read(), test_file.read())
 
 
 if __name__ == '__main__':

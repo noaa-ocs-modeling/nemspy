@@ -10,7 +10,8 @@ ij_continuation_indent_size = 8
 ij_formatter_off_tag = @formatter:off
 ij_formatter_on_tag = @formatter:on
 ij_formatter_tags_enabled = false
-ij_smart_tabs = false
+ij_smart_tabs = true
+ij_visual_guides = 79, 127
 ij_wrap_on_typing = false
 
 [.editorconfig]
@@ -22,6 +23,7 @@ ij_editorconfig_space_before_comma = false
 ij_editorconfig_spaces_around_assignment_operators = true
 
 [{*.py, *.pyw, soundings}]
+ij_continuation_indent_size = 4
 ij_python_align_collections_and_comprehensions = true
 ij_python_align_multiline_imports = true
 ij_python_align_multiline_parameters = true
@@ -36,7 +38,7 @@ ij_python_blank_lines_before_first_method = 0
 ij_python_dict_alignment = 0
 ij_python_dict_new_line_after_left_brace = false
 ij_python_dict_new_line_before_right_brace = false
-ij_python_dict_wrapping = 1
+ij_python_dict_wrapping = 5
 ij_python_from_import_new_line_after_left_parenthesis = false
 ij_python_from_import_new_line_before_right_parenthesis = false
 ij_python_from_import_parentheses_force_if_multiline = false
