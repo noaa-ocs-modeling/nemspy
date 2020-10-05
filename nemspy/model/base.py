@@ -87,12 +87,12 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
     """
 
     def __init__(
-            self,
-            name: str,
-            model_type: ModelType,
-            processors: int,
-            verbose: bool = False,
-            **attributes,
+        self,
+        name: str,
+        model_type: ModelType,
+        processors: int,
+        verbose: bool = False,
+        **attributes,
     ):
         self.name = name
         self.model_type = model_type
@@ -216,8 +216,8 @@ class ConnectionEntry(SequenceEntry):
     @property
     def sequence_entry(self) -> str:
         return (
-                f'{self.source.entry_type} -> {self.target.entry_type}'.ljust(13)
-                + f':remapMethod={self.method.value}'
+            f'{self.source.entry_type} -> {self.target.entry_type}'.ljust(13)
+            + f':remapMethod={self.method.value}'
         )
 
     def __repr__(self) -> str:
@@ -246,12 +246,12 @@ class MediationFunctionEntry(SequenceEntry):
 
 class MediationEntry(ConnectionEntry):
     def __init__(
-            self,
-            source: ModelEntry,
-            mediator: MediatorEntry,
-            target: ModelEntry = None,
-            functions: [str] = None,
-            method: RemapMethod = None,
+        self,
+        source: ModelEntry,
+        mediator: MediatorEntry,
+        target: ModelEntry = None,
+        functions: [str] = None,
+        method: RemapMethod = None,
     ):
         if functions is None:
             functions = []
@@ -271,8 +271,8 @@ class MediationEntry(ConnectionEntry):
         output = ''
         if self.source is not None:
             output += (
-                    f'{self.source.entry_type} -> {self.mediator.entry_type}'.ljust(13)
-                    + f':remapMethod={self.method.value}'
+                f'{self.source.entry_type} -> {self.mediator.entry_type}'.ljust(13)
+                + f':remapMethod={self.method.value}'
             )
             if len(self.functions) > 0:
                 output += '\n'
@@ -281,9 +281,9 @@ class MediationEntry(ConnectionEntry):
         )
         if self.target is not None:
             output += (
-                    '\n'
-                    + f'{self.mediator.entry_type} -> {self.target.entry_type}'.ljust(13)
-                    + f':remapMethod={self.method.value}'
+                '\n'
+                + f'{self.mediator.entry_type} -> {self.target.entry_type}'.ljust(13)
+                + f':remapMethod={self.method.value}'
             )
         return output
 

@@ -18,14 +18,14 @@ class TestModels(unittest.TestCase):
         model.start_processor = 0
 
         self.assertEqual(
-                'ATM_model:                      atmesh\n'
-                'ATM_petlist_bounds:             0 0\n'
-                'ATM_attributes::\n'
-                '  Verbosity = min\n'
-                '  test = value\n'
-                '  test2 = 5\n'
-                '::',
-                str(model),
+            'ATM_model:                      atmesh\n'
+            'ATM_petlist_bounds:             0 0\n'
+            'ATM_attributes::\n'
+            '  Verbosity = min\n'
+            '  test = value\n'
+            '  test2 = 5\n'
+            '::',
+            str(model),
         )
 
     def test_processors(self):

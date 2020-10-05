@@ -153,7 +153,7 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
             self.__sequence = sequence
 
     def connect(
-            self, source: ModelType, target: ModelType, method: RemapMethod = None, **kwargs
+        self, source: ModelType, target: ModelType, method: RemapMethod = None, **kwargs
     ):
         if method is None:
             method = RemapMethod.REDISTRIBUTE
@@ -181,13 +181,13 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
         self[ModelType.MEDIATOR] = mediator
 
     def mediate(
-            self,
-            source: ModelType = None,
-            target: ModelType = None,
-            functions: [str] = None,
-            method: RemapMethod = None,
-            processors: int = None,
-            **attributes,
+        self,
+        source: ModelType = None,
+        target: ModelType = None,
+        functions: [str] = None,
+        method: RemapMethod = None,
+        processors: int = None,
+        **attributes,
     ):
         if 'name' not in attributes:
             attributes['name'] = 'mediator'
@@ -336,10 +336,10 @@ class NEMSConfigurationFile(ConfigurationFile):
 
     def __str__(self) -> str:
         return (
-                '#############################################\n'
-                '####  NEMS Run-Time Configuration File  #####\n'
-                '#############################################\n'
-                '\n' + '\n'.join(f'# {entry.entry_type} #\n' f'{entry}\n' for entry in self) + '\n'
+            '#############################################\n'
+            '####  NEMS Run-Time Configuration File  #####\n'
+            '#############################################\n'
+            '\n' + '\n'.join(f'# {entry.entry_type} #\n' f'{entry}\n' for entry in self)
         )
 
 
@@ -403,33 +403,33 @@ class ModelConfigurationFile(ConfigurationFile):
     def __str__(self) -> str:
         duration_hours = round(self.duration / timedelta(hours=1))
         return (
-                '\n'.join(
-                        [
-                                'total_member:            1',
-                                'print_esmf:              .true.',
-                                'namelist:                atm_namelist',
-                                f'PE_MEMBER01:             {self.sequence.processors}',
-                                f'start_year:              {self.start_time.year}',
-                                f'start_month:             {self.start_time.month}',
-                                f'start_day:               {self.start_time.day}',
-                                f'start_hour:              {self.start_time.hour}',
-                                f'start_minute:            {self.start_time.minute}',
-                                f'start_second:            {self.start_time.second}',
-                                f'nhours_fcst:             {duration_hours:.0f}',
-                                'RUN_CONTINUE:            .false.',
-                                'ENS_SPS:                 .false.',
-                                # 'dt_atmos:                   @[DT_ATMOS]'
-                                # 'atm_coupling_interval_sec:  @[coupling_interval_fast_sec]'
-                                #
-                                # 'iatm: @[IATM]'
-                                # 'jatm: @[JATM]'
-                                #
-                                # 'cdate0: @[CDATE]'
-                                # 'nfhout: @[NFHOUT]'
-                                # 'filename_base: @[FILENAME_BASE]'
-                        ]
-                )
-                + '\n'
+            '\n'.join(
+                [
+                    'total_member:            1',
+                    'print_esmf:              .true.',
+                    'namelist:                atm_namelist',
+                    f'PE_MEMBER01:             {self.sequence.processors}',
+                    f'start_year:              {self.start_time.year}',
+                    f'start_month:             {self.start_time.month}',
+                    f'start_day:               {self.start_time.day}',
+                    f'start_hour:              {self.start_time.hour}',
+                    f'start_minute:            {self.start_time.minute}',
+                    f'start_second:            {self.start_time.second}',
+                    f'nhours_fcst:             {duration_hours:.0f}',
+                    'RUN_CONTINUE:            .false.',
+                    'ENS_SPS:                 .false.',
+                    # 'dt_atmos:                   @[DT_ATMOS]'
+                    # 'atm_coupling_interval_sec:  @[coupling_interval_fast_sec]'
+                    #
+                    # 'iatm: @[IATM]'
+                    # 'jatm: @[JATM]'
+                    #
+                    # 'cdate0: @[CDATE]'
+                    # 'nfhout: @[NFHOUT]'
+                    # 'filename_base: @[FILENAME_BASE]'
+                ]
+            )
+            + '\n'
         )
 
 
