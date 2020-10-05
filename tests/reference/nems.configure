@@ -1,7 +1,3 @@
-#############################################
-####  NEMS Run-Time Configuration File  #####
-#############################################
-
 # EARTH #
 EARTH_component_list: ATM WAV OCN HYD
 EARTH_attributes::

@@ -310,7 +310,7 @@ class ConfigurationFile(ABC):
     def write(
         self, directory: PathLike, overwrite: bool = False, include_version: bool = True
     ) -> Path:
-        output = f'{self}'
+        output = f'{self}\n'
         if include_version:
             output = f'{self.version_header}\n{output}'
 
@@ -376,7 +376,7 @@ class ModelConfigurationFile(ConfigurationFile):
     def write(
         self, directory: PathLike, overwrite: bool = False, include_version: bool = True
     ):
-        filename = super().write(directory)
+        filename = super().write(directory, overwrite, include_version)
         symbolic_link_filename = filename.parent / 'atm_namelist.rc'
 
         try:
