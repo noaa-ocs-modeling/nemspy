@@ -61,10 +61,7 @@ class ModelingSystem:
 
     @property
     def interval(self) -> timedelta:
-        """
-        run sequence interval
-        """
-
+        """ run sequence interval """
         return self.__sequence.interval
 
     @interval.setter
@@ -83,19 +80,18 @@ class ModelingSystem:
 
     @property
     def models(self) -> [ModelEntry]:
-        """
-        models in execution order
-        """
-
+        """ models in execution order """
         return self.__sequence.models
 
     @property
     def sequence(self) -> [str]:
-        """
-        model execution order
-        """
-
+        """ model execution order """
         return [entry.sequence_entry for entry in self.__sequence.sequence]
+
+    @property
+    def processors(self) -> int:
+        """ number of PETs / processors / tasks """
+        return self.__sequence.processors
 
     @sequence.setter
     def sequence(self, sequence: [str]):
