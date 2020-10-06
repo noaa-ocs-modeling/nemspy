@@ -212,6 +212,8 @@ class TestInterface(unittest.TestCase):
 
         nems.sequence = sequence
 
+        self.assertEqual(782, nems.processors)
+
         with tempfile.TemporaryDirectory() as temporary_directory:
             temporary_directory = Path(temporary_directory)
             nems.write(temporary_directory, overwrite=True, include_version=False)
