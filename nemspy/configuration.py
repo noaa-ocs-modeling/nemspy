@@ -93,8 +93,8 @@ class Earth(ConfigurationEntry):
 
     def __repr__(self) -> str:
         kwargs = [
-                     f'{model_type.name}={repr(model)}' for model_type, model in self.models.items()
-                 ] + [f'{key}={value}' for key, value in self.attributes.items()]
+            f'{model_type.name}={repr(model)}' for model_type, model in self.models.items()
+        ] + [f'{key}={value}' for key, value in self.attributes.items()]
         return (
             f'{self.__class__.__name__}({self.attributes["Verbosity"]}, {", ".join(kwargs)})'
         )
@@ -189,8 +189,8 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
         self,
         source: ModelType = None,
         target: ModelType = None,
-        functions: [str] = None,
         method: RemapMethod = None,
+        functions: [str] = None,
         processors: int = None,
         **attributes,
     ):

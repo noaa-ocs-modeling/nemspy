@@ -60,7 +60,6 @@ nems.write(output_directory, overwrite=True)
 ```
 
 ### Output:
-
 #### nems.configure
 ```fortran
 #############################################

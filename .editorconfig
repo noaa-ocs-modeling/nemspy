@@ -10,7 +10,7 @@ ij_continuation_indent_size = 8
 ij_formatter_off_tag = @formatter:off
 ij_formatter_on_tag = @formatter:on
 ij_formatter_tags_enabled = false
-ij_smart_tabs = true
+ij_smart_tabs = false
 ij_visual_guides = 79, 127
 ij_wrap_on_typing = false
 
@@ -84,8 +84,8 @@ ij_python_spaces_within_braces = false
 ij_python_spaces_within_brackets = false
 ij_python_spaces_within_method_call_parentheses = false
 ij_python_spaces_within_method_parentheses = false
-ij_python_use_continuation_indent_for_arguments = true
-ij_python_use_continuation_indent_for_collection_and_comprehensions = true
+ij_python_use_continuation_indent_for_arguments = false
+ij_python_use_continuation_indent_for_collection_and_comprehensions = false
 ij_python_wrap_long_lines = false
 
 [{*.yaml, *.yml}]
