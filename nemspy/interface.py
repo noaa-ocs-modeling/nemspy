@@ -149,6 +149,17 @@ class ModelingSystem:
         :param method: remapping method
         """
 
+        if not isinstance(source, str) and not isinstance(source, ModelType):
+            raise ValueError(
+                f'source model type must be {str} or {ModelType}, not {type(source)}'
+            )
+        if not isinstance(target, str) and not isinstance(target, ModelType):
+            raise ValueError(
+                f'target model type must be {str} or {ModelType}, not {type(target)}'
+            )
+        if not isinstance(method, str) and not isinstance(method, RemapMethod):
+            raise ValueError(f'method type must be {str} or {RemapMethod}, not {type(method)}')
+
         model_types = [model_type.value.upper() for model_type in ModelType]
         remap_methods = [remap.value.lower() for remap in RemapMethod]
 
@@ -173,10 +184,10 @@ class ModelingSystem:
 
     def mediate(
         self,
-        source: ModelType = None,
-        target: ModelType = None,
-        functions: [str] = None,
+        source: str = None,
+        target: str = None,
         method: RemapMethod = None,
+        functions: [str] = None,
         processors: int = None,
         **attributes,
     ):
@@ -186,28 +197,39 @@ class ModelingSystem:
 
         :param source: model providing information
         :param target: model receiving information
-        :param functions: mediator functions
         :param method: remapping method
+        :param functions: mediator functions
         :param processors: number of processors to assign to mediation
         """
+
+        if not isinstance(source, str) and not isinstance(source, ModelType):
+            raise ValueError(
+                f'source model type must be {str} or {ModelType}, not {type(source)}'
+            )
+        if not isinstance(target, str) and not isinstance(target, ModelType):
+            raise ValueError(
+                f'target model type must be {str} or {ModelType}, not {type(target)}'
+            )
+        if not isinstance(method, str) and not isinstance(method, RemapMethod):
+            raise ValueError(f'method type must be {str} or {RemapMethod}, not {type(method)}')
 
         model_types = [model_type.value.upper() for model_type in ModelType]
         remap_methods = [remap.value.lower() for remap in RemapMethod]
 
-        if source is not None:
+        if isinstance(source, str):
             if source.upper() not in model_types:
                 raise KeyError(f'"{source}" not in {model_types}')
             source = ModelType(source.upper())
-        if target is not None:
+        if isinstance(target, str):
             if target.upper() not in model_types:
                 raise KeyError(f'"{target}" not in {model_types}')
             target = ModelType(target.upper())
-        if method is not None:
+        if isinstance(method, str):
             if method.lower() not in remap_methods:
                 raise KeyError(f'"{method}" not in {remap_methods}')
             method = RemapMethod(method.lower())
 
-        self.__sequence.mediate(source, target, functions, method, processors, **attributes)
+        self.__sequence.mediate(source, target, method, functions, processors, **attributes)
 
     @property
     def __configuration_files(self) -> [ConfigurationFile]:
@@ -240,10 +262,21 @@ class ModelingSystem:
             configuration_file.write(directory, overwrite, include_version)
 
     def __getitem__(self, model_type: str) -> ModelEntry:
+        if not isinstance(model_type, str) and not isinstance(model_type, ModelType):
+            raise ValueError(
+                f'model type must be {str} or {ModelType}, not {type(model_type)}'
+            )
         model_types = [model_type.value.upper() for model_type in ModelType]
         if model_type.upper() not in model_types:
             raise KeyError(f'"{model_type}" not in {model_types}')
         return self.__sequence[ModelType(model_type.upper())]
+
+    def __contains__(self, model_type: str) -> bool:
+        if not isinstance(model_type, str) and not isinstance(model_type, ModelType):
+            raise ValueError(
+                f'model type must be {str} or {ModelType}, not {type(model_type)}'
+            )
+        return ModelType(model_type.upper()) in self.__sequence
 
     def __repr__(self) -> str:
         models = [f'{model.model_type}={repr(model)}' for model in self.__sequence.models]

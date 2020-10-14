@@ -91,9 +91,9 @@ class TestInterface(unittest.TestCase):
         )
 
         nems.connect('OCN', 'MED')
-        nems.mediate('ATM', 'ICE', ['MedPhase_prep_ice'])
-        nems.mediate('ICE', None, ['MedPhase_atm_ocn_flux', 'MedPhase_accum_fast'])
-        nems.mediate(None, 'OCN', ['MedPhase_prep_ocn'])
+        nems.mediate('ATM', 'ICE', functions=['MedPhase_prep_ice'])
+        nems.mediate('ICE', None, functions=['MedPhase_atm_ocn_flux', 'MedPhase_accum_fast'])
+        nems.mediate(None, 'OCN', functions=['MedPhase_prep_ocn'])
 
         nems.sequence = [
             'ATM',

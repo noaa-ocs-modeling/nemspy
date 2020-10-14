@@ -42,9 +42,9 @@ if __name__ == '__main__':
     nems.connect('WAV', 'HYD')
 
     # form mediations between models with custom functions
-    nems.mediate('ATM', 'OCN', ['MedPhase_atm_ocn_flux'])
+    nems.mediate('ATM', 'OCN', functions=['MedPhase_atm_ocn_flux'])
     nems.mediate('HYD', None)
-    nems.mediate(None, 'OCN', ['MedPhase_prep_ocn'], processors=2)
+    nems.mediate(None, 'OCN', functions=['MedPhase_prep_ocn'], processors=2)
 
     # define execution order
     nems.sequence = [
