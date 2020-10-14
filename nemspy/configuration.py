@@ -308,7 +308,7 @@ class ConfigurationFile(ABC):
         return f'# `{self.name}` generated with NEMSpy {__version__}'
 
     def write(
-        self, directory: PathLike, overwrite: bool = False, include_version: bool = True
+        self, directory: PathLike, overwrite: bool = False, include_version: bool = False
     ) -> Path:
         output = f'{self}\n'
         if include_version:
@@ -374,7 +374,7 @@ class ModelConfigurationFile(ConfigurationFile):
         super().__init__(sequence)
 
     def write(
-        self, directory: PathLike, overwrite: bool = False, include_version: bool = True
+        self, directory: PathLike, overwrite: bool = False, include_version: bool = False
     ):
         filename = super().write(directory, overwrite, include_version)
         symbolic_link_filename = filename.parent / 'atm_namelist.rc'

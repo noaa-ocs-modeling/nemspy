@@ -271,7 +271,7 @@ class ModelingSystem:
         }
 
     def write(
-        self, directory: PathLike, overwrite: bool = False, include_version: bool = True
+        self, directory: PathLike, overwrite: bool = False, include_version: bool = False
     ):
         """
         write NEMS / NUOPC configuration to the given directory

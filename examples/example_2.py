@@ -61,4 +61,4 @@ if __name__ == '__main__':
     ]
 
     # write configuration files to the given directory
-    nems.write(output_directory, overwrite=True)
+    nems.write(output_directory, overwrite=True, include_version=True)
