@@ -149,15 +149,27 @@ class ModelingSystem:
         :param method: remapping method
         """
 
-        if source is not None and not isinstance(source, str) and not isinstance(source, ModelType):
+        if (
+            source is not None
+            and not isinstance(source, str)
+            and not isinstance(source, ModelType)
+        ):
             raise ValueError(
                 f'source model type must be {str} or {ModelType}, not {type(source)}'
             )
-        if target is not None and not isinstance(target, str) and not isinstance(target, ModelType):
+        if (
+            target is not None
+            and not isinstance(target, str)
+            and not isinstance(target, ModelType)
+        ):
             raise ValueError(
                 f'target model type must be {str} or {ModelType}, not {type(target)}'
             )
-        if method is not None and not isinstance(method, str) and not isinstance(method, RemapMethod):
+        if (
+            method is not None
+            and not isinstance(method, str)
+            and not isinstance(method, RemapMethod)
+        ):
             raise ValueError(f'method type must be {str} or {RemapMethod}, not {type(method)}')
 
         model_types = [model_type.value.upper() for model_type in ModelType]
@@ -202,15 +214,27 @@ class ModelingSystem:
         :param processors: number of processors to assign to mediation
         """
 
-        if source is not None and not isinstance(source, str) and not isinstance(source, ModelType):
+        if (
+            source is not None
+            and not isinstance(source, str)
+            and not isinstance(source, ModelType)
+        ):
             raise ValueError(
                 f'source model type must be {str} or {ModelType}, not {type(source)}'
             )
-        if target is not None and not isinstance(target, str) and not isinstance(target, ModelType):
+        if (
+            target is not None
+            and not isinstance(target, str)
+            and not isinstance(target, ModelType)
+        ):
             raise ValueError(
                 f'target model type must be {str} or {ModelType}, not {type(target)}'
             )
-        if method is not None and not isinstance(method, str) and not isinstance(method, RemapMethod):
+        if (
+            method is not None
+            and not isinstance(method, str)
+            and not isinstance(method, RemapMethod)
+        ):
             raise ValueError(f'method type must be {str} or {RemapMethod}, not {type(method)}')
 
         model_types = [model_type.value.upper() for model_type in ModelType]

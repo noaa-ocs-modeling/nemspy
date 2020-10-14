@@ -62,10 +62,7 @@ nems.write(output_directory, overwrite=True)
 ### Output:
 #### nems.configure
 ```fortran
-#############################################
-####  NEMS Run-Time Configuration File  #####
-#############################################
-
+# `nems.configure` generated with NEMSpy 0.4.4
 # EARTH #
 EARTH_component_list: ATM WAV OCN
 EARTH_attributes::
@@ -108,6 +105,7 @@ runSeq::
 
 #### config.rc
 ```fortran
+# `config.rc` generated with NEMSpy 0.4.4
  atm_dir: ~
  atm_nam: wind_atm_fin_ch_time_vec.nc
  wav_dir: ~
@@ -116,6 +114,7 @@ runSeq::
 
 #### model_configure
 ```fortran
+# `model_configure` generated with NEMSpy 0.4.4
 total_member:            1
 print_esmf:              .true.
 namelist:                atm_namelist

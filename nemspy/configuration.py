@@ -26,7 +26,7 @@ from .utilities import get_logger
 
 LOGGER = get_logger('configuration')
 
-__version__ = Version.from_git().serialize(dirty=True)
+__version__ = Version.from_git().serialize()
 
 
 class Earth(ConfigurationEntry):
