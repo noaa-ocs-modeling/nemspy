@@ -308,14 +308,18 @@ class ConfigurationFile(ABC):
         return f'# `{self.name}` generated with NEMSpy {__version__}'
 
     def write(
-        self, directory: PathLike, overwrite: bool = False, include_version: bool = False
+        self, filename: PathLike, overwrite: bool = False, include_version: bool = False
     ) -> Path:
+        if not isinstance(filename, Path):
+            filename = Path(filename)
+        ensure_directory(filename.parent)
+
         output = f'{self}\n'
         if include_version:
             output = f'{self.version_header}\n{output}'
 
-        directory = ensure_directory(directory)
-        filename = directory / self.name
+        if not filename.is_file():
+            filename = filename / self.name
 
         if filename.exists():
             LOGGER.warning(
@@ -374,9 +378,9 @@ class ModelConfigurationFile(ConfigurationFile):
         super().__init__(sequence)
 
     def write(
-        self, directory: PathLike, overwrite: bool = False, include_version: bool = False
-    ):
-        filename = super().write(directory, overwrite, include_version)
+        self, filename: PathLike, overwrite: bool = False, include_version: bool = False
+    ) -> Path:
+        filename = super().write(filename, overwrite, include_version)
         symbolic_link_filename = filename.parent / 'atm_namelist.rc'
 
         try:
@@ -384,6 +388,8 @@ class ModelConfigurationFile(ConfigurationFile):
         except Exception as error:
             LOGGER.warning(f'could not create symbolic link: {error}')
             shutil.copyfile(filename, symbolic_link_filename)
+
+        return filename
 
     def __str__(self) -> str:
         duration_hours = round(self.duration / timedelta(hours=1))

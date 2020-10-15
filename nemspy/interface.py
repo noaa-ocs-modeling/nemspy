@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from os import PathLike
+from pathlib import Path
 
 from .configuration import (
     ConfigurationFile,
@@ -272,7 +273,7 @@ class ModelingSystem:
 
     def write(
         self, directory: PathLike, overwrite: bool = False, include_version: bool = False
-    ):
+    ) -> [Path]:
         """
         write NEMS / NUOPC configuration to the given directory
 
@@ -282,8 +283,11 @@ class ModelingSystem:
         """
 
         directory = ensure_directory(directory)
+        filenames = []
         for configuration_file in self.__configuration_files:
-            configuration_file.write(directory, overwrite, include_version)
+            filename = configuration_file.write(directory, overwrite, include_version)
+            filenames.append(filename)
+        return filenames
 
     def __getitem__(self, model_type: str) -> ModelEntry:
         if not isinstance(model_type, str) and not isinstance(model_type, ModelType):
