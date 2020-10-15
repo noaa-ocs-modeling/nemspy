@@ -318,8 +318,9 @@ class ConfigurationFile(ABC):
         if include_version:
             output = f'{self.version_header}\n{output}'
 
-        if not filename.is_file():
+        if filename.is_dir():
             filename = filename / self.name
+            LOGGER.warning(f'creating new file "{filename}"')
 
         if filename.exists():
             LOGGER.warning(

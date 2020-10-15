@@ -285,7 +285,9 @@ class ModelingSystem:
         directory = ensure_directory(directory)
         filenames = []
         for configuration_file in self.__configuration_files:
-            filename = configuration_file.write(directory, overwrite, include_version)
+            filename = configuration_file.write(
+                directory / configuration_file.name, overwrite, include_version
+            )
             filenames.append(filename)
         return filenames
 
