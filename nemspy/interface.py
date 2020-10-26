@@ -297,6 +297,16 @@ class ModelingSystem:
             raise KeyError(f'"{model_type}" not in {model_types}')
         return self.__sequence[ModelType(model_type.upper())]
 
+    def __setitem__(self, model_type: str, model: ModelEntry):
+        if not isinstance(model_type, str) and not isinstance(model_type, ModelType):
+            raise ValueError(
+                f'model type must be {str} or {ModelType}, not {type(model_type)}'
+            )
+        model_types = [model_type.value.upper() for model_type in ModelType]
+        if model_type.upper() not in model_types:
+            raise KeyError(f'"{model_type}" not in {model_types}')
+        self.__sequence[ModelType(model_type.upper())] = model
+
     def __contains__(self, model_type: str) -> bool:
         if not isinstance(model_type, str) and not isinstance(model_type, ModelType):
             raise ValueError(

@@ -36,12 +36,12 @@ class TestModels(unittest.TestCase):
         model_1.next = model_2
         model_2.next = model_3
 
-        self.assertIs(model_1.start_processor, None)
-        self.assertIs(model_1.end_processor, None)
-        self.assertIs(model_2.start_processor, None)
-        self.assertIs(model_2.end_processor, None)
-        self.assertIs(model_3.start_processor, None)
-        self.assertIs(model_3.end_processor, None)
+        self.assertIs(None, model_1.start_processor)
+        self.assertIs(None, model_1.end_processor)
+        self.assertIs(None, model_2.start_processor)
+        self.assertIs(None, model_2.end_processor)
+        self.assertIs(None, model_3.start_processor)
+        self.assertIs(None, model_3.end_processor)
 
         model_1.start_processor = 0
 

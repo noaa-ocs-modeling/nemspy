@@ -29,6 +29,7 @@ class TestInterface(unittest.TestCase):
         atmospheric_mesh = AtmosphericMeshEntry(ATMOSPHERIC_MESH_FILENAME)
         wave_mesh = WaveMeshEntry(WAVE_MESH_FILENAME)
         ocean_model = ADCIRCEntry(11)
+        hydrological_model = NationalWaterModelEntry(769, Verbosity=ModelVerbosity.MAX)
 
         nems = ModelingSystem(
             start_time,
@@ -39,27 +40,31 @@ class TestInterface(unittest.TestCase):
             ocn=ocean_model,
         )
 
-        self.assertIs(nems['ATM'], atmospheric_mesh)
-        self.assertIs(nems['WAV'], wave_mesh)
-        self.assertIs(nems['OCN'], ocean_model)
+        self.assertIs(atmospheric_mesh, nems['ATM'])
+        self.assertIs(wave_mesh, nems['WAV'])
+        self.assertIs(ocean_model, nems['OCN'])
 
         with self.assertRaises(KeyError):
             nems['HYD']
         with self.assertRaises(KeyError):
             nems['nonexistent']
 
-        self.assertEqual(nems.interval, interval)
-        self.assertEqual(nems.attributes['Verbosity'], 'off')
+        nems['HYD'] = hydrological_model
+
+        self.assertIs(hydrological_model, nems['HYD'])
+
+        self.assertEqual(interval, nems.interval)
+        self.assertEqual('off', nems.attributes['Verbosity'])
 
         new_interval = timedelta(minutes=30)
         nems.interval = new_interval
 
-        self.assertEqual(nems.interval, new_interval)
+        self.assertEqual(new_interval, nems.interval)
 
         nems.attributes = {'Verbosity': ModelVerbosity.MAX}
         nems.attributes['Verbosity'] = ModelVerbosity.LOW
 
-        self.assertEqual(nems.attributes['Verbosity'], 'max')
+        self.assertEqual('max', nems.attributes['Verbosity'])
 
     def test_connection(self):
         start_time = datetime(2020, 6, 1)
@@ -80,7 +85,7 @@ class TestInterface(unittest.TestCase):
         with self.assertRaises(KeyError):
             nems.connect('WAV', 'OCN', 'nonexistent')
 
-        self.assertEqual(nems.connections, ['WAV -> OCN   :remapMethod=redist'])
+        self.assertEqual(['WAV -> OCN   :remapMethod=redist'], nems.connections)
 
     def test_mediation(self):
         start_time = datetime(2020, 6, 1)
@@ -117,7 +122,6 @@ class TestInterface(unittest.TestCase):
             nems.connect('WAV', 'OCN', 'nonexistent')
 
         self.assertEqual(
-            nems.connections,
             [
                 'ATM -> MED   :remapMethod=redist\n'
                 'MED MedPhase_prep_ice\n'
@@ -128,6 +132,7 @@ class TestInterface(unittest.TestCase):
                 'MED MedPhase_prep_ocn\n' 'MED -> OCN   :remapMethod=redist',
                 'OCN -> MED   :remapMethod=redist',
             ],
+            nems.connections,
         )
 
     def test_sequence(self):
