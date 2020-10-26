@@ -36,22 +36,19 @@ class Earth(ConfigurationEntry):
 
     entry_type = 'EARTH'
 
-    def __init__(self, verbosity: ModelVerbosity = None, **kwargs):
-        if verbosity is None:
-            verbosity = ModelVerbosity.MINIMUM
+    def __init__(self, **models):
+        if 'Verbosity' not in models:
+            models['Verbosity'] = ModelVerbosity.OFF
 
         self.__models = {model_type: None for model_type in ModelType}
 
         self.attributes = {}
-        for key, value in kwargs.items():
-            key = key.upper()
-            if key in {entry.name for entry in ModelType}:
+        for key, value in models.items():
+            if key.upper() in {entry.name for entry in ModelType}:
                 if isinstance(value, ModelEntry):
-                    self[ModelType[key]] = value
+                    self[ModelType[key.upper()]] = value
             else:
                 self.attributes[key] = value
-
-        self.attributes['Verbosity'] = verbosity
 
     @property
     def models(self):
@@ -93,8 +90,8 @@ class Earth(ConfigurationEntry):
 
     def __repr__(self) -> str:
         kwargs = [
-            f'{model_type.name}={repr(model)}' for model_type, model in self.models.items()
-        ] + [f'{key}={value}' for key, value in self.attributes.items()]
+                     f'{model_type.name}={repr(model)}' for model_type, model in self.models.items()
+                 ] + [f'{key}={value}' for key, value in self.attributes.items()]
         return (
             f'{self.__class__.__name__}({self.attributes["Verbosity"]}, {", ".join(kwargs)})'
         )
@@ -103,19 +100,20 @@ class Earth(ConfigurationEntry):
 class RunSequence(ConfigurationEntry, SequenceEntry):
     entry_type = 'Run Sequence'
 
-    def __init__(self, interval: timedelta, verbose: bool = False, **kwargs):
+    def __init__(self, interval: timedelta, **kwargs):
         self.interval = interval
-        self.verbosity = ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM
+
+        if 'Verbosity' not in kwargs:
+            kwargs['Verbosity'] = ModelVerbosity.OFF
 
         self.__models = {}
+        self.attributes = {}
         for key, value in kwargs.items():
-            key = key.upper()
             model_types = [model_type.value for model_type in ModelType]
-            if key in model_types and isinstance(value, ModelEntry):
-                self.__models[ModelType(key)] = value
-            elif key == 'EARTH' and isinstance(value, Earth):
-                for model_type, model in value:
-                    self.__models[model_type] = model
+            if key.upper() in model_types and isinstance(value, ModelEntry):
+                self.__models[ModelType(key.upper())] = value
+            else:
+                self.attributes[key] = value
 
         self.__sequence = [
             model for model in self.models if model.model_type != ModelType.MEDIATOR
@@ -218,7 +216,7 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
 
     @property
     def earth(self) -> Earth:
-        return Earth(self.verbosity, **{model.model_type.name: model for model in self.models})
+        return Earth(**{model.model_type.name: model for model in self.models}, **self.attributes)
 
     @property
     def processors(self) -> int:

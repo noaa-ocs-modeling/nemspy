@@ -28,8 +28,10 @@ class ModelVerbosity(Enum):
     verbosity attribute within a NEMS / NUOPC configuration file
     """
 
-    MINIMUM = 'min'
-    MAXIMUM = 'max'
+    OFF = 'off'
+    LOW = 'low'
+    HIGH = 'high'
+    MAX = 'max'
 
 
 class RemapMethod(Enum):
@@ -91,7 +93,6 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
         name: str,
         model_type: ModelType,
         processors: int,
-        verbose: bool = False,
         **attributes,
     ):
         self.name = name
@@ -105,10 +106,11 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
 
         self.entry_type = str(self.model_type.value)
 
-        self.attributes = {
-            'Verbosity': ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM,
-            **attributes,
-        }
+        if 'Verbosity' not in attributes:
+            attributes['Verbosity'] = ModelVerbosity.OFF
+
+        # http://www.earthsystemmodeling.org/esmf_releases/last_built/NUOPC_refdoc/node3.html#SECTION00033000000000000000
+        self.attributes = attributes
 
     @property
     def processors(self) -> int:
