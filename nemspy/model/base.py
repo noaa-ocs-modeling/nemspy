@@ -89,11 +89,7 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
     """
 
     def __init__(
-        self,
-        name: str,
-        model_type: ModelType,
-        processors: int,
-        **attributes,
+        self, name: str, model_type: ModelType, processors: int, **attributes,
     ):
         self.name = name
         self.model_type = model_type

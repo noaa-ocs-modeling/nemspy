@@ -89,11 +89,12 @@ class Earth(ConfigurationEntry):
         )
 
     def __repr__(self) -> str:
-        kwargs = [
-                     f'{model_type.name}={repr(model)}' for model_type, model in self.models.items()
-                 ] + [f'{key}={value}' for key, value in self.attributes.items()]
+        models = [
+            f'{model_type.name}={repr(model)}' for model_type, model in self.models.items()
+        ]
+        models += [f'{key}={value}' for key, value in self.attributes.items()]
         return (
-            f'{self.__class__.__name__}({self.attributes["Verbosity"]}, {", ".join(kwargs)})'
+            f'{self.__class__.__name__}({self.attributes["Verbosity"]}, {", ".join(models)})'
         )
 
 
@@ -216,7 +217,9 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
 
     @property
     def earth(self) -> Earth:
-        return Earth(**{model.model_type.name: model for model in self.models}, **self.attributes)
+        return Earth(
+            **{model.model_type.name: model for model in self.models}, **self.attributes
+        )
 
     @property
     def processors(self) -> int:

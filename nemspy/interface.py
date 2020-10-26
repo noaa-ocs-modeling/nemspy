@@ -19,11 +19,7 @@ class ModelingSystem:
     """
 
     def __init__(
-        self,
-        start_time: datetime,
-        duration: timedelta,
-        interval: timedelta,
-        **models,
+        self, start_time: datetime, duration: timedelta, interval: timedelta, **models,
     ):
         """
         create a NEMS interface from the given interval and models
