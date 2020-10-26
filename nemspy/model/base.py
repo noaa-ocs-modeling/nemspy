@@ -196,7 +196,10 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
                 f'{self.entry_type}_attributes::',
                 indent(
                     '\n'.join(
-                        [f'{attribute} = {value}' for attribute, value in self.attributes.items()]
+                        [
+                            f'{attribute} = {value}'
+                            for attribute, value in self.attributes.items()
+                        ]
                     ),
                     INDENTATION,
                 ),
