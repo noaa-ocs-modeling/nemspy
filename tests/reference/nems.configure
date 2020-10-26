@@ -15,7 +15,7 @@ ATM_attributes::
 WAV_model:                      ww3data
 WAV_petlist_bounds:             1 1
 WAV_attributes::
-  Verbosity = off
+  Verbosity = low
 ::
 
 # OCN #
@@ -29,7 +29,7 @@ OCN_attributes::
 HYD_model:                      nwm
 HYD_petlist_bounds:             13 781
 HYD_attributes::
-  Verbosity = off
+  Verbosity = max
 ::
 
 # Run Sequence #

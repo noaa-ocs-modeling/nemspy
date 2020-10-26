@@ -42,13 +42,14 @@ class Earth(ConfigurationEntry):
 
         self.__models = {model_type: None for model_type in ModelType}
 
-        self.attributes = {}
+        attributes = {}
         for key, value in models.items():
             if key.upper() in {entry.name for entry in ModelType}:
                 if isinstance(value, ModelEntry):
                     self[ModelType[key.upper()]] = value
             else:
-                self.attributes[key] = value
+                attributes[key] = value
+        self.attributes = attributes
 
     @property
     def models(self):
@@ -108,13 +109,14 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
             kwargs['Verbosity'] = ModelVerbosity.OFF
 
         self.__models = {}
-        self.attributes = {}
+        attributes = {}
         for key, value in kwargs.items():
             model_types = [model_type.value for model_type in ModelType]
             if key.upper() in model_types and isinstance(value, ModelEntry):
                 self.__models[ModelType(key.upper())] = value
             else:
-                self.attributes[key] = value
+                attributes[key] = value
+        self.attributes = attributes
 
         self.__sequence = [
             model for model in self.models if model.model_type != ModelType.MEDIATOR
@@ -328,7 +330,7 @@ class ConfigurationFile(ABC):
                 f'{"overwriting" if overwrite else "skipping"} existing file "{filename}"'
             )
         if not filename.exists() or overwrite:
-            with open(filename, 'w') as output_file:
+            with open(filename, 'w', newline='\n') as output_file:
                 output_file.write(output)
 
         return filename

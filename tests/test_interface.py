@@ -49,14 +49,17 @@ class TestInterface(unittest.TestCase):
             nems['nonexistent']
 
         self.assertEqual(nems.interval, interval)
-        self.assertEqual(nems.attributes['Verbosity'], ModelVerbosity.OFF)
+        self.assertEqual(nems.attributes['Verbosity'], 'off')
 
         new_interval = timedelta(minutes=30)
         nems.interval = new_interval
-        nems.attributes['Verbosity'] = ModelVerbosity.MAX
 
         self.assertEqual(nems.interval, new_interval)
-        self.assertEqual(nems.attributes['Verbosity'], ModelVerbosity.MAX)
+
+        nems.attributes = {'Verbosity': ModelVerbosity.MAX}
+        nems.attributes['Verbosity'] = ModelVerbosity.LOW
+
+        self.assertEqual(nems.attributes['Verbosity'], 'max')
 
     def test_connection(self):
         start_time = datetime(2020, 6, 1)
@@ -180,9 +183,9 @@ class TestInterface(unittest.TestCase):
         duration = timedelta(days=1)
         interval = timedelta(hours=1)
         atmospheric_mesh = AtmosphericMeshEntry(ATMOSPHERIC_MESH_FILENAME)
-        wave_mesh = WaveMeshEntry(WAVE_MESH_FILENAME)
+        wave_mesh = WaveMeshEntry(WAVE_MESH_FILENAME, Verbosity='low')
         ocean_model = ADCIRCEntry(11)
-        hydrological_model = NationalWaterModelEntry(769)
+        hydrological_model = NationalWaterModelEntry(769, Verbosity=ModelVerbosity.MAX)
 
         nems = ModelingSystem(
             start_time,

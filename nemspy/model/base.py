@@ -63,10 +63,26 @@ class ConfigurationEntry(ABC):
     """
 
     entry_type: str = NotImplementedError
+    __attributes: {str: str} = NotImplementedError
 
     @abstractmethod
     def __str__(self) -> str:
         raise NotImplementedError
+
+    @property
+    def attributes(self) -> {str: str}:
+        attributes = {}
+        for attribute, value in self.__attributes.items():
+            if isinstance(value, Enum):
+                value = value.value
+            elif isinstance(value, bool):
+                value = f'{value}'.lower()
+            attributes[attribute] = value
+        return attributes
+
+    @attributes.setter
+    def attributes(self, attributes: {str: str}):
+        self.__attributes = attributes
 
 
 class SequenceEntry(ABC):
@@ -173,14 +189,6 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
         return str(self.model_type.value)
 
     def __str__(self) -> str:
-        attributes = {}
-        for attribute, value in self.attributes.items():
-            if isinstance(value, Enum):
-                value = value.value
-            elif isinstance(value, bool):
-                value = f'{value}'.lower()
-            attributes[attribute] = value
-
         return '\n'.join(
             [
                 f'{self.entry_type}_model:                      {self.name}',
@@ -188,7 +196,7 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
                 f'{self.entry_type}_attributes::',
                 indent(
                     '\n'.join(
-                        [f'{attribute} = {value}' for attribute, value in attributes.items()]
+                        [f'{attribute} = {value}' for attribute, value in self.attributes.items()]
                     ),
                     INDENTATION,
                 ),

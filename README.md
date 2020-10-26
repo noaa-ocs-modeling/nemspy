@@ -33,7 +33,7 @@ interval = timedelta(hours=1)
 output_directory = '~/nems_configuration/'
 
 # model entries
-ocean_model = ADCIRCEntry(processors=11, verbose=True, DumpFields=False)
+ocean_model = ADCIRCEntry(processors=11, Verbosity='max', DumpFields=False)
 atmospheric_mesh = AtmosphericMeshEntry('~/wind_atm_fin_ch_time_vec.nc')
 wave_mesh = WaveMeshEntry('~/ww3.Constant.20151214_sxy_ike_date.nc')
 
@@ -62,25 +62,25 @@ nems.write(output_directory, overwrite=True, include_version=True)
 ### Output:
 #### nems.configure
 ```fortran
-# `nems.configure` generated with NEMSpy 0.4.4
+# `nems.configure` generated with NEMSpy 0.5.0
 # EARTH #
 EARTH_component_list: ATM WAV OCN
 EARTH_attributes::
-  Verbosity = min
+  Verbosity = off
 ::
 
 # ATM #
 ATM_model:                      atmesh
 ATM_petlist_bounds:             0 0
 ATM_attributes::
-  Verbosity = min
+  Verbosity = off
 ::
 
 # WAV #
 WAV_model:                      ww3data
 WAV_petlist_bounds:             1 1
 WAV_attributes::
-  Verbosity = min
+  Verbosity = off
 ::
 
 # OCN #
@@ -103,18 +103,9 @@ runSeq::
 ::
 ```
 
-#### config.rc
-```fortran
-# `config.rc` generated with NEMSpy 0.4.4
- atm_dir: ~
- atm_nam: wind_atm_fin_ch_time_vec.nc
- wav_dir: ~
- wav_nam: ww3.Constant.20151214_sxy_ike_date.nc
-```
-
 #### model_configure
 ```fortran
-# `model_configure` generated with NEMSpy 0.4.4
+# `model_configure` generated with NEMSpy 0.5.0
 total_member:            1
 print_esmf:              .true.
 namelist:                atm_namelist
@@ -128,6 +119,15 @@ start_second:            0
 nhours_fcst:             24
 RUN_CONTINUE:            .false.
 ENS_SPS:                 .false.
+```
+
+#### config.rc
+```fortran
+# `config.rc` generated with NEMSpy 0.5.0
+ atm_dir: ~
+ atm_nam: wind_atm_fin_ch_time_vec.nc
+ wav_dir: ~
+ wav_nam: ww3.Constant.20151214_sxy_ike_date.nc
 ```
 
 ### Related:

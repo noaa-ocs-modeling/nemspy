@@ -19,7 +19,7 @@ if __name__ == '__main__':
     output_directory = '~/nems_configuration/'
 
     # model entries
-    ocean_model = ADCIRCEntry(processors=11, verbose=True, DumpFields=False)
+    ocean_model = ADCIRCEntry(processors=11, Verbosity='max', DumpFields=False)
     atmospheric_mesh = AtmosphericMeshEntry('~/wind_atm_fin_ch_time_vec.nc')
     wave_mesh = WaveMeshEntry('~/ww3.Constant.20151214_sxy_ike_date.nc')
 
