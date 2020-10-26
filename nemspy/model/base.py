@@ -28,8 +28,10 @@ class ModelVerbosity(Enum):
     verbosity attribute within a NEMS / NUOPC configuration file
     """
 
-    MINIMUM = 'min'
-    MAXIMUM = 'max'
+    OFF = 'off'
+    LOW = 'low'
+    HIGH = 'high'
+    MAX = 'max'
 
 
 class RemapMethod(Enum):
@@ -61,10 +63,26 @@ class ConfigurationEntry(ABC):
     """
 
     entry_type: str = NotImplementedError
+    __attributes: {str: str} = NotImplementedError
 
     @abstractmethod
     def __str__(self) -> str:
         raise NotImplementedError
+
+    @property
+    def attributes(self) -> {str: str}:
+        attributes = {}
+        for attribute, value in self.__attributes.items():
+            if isinstance(value, Enum):
+                value = value.value
+            elif isinstance(value, bool):
+                value = f'{value}'.lower()
+            attributes[attribute] = value
+        return attributes
+
+    @attributes.setter
+    def attributes(self, attributes: {str: str}):
+        self.__attributes = attributes
 
 
 class SequenceEntry(ABC):
@@ -87,12 +105,7 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
     """
 
     def __init__(
-        self,
-        name: str,
-        model_type: ModelType,
-        processors: int,
-        verbose: bool = False,
-        **attributes,
+        self, name: str, model_type: ModelType, processors: int, **attributes,
     ):
         self.name = name
         self.model_type = model_type
@@ -105,10 +118,11 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
 
         self.entry_type = str(self.model_type.value)
 
-        self.attributes = {
-            'Verbosity': ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM,
-            **attributes,
-        }
+        if 'Verbosity' not in attributes:
+            attributes['Verbosity'] = ModelVerbosity.OFF
+
+        # http://www.earthsystemmodeling.org/esmf_releases/last_built/NUOPC_refdoc/node3.html#SECTION00033000000000000000
+        self.attributes = attributes
 
     @property
     def processors(self) -> int:
@@ -175,14 +189,6 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
         return str(self.model_type.value)
 
     def __str__(self) -> str:
-        attributes = {}
-        for attribute, value in self.attributes.items():
-            if isinstance(value, Enum):
-                value = value.value
-            elif isinstance(value, bool):
-                value = f'{value}'.lower()
-            attributes[attribute] = value
-
         return '\n'.join(
             [
                 f'{self.entry_type}_model:                      {self.name}',
@@ -190,7 +196,7 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
                 f'{self.entry_type}_attributes::',
                 indent(
                     '\n'.join(
-                        [f'{attribute} = {value}' for attribute, value in attributes.items()]
+                        [f'{attribute} = {value}' for attribute, value in self.attributes.items()]
                     ),
                     INDENTATION,
                 ),

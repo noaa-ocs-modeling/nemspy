@@ -10,7 +10,7 @@ from .configuration import (
     RunSequence,
     ensure_directory,
 )
-from .model.base import ModelEntry, ModelType, ModelVerbosity, RemapMethod
+from .model.base import ModelEntry, ModelType, RemapMethod
 
 
 class ModelingSystem:
@@ -19,12 +19,7 @@ class ModelingSystem:
     """
 
     def __init__(
-        self,
-        start_time: datetime,
-        duration: timedelta,
-        interval: timedelta,
-        verbose: bool = False,
-        **kwargs,
+        self, start_time: datetime, duration: timedelta, interval: timedelta, **models,
     ):
         """
         create a NEMS interface from the given interval and models
@@ -45,20 +40,23 @@ class ModelingSystem:
 
         model_types = [model_type.value.lower() for model_type in ModelType]
 
-        models = {}
-        for model_type, model in kwargs.items():
-            if model_type in model_types:
-                if isinstance(model, ModelEntry):
-                    if model.model_type.value.lower() == model_type:
-                        models[model_type.upper()] = model
+        parsed_models = {}
+        attributes = {}
+        for key, value in models.items():
+            if key.lower() in model_types:
+                key = key.lower()
+                if isinstance(value, ModelEntry):
+                    if value.model_type.value.lower() == key:
+                        parsed_models[key.upper()] = value
                     else:
-                        raise TypeError(f'"{model.name}" is not {model_type}')
+                        raise TypeError(f'"{value.name}" is not {key}')
                 else:
-                    raise TypeError(f'unsupported type {model.__class__}"')
+                    raise TypeError(f'unsupported type {value.__class__}"')
             else:
-                raise KeyError(f'"{model_type}" not in {model_types}')
+                attributes[key] = value
 
-        self.__sequence = RunSequence(interval, verbose, **models)
+        models = parsed_models
+        self.__sequence = RunSequence(interval, **models, **attributes)
 
     @property
     def interval(self) -> timedelta:
@@ -70,14 +68,12 @@ class ModelingSystem:
         self.__sequence.interval = interval
 
     @property
-    def verbose(self) -> bool:
-        return self.__sequence.verbosity is ModelVerbosity.MAXIMUM
+    def attributes(self):
+        return self.__sequence.attributes
 
-    @verbose.setter
-    def verbose(self, verbose: bool):
-        self.__sequence.verbosity = (
-            ModelVerbosity.MAXIMUM if verbose else ModelVerbosity.MINIMUM
-        )
+    @attributes.setter
+    def attributes(self, attributes: {str: str}):
+        self.__sequence.attributes = attributes
 
     @property
     def models(self) -> [ModelEntry]:

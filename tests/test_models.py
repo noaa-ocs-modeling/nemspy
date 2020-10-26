@@ -13,7 +13,7 @@ WAVE_MESH_FILENAME = REFERENCE_DIRECTORY / 'ww3.Constant.20151214_sxy_ike_date.n
 class TestModels(unittest.TestCase):
     def test_model(self):
         model = AtmosphericMeshEntry(
-            ATMOSPHERIC_MESH_FILENAME, verbose=False, test='value', test2=5
+            ATMOSPHERIC_MESH_FILENAME, Verbosity='off', test='value', test2=5,
         )
         model.start_processor = 0
 
@@ -21,7 +21,7 @@ class TestModels(unittest.TestCase):
             'ATM_model:                      atmesh\n'
             'ATM_petlist_bounds:             0 0\n'
             'ATM_attributes::\n'
-            '  Verbosity = min\n'
+            '  Verbosity = off\n'
             '  test = value\n'
             '  test2 = 5\n'
             '::',

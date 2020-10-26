@@ -8,6 +8,7 @@ import unittest
 
 from nemspy import ModelingSystem
 from nemspy.model.atmosphere import AtmosphericMeshEntry
+from nemspy.model.base import ModelVerbosity
 from nemspy.model.hydrology import NationalWaterModelEntry
 from nemspy.model.ice import IceMeshEntry
 from nemspy.model.ocean import ADCIRCEntry
@@ -48,14 +49,17 @@ class TestInterface(unittest.TestCase):
             nems['nonexistent']
 
         self.assertEqual(nems.interval, interval)
-        self.assertEqual(nems.verbose, False)
+        self.assertEqual(nems.attributes['Verbosity'], 'off')
 
         new_interval = timedelta(minutes=30)
         nems.interval = new_interval
-        nems.verbose = True
 
         self.assertEqual(nems.interval, new_interval)
-        self.assertEqual(nems.verbose, True)
+
+        nems.attributes = {'Verbosity': ModelVerbosity.MAX}
+        nems.attributes['Verbosity'] = ModelVerbosity.LOW
+
+        self.assertEqual(nems.attributes['Verbosity'], 'max')
 
     def test_connection(self):
         start_time = datetime(2020, 6, 1)
@@ -179,9 +183,9 @@ class TestInterface(unittest.TestCase):
         duration = timedelta(days=1)
         interval = timedelta(hours=1)
         atmospheric_mesh = AtmosphericMeshEntry(ATMOSPHERIC_MESH_FILENAME)
-        wave_mesh = WaveMeshEntry(WAVE_MESH_FILENAME)
+        wave_mesh = WaveMeshEntry(WAVE_MESH_FILENAME, Verbosity='low')
         ocean_model = ADCIRCEntry(11)
-        hydrological_model = NationalWaterModelEntry(769)
+        hydrological_model = NationalWaterModelEntry(769, Verbosity=ModelVerbosity.MAX)
 
         nems = ModelingSystem(
             start_time,
@@ -191,6 +195,7 @@ class TestInterface(unittest.TestCase):
             wav=wave_mesh,
             ocn=ocean_model,
             hyd=hydrological_model,
+            Verbosity='off',
         )
         nems.connect('ATM', 'OCN')
         nems.connect('WAV', 'OCN')

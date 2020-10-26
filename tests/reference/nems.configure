@@ -1,35 +1,35 @@
 # EARTH #
 EARTH_component_list: ATM WAV OCN HYD
 EARTH_attributes::
-  Verbosity = min
+  Verbosity = off
 ::
 
 # ATM #
 ATM_model:                      atmesh
 ATM_petlist_bounds:             0 0
 ATM_attributes::
-  Verbosity = min
+  Verbosity = off
 ::
 
 # WAV #
 WAV_model:                      ww3data
 WAV_petlist_bounds:             1 1
 WAV_attributes::
-  Verbosity = min
+  Verbosity = low
 ::
 
 # OCN #
 OCN_model:                      adcirc
 OCN_petlist_bounds:             2 12
 OCN_attributes::
-  Verbosity = min
+  Verbosity = off
 ::
 
 # HYD #
 HYD_model:                      nwm
 HYD_petlist_bounds:             13 781
 HYD_attributes::
-  Verbosity = min
+  Verbosity = max
 ::
 
 # Run Sequence #
