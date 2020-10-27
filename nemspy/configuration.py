@@ -235,11 +235,11 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
                 model.previous.next = None
             if model.next is not None:
                 model.next = None
+            model.start_processor = 0
         for model_index, model in enumerate(models):
-            next_model_index = model_index + 1
-            if next_model_index < len(models):
-                model.next = models[next_model_index]
-        models[0].start_processor = 0
+            previous_model_index = model_index - 1
+            if previous_model_index >= 0:
+                model.previous = models[previous_model_index]
 
     def __setitem__(self, model_type: ModelType, model: ModelEntry):
         assert model_type == model.model_type
