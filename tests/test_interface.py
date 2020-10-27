@@ -152,14 +152,12 @@ class TestInterface(unittest.TestCase):
             ocn=ocean_model,
         )
 
-        models = nems.models
-
-        self.assertEqual(0, models[0].start_processor)
-        self.assertEqual(0, models[0].end_processor)
-        self.assertEqual(1, models[1].start_processor)
-        self.assertEqual(1, models[1].end_processor)
-        self.assertEqual(2, models[2].start_processor)
-        self.assertEqual(12, models[2].end_processor)
+        self.assertEqual(0, atmospheric_mesh.start_processor)
+        self.assertEqual(0, atmospheric_mesh.end_processor)
+        self.assertEqual(1, wave_mesh.start_processor)
+        self.assertEqual(1, wave_mesh.end_processor)
+        self.assertEqual(2, ocean_model.start_processor)
+        self.assertEqual(12, ocean_model.end_processor)
 
         self.assertEqual(['ATM', 'WAV', 'OCN'], nems.sequence)
         with self.assertRaises(KeyError):
@@ -174,14 +172,35 @@ class TestInterface(unittest.TestCase):
 
         self.assertEqual(['OCN', 'ATM', 'WAV'], nems.sequence)
 
-        models = nems.models
+        self.assertEqual(0, ocean_model.start_processor)
+        self.assertEqual(10, ocean_model.end_processor)
+        self.assertEqual(11, atmospheric_mesh.start_processor)
+        self.assertEqual(11, atmospheric_mesh.end_processor)
+        self.assertEqual(12, wave_mesh.start_processor)
+        self.assertEqual(12, wave_mesh.end_processor)
 
-        self.assertEqual(0, models[0].start_processor)
-        self.assertEqual(10, models[0].end_processor)
-        self.assertEqual(11, models[1].start_processor)
-        self.assertEqual(11, models[1].end_processor)
-        self.assertEqual(12, models[2].start_processor)
-        self.assertEqual(12, models[2].end_processor)
+        nems.sequence = [
+            'ATM',
+            'WAV',
+            'OCN',
+        ]
+
+        nems.connect('ATM', 'OCN')
+        nems.connect('WAV', 'OCN')
+        nems.sequence = [
+            'ATM -> OCN',
+            'WAV -> OCN',
+            'ATM',
+            'WAV',
+            'OCN',
+        ]
+
+        self.assertEqual(0, atmospheric_mesh.start_processor)
+        self.assertEqual(0, atmospheric_mesh.end_processor)
+        self.assertEqual(1, wave_mesh.start_processor)
+        self.assertEqual(1, wave_mesh.end_processor)
+        self.assertEqual(2, ocean_model.start_processor)
+        self.assertEqual(12, ocean_model.end_processor)
 
     def test_configuration_files(self):
         start_time = datetime(2020, 6, 1)

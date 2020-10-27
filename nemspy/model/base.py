@@ -144,9 +144,8 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
         self.__start_processor = index
         current_model = self.next
         while current_model is not None:
-            if current_model.previous is None:
-                current_model.previous = self
-            current_model.__start_processor = current_model.previous.end_processor + 1
+            if current_model.previous is not None:
+                current_model.__start_processor = current_model.previous.end_processor + 1
             current_model = current_model.next
 
     @property
