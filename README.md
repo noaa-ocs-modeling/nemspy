@@ -3,7 +3,7 @@
 [![build](https://github.com/noaa-ocs-modeling/NEMSpy/workflows/build/badge.svg)](https://github.com/noaa-ocs-modeling/NEMSpy/actions?query=workflow%3Abuild)
 [![version](https://img.shields.io/pypi/v/nemspy)](https://pypi.org/project/nemspy)
 [![oitnb](https://sourceforge.net/p/oitnb/code/ci/default/tree/_doc/_static/oitnb.svg?format=raw)](https://sourceforge.net/p/oitnb/code)
-[![license](https://img.shields.io/badge/license-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![license](https://img.shields.io/github/license/noaa-ocs-modeling/nemspy)
 
 NEMSpy generates configuration files (`nems.configure`, `config.rc`, `model_configure`, `atm_namelist.rc`) 
 for coupled modeling applications run with a compiled NEMS binary (not included). 
