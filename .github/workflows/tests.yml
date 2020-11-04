@@ -26,7 +26,9 @@ jobs:
       - name: Update pip
         run: python -m pip install --upgrade pip
       - name: Install dependencies
-        run: pip install -e .[development]
+        run: |
+          pip install wheel
+          pip install -e .[development]
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
