@@ -89,7 +89,7 @@ def test_connection():
     assert nems.connections == ['WAV -> OCN   :remapMethod=redist']
 
 
-def test_mediation(self):
+def test_mediation():
     start_time = datetime(2020, 6, 1)
     duration = timedelta(days=1)
     interval = timedelta(hours=1)
