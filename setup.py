@@ -25,6 +25,5 @@ setup(
     packages=find_packages(),
     python_requires='>=3.6',
     setup_requires=['dunamai', 'setuptools>=41.2'],
-    extras_require={'development': ['coverage', 'flake8', 'nose', 'oitnb']},
-    test_suite='nose.collector',
+    extras_require={'testing': ['flake8', 'pytest', 'pytest-cov'], 'development': ['oitnb']},
 )
