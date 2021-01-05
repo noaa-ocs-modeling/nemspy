@@ -32,12 +32,7 @@ def test_interface():
     hydrological_model = NationalWaterModelEntry(769, Verbosity=ModelVerbosity.MAX)
 
     nems = ModelingSystem(
-        start_time,
-        duration,
-        interval,
-        atm=atmospheric_mesh,
-        wav=wave_mesh,
-        ocn=ocean_model,
+        start_time, duration, interval, atm=atmospheric_mesh, wav=wave_mesh, ocn=ocean_model,
     )
 
     assert nems['ATM'] is atmospheric_mesh
@@ -144,12 +139,7 @@ def test_sequence():
     ocean_model = ADCIRCEntry(11)
 
     nems = ModelingSystem(
-        start_time,
-        duration,
-        interval,
-        atm=atmospheric_mesh,
-        wav=wave_mesh,
-        ocn=ocean_model,
+        start_time, duration, interval, atm=atmospheric_mesh, wav=wave_mesh, ocn=ocean_model,
     )
 
     assert atmospheric_mesh.start_processor == 0

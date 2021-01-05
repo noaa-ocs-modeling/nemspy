@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 from datetime import datetime, timedelta
 
 from nemspy import ModelingSystem
@@ -16,7 +17,7 @@ if __name__ == '__main__':
     interval = timedelta(hours=1)
 
     # directory to which configuration files should be written
-    output_directory = '~/nems_configuration/'
+    output_directory = 'example_2_output'
 
     # model entries
     ocean_model = ADCIRCEntry(processors=11, Verbosity='max', DumpFields=False)

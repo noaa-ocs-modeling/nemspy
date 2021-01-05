@@ -131,5 +131,6 @@ ENS_SPS:                 .false.
 ```
 
 ### Related:
-- https://github.com/NOAA-EMC/NEMS
-- https://github.com/esmf-org/esmf
+- [NOAA-EMC/NEMS](https://github.com/NOAA-EMC/NEMS)
+- [esmf-org/esmf](https://github.com/esmf-org/esmf)
+- [noaa-ocs-modeling/ADC-WW3-NWM-NEMS](https://github.com/noaa-ocs-modeling/ADC-WW3-NWM-NEMS)
