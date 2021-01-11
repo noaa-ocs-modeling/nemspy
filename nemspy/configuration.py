@@ -26,8 +26,6 @@ from .utilities import get_logger
 
 LOGGER = get_logger('configuration')
 
-__version__ = Version.from_git().serialize()
-
 
 class Earth(ConfigurationEntry):
     """
@@ -308,7 +306,11 @@ class ConfigurationFile(ABC):
 
     @property
     def version_header(self) -> str:
-        return f'# `{self.name}` generated with NEMSpy {__version__}'
+        try:
+            version = Version.from_git().serialize()
+        except RuntimeError:
+            version = 'unknown'
+        return f'# `{self.name}` generated with NEMSpy {version}'
 
     def write(
         self, filename: PathLike, overwrite: bool = False, include_version: bool = False
