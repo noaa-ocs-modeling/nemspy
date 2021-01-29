@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     # instantiate model system with model entries
     nems = ModelingSystem(
-        start_time, duration, interval, ocn=ocean_model, atm=atmospheric_mesh, wav=wave_mesh,
+        start_time, start_time + duration, interval, ocn=ocean_model, atm=atmospheric_mesh, wav=wave_mesh,
     )
 
     # form connections between models

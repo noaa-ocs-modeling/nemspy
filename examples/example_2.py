@@ -29,7 +29,7 @@ if __name__ == '__main__':
     # instantiate model system with model entries
     nems = ModelingSystem(
         start_time,
-        duration,
+        start_time + duration,
         interval,
         ocn=ocean_model,
         hyd=hydrological_model,
