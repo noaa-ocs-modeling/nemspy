@@ -1,7 +1,9 @@
+from datetime import datetime
 import logging
 from os import PathLike
 from pathlib import Path
 import sys
+from typing import Union
 
 
 def repository_root(path: PathLike = None) -> str:
@@ -40,7 +42,6 @@ def get_logger(
             logger.setLevel(logging.DEBUG)
             if console_level != logging.NOTSET:
                 if console_level <= logging.INFO:
-
                     class LoggingOutputFilter(logging.Filter):
                         def filter(self, rec):
                             return rec.levelno in (logging.DEBUG, logging.INFO)
@@ -70,3 +71,14 @@ def get_logger(
         handler.setFormatter(log_formatter)
 
     return logger
+
+
+def parse_datetime(value: Union[int, float, str, datetime]):
+    if not isinstance(value, datetime):
+        if isinstance(value, int) or isinstance(value, float):
+            value = datetime.fromtimestamp(value)
+        elif isinstance(value, str):
+            value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
+        else:
+            raise TypeError(f'unable to convert value of type "{type(value)}" to datetime: {value}')
+    return value

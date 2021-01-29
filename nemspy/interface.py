@@ -11,6 +11,7 @@ from .configuration import (
     ensure_directory,
 )
 from .model.base import ModelEntry, ModelType, RemapMethod
+from .utilities import parse_datetime
 
 
 class ModelingSystem:
@@ -19,13 +20,13 @@ class ModelingSystem:
     """
 
     def __init__(
-        self, start_time: datetime, duration: timedelta, interval: timedelta, **models,
+        self, start_time: datetime, end_time: datetime, interval: timedelta, **models,
     ):
         """
         create a NEMS interface from the given interval and models
 
-        :param start_time: time at which to start
-        :param duration: total time to run models
+        :param start_time: start time within the modeled system
+        :param end_time: end time within the modeled system
         :param interval: time interval of top-level run sequence
         :param verbose: verbosity in NEMS configuration
         :param atm: atmospheric wind model
@@ -35,8 +36,8 @@ class ModelingSystem:
         :param med: model mediator
         """
 
-        self.start_time = start_time
-        self.duration = duration
+        self.__start_time = start_time
+        self.end_time = end_time
 
         model_types = [model_type.value.lower() for model_type in ModelType]
 
@@ -59,8 +60,39 @@ class ModelingSystem:
         self.__sequence = RunSequence(interval, **models, **attributes)
 
     @property
+    def start_time(self) -> datetime:
+        """ end time within modeled system """
+        return self.__start_time
+
+    @start_time.setter
+    def start_time(self, start_time: datetime):
+        start_time = parse_datetime(start_time)
+        self.__start_time = start_time
+        if self.start_time > self.end_time:
+            self.start_time = self.end_time
+            self.end_time = start_time
+
+    @property
+    def end_time(self) -> datetime:
+        """ end time within modeled system """
+        return self.__end_time
+
+    @end_time.setter
+    def end_time(self, end_time: datetime):
+        end_time = parse_datetime(end_time)
+        self.__end_time = end_time
+        if self.end_time < self.start_time:
+            self.end_time = self.start_time
+            self.start_time = end_time
+
+    @property
+    def duration(self) -> timedelta:
+        """ duration of run within modeled system """
+        return self.end_time - self.start_time
+
+    @property
     def interval(self) -> timedelta:
-        """ run sequence interval """
+        """ run sequence interval within the modeled system """
         return self.__sequence.interval
 
     @interval.setter
