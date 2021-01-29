@@ -1,30 +1,30 @@
 # NEMSpy
+
 [![tests](https://github.com/noaa-ocs-modeling/NEMSpy/workflows/tests/badge.svg)](https://github.com/noaa-ocs-modeling/NEMSpy/actions?query=workflow%3Atests)
 [![build](https://github.com/noaa-ocs-modeling/NEMSpy/workflows/build/badge.svg)](https://github.com/noaa-ocs-modeling/NEMSpy/actions?query=workflow%3Abuild)
 [![version](https://img.shields.io/pypi/v/nemspy)](https://pypi.org/project/nemspy)
 [![license](https://img.shields.io/github/license/noaa-ocs-modeling/nemspy)](https://creativecommons.org/share-your-work/public-domain/cc0)
 [![style](https://sourceforge.net/p/oitnb/code/ci/default/tree/_doc/_static/oitnb.svg?format=raw)](https://sourceforge.net/p/oitnb/code)
 
-NEMSpy generates configuration files (`nems.configure`, `config.rc`, `model_configure`, `atm_namelist.rc`) 
-for coupled modeling applications run with a compiled NEMS binary (not included). 
+NEMSpy generates configuration files (`nems.configure`, `config.rc`, `model_configure`, `atm_namelist.rc`)
+for coupled modeling applications run with a compiled NEMS binary (not included).
 
-NEMS implements the [National Unified Operational Prediction Capability (NUOPC)](https://www.earthsystemcog.org/projects/nuopc/), 
-and configuration files built for NEMS will also work for most NUOPC applications.
+NEMS implements
+the [National Unified Operational Prediction Capability (NUOPC)](https://www.earthsystemcog.org/projects/nuopc/), and
+configuration files built for NEMS will also work for most NUOPC applications.
 
 ### Usage:
+
 ```python
 from datetime import datetime, timedelta
 
 from nemspy import ModelingSystem
-from nemspy.model import (
-    ADCIRCEntry,
-    AtmosphericMeshEntry,
-    WaveMeshEntry,
-)
+from nemspy.model import ADCIRCEntry, AtmosphericMeshEntry, WaveMeshEntry
 
 # model run time
 start_time = datetime(2020, 6, 1)
 duration = timedelta(days=1)
+end_time = start_time + duration
 
 # returning interval of main run sequence
 interval = timedelta(hours=1)
@@ -33,13 +33,28 @@ interval = timedelta(hours=1)
 output_directory = '~/nems_configuration/'
 
 # model entries
-ocean_model = ADCIRCEntry(processors=11, Verbosity='max', DumpFields=False)
-atmospheric_mesh = AtmosphericMeshEntry('~/wind_atm_fin_ch_time_vec.nc')
-wave_mesh = WaveMeshEntry('~/ww3.Constant.20151214_sxy_ike_date.nc')
+ocean_model = ADCIRCEntry(
+    processors=11,
+    Verbosity='max',
+    DumpFields=False
+)
+atmospheric_mesh = AtmosphericMeshEntry(
+    filename='~/wind_atm_fin_ch_time_vec.nc',
+    processors=1
+)
+wave_mesh = WaveMeshEntry(
+    filename='~/ww3.Constant.20151214_sxy_ike_date.nc',
+    processors=1
+)
 
 # instantiate model system with model entries
 nems = ModelingSystem(
-    start_time, duration, interval, ocn=ocean_model, atm=atmospheric_mesh, wav=wave_mesh,
+    start_time=start_time,
+    end_time=end_time,
+    interval=interval,
+    ocn=ocean_model,
+    atm=atmospheric_mesh,
+    wav=wave_mesh,
 )
 
 # form connections between models
@@ -56,11 +71,17 @@ nems.sequence = [
 ]
 
 # write configuration files to the given directory
-nems.write(output_directory, overwrite=True, include_version=True)
+nems.write(
+    directory=output_directory,
+    overwrite=True,
+    include_version=True
+)
 ```
 
 ### Output:
+
 #### nems.configure
+
 ```fortran
 # `nems.configure` generated with NEMSpy 0.5.0
 # EARTH #
@@ -104,6 +125,7 @@ runSeq::
 ```
 
 #### model_configure
+
 ```fortran
 # `model_configure` generated with NEMSpy 0.5.0
 total_member:            1
@@ -122,6 +144,7 @@ ENS_SPS:                 .false.
 ```
 
 #### config.rc
+
 ```fortran
 # `config.rc` generated with NEMSpy 0.5.0
  atm_dir: ~
@@ -131,6 +154,7 @@ ENS_SPS:                 .false.
 ```
 
 ### Related:
+
 - [NOAA-EMC/NEMS](https://github.com/NOAA-EMC/NEMS)
 - [esmf-org/esmf](https://github.com/esmf-org/esmf)
 - [noaa-ocs-modeling/ADC-WW3-NWM-NEMS](https://github.com/noaa-ocs-modeling/ADC-WW3-NWM-NEMS)

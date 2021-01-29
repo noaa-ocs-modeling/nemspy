@@ -42,6 +42,7 @@ def get_logger(
             logger.setLevel(logging.DEBUG)
             if console_level != logging.NOTSET:
                 if console_level <= logging.INFO:
+
                     class LoggingOutputFilter(logging.Filter):
                         def filter(self, rec):
                             return rec.levelno in (logging.DEBUG, logging.INFO)
@@ -80,5 +81,7 @@ def parse_datetime(value: Union[int, float, str, datetime]):
         elif isinstance(value, str):
             value = datetime.strptime(value, '%Y-%m-%d %H:%M:%S')
         else:
-            raise TypeError(f'unable to convert value of type "{type(value)}" to datetime: {value}')
+            raise TypeError(
+                f'unable to convert value of type "{type(value)}" to datetime: {value}'
+            )
     return value

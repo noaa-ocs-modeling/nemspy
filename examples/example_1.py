@@ -12,21 +12,29 @@ if __name__ == '__main__':
     # model run time
     start_time = datetime(2020, 6, 1)
     duration = timedelta(days=1)
+    end_time = start_time + duration
 
     # returning interval of main run sequence
     interval = timedelta(hours=1)
 
     # directory to which configuration files should be written
-    output_directory = 'example_2_output'
+    output_directory = '~/nems_configuration/'
 
     # model entries
     ocean_model = ADCIRCEntry(processors=11, Verbosity='max', DumpFields=False)
-    atmospheric_mesh = AtmosphericMeshEntry('~/wind_atm_fin_ch_time_vec.nc')
-    wave_mesh = WaveMeshEntry('~/ww3.Constant.20151214_sxy_ike_date.nc')
+    atmospheric_mesh = AtmosphericMeshEntry(
+        filename='~/wind_atm_fin_ch_time_vec.nc', processors=1
+    )
+    wave_mesh = WaveMeshEntry(filename='~/ww3.Constant.20151214_sxy_ike_date.nc', processors=1)
 
     # instantiate model system with model entries
     nems = ModelingSystem(
-        start_time, start_time + duration, interval, ocn=ocean_model, atm=atmospheric_mesh, wav=wave_mesh,
+        start_time=start_time,
+        end_time=end_time,
+        interval=interval,
+        ocn=ocean_model,
+        atm=atmospheric_mesh,
+        wav=wave_mesh,
     )
 
     # form connections between models
@@ -43,4 +51,4 @@ if __name__ == '__main__':
     ]
 
     # write configuration files to the given directory
-    nems.write(output_directory, overwrite=True, include_version=True)
+    nems.write(directory=output_directory, overwrite=True, include_version=True)
