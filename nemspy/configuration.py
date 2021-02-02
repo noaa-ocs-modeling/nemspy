@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum
+import os
 from os import PathLike, makedirs
 from pathlib import Path
 import shutil
@@ -388,6 +389,9 @@ class ModelConfigurationFile(ConfigurationFile):
     ) -> Path:
         filename = super().write(filename, overwrite, include_version)
         symbolic_link_filename = filename.parent / 'atm_namelist.rc'
+
+        if symbolic_link_filename.exists():
+            os.remove(symbolic_link_filename)
 
         try:
             symbolic_link_filename.symlink_to(filename)
