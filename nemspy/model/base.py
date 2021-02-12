@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 from os import PathLike
-from pathlib import Path
+from pathlib import PurePosixPath
 from textwrap import indent
 
 from nemspy.utilities import get_logger
@@ -44,8 +44,8 @@ class RemapMethod(Enum):
 
 class ModelMeshEntry(ABC):
     def __init__(self, mesh_type: ModelType, filename: PathLike):
-        if not isinstance(filename, Path):
-            filename = Path(filename)
+        if not isinstance(filename, PurePosixPath):
+            filename = PurePosixPath(filename)
 
         self.mesh_type = mesh_type
         self.filename = filename
