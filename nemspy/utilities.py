@@ -1,7 +1,9 @@
 from datetime import datetime
 import logging
+import os
 from os import PathLike
 from pathlib import Path
+import shutil
 import sys
 from typing import Union
 
@@ -42,7 +44,6 @@ def get_logger(
             logger.setLevel(logging.DEBUG)
             if console_level != logging.NOTSET:
                 if console_level <= logging.INFO:
-
                     class LoggingOutputFilter(logging.Filter):
                         def filter(self, rec):
                             return rec.levelno in (logging.DEBUG, logging.INFO)
@@ -72,6 +73,25 @@ def get_logger(
         handler.setFormatter(log_formatter)
 
     return logger
+
+
+LOGGER = get_logger('utilities')
+
+
+def create_symlink(from_filename: PathLike, to_filename: PathLike, overwrite: bool = False):
+    if not isinstance(from_filename, Path):
+        from_filename = Path(from_filename)
+    if not isinstance(to_filename, Path):
+        to_filename = Path(to_filename)
+
+    if to_filename.exists() and overwrite:
+        os.remove(to_filename)
+
+    try:
+        to_filename.symlink_to(from_filename)
+    except Exception as error:
+        LOGGER.warning(f'could not create symbolic link: {error}')
+        shutil.copyfile(from_filename, to_filename)
 
 
 def parse_datetime(value: Union[int, float, str, datetime]):
