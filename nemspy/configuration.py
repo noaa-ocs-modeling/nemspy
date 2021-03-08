@@ -386,7 +386,7 @@ class ModelConfigurationFile(ConfigurationFile):
         self, filename: PathLike, overwrite: bool = False, include_version: bool = False
     ) -> Path:
         filename = super().write(filename, overwrite, include_version)
-        create_symlink(filename, filename.resolve().parent / 'atm_namelist.rc')
+        create_symlink(filename, filename.parent / 'atm_namelist.rc')
         return filename
 
     def __str__(self) -> str:
