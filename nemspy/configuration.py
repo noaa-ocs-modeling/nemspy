@@ -1,10 +1,8 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum
-import os
 from os import PathLike, makedirs
 from pathlib import Path
-import shutil
 from textwrap import indent
 from typing import Iterator, Tuple
 
@@ -23,7 +21,7 @@ from .model.base import (
     RemapMethod,
     SequenceEntry,
 )
-from .utilities import get_logger
+from .utilities import create_symlink, get_logger
 
 LOGGER = get_logger('configuration')
 
@@ -388,17 +386,7 @@ class ModelConfigurationFile(ConfigurationFile):
         self, filename: PathLike, overwrite: bool = False, include_version: bool = False
     ) -> Path:
         filename = super().write(filename, overwrite, include_version)
-        symbolic_link_filename = filename.parent / 'atm_namelist.rc'
-
-        if symbolic_link_filename.exists():
-            os.remove(symbolic_link_filename)
-
-        try:
-            symbolic_link_filename.symlink_to(filename)
-        except Exception as error:
-            LOGGER.warning(f'could not create symbolic link: {error}')
-            shutil.copyfile(filename, symbolic_link_filename)
-
+        create_symlink(filename, filename.parent / 'atm_namelist.rc')
         return filename
 
     def __str__(self) -> str:
