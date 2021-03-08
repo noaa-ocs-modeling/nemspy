@@ -320,16 +320,16 @@ class ConfigurationFile(ABC):
 
         output = f'{self}\n'
         if include_version:
-            output = f'{self.version_header}\n{output}'
+            output = f'{self.version_header}\n' \
+                     f'{output}'
 
         if filename.is_dir():
             filename = filename / self.name
             LOGGER.warning(f'creating new file "{filename}"')
 
         if filename.exists():
-            LOGGER.warning(
-                f'{"overwriting" if overwrite else "skipping"} existing file "{filename}"'
-            )
+            LOGGER.warning(f'{"overwriting" if overwrite else "skipping"} '
+                           f'existing file "{filename}"')
         if not filename.exists() or overwrite:
             with open(filename, 'w', newline='\n') as output_file:
                 output_file.write(output)
@@ -386,7 +386,7 @@ class ModelConfigurationFile(ConfigurationFile):
         self, filename: PathLike, overwrite: bool = False, include_version: bool = False
     ) -> Path:
         filename = super().write(filename, overwrite, include_version)
-        create_symlink(filename, filename.parent / 'atm_namelist.rc')
+        create_symlink(filename, filename.resolve().parent / 'atm_namelist.rc')
         return filename
 
     def __str__(self) -> str:
