@@ -1,12 +1,11 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
+from dunamai import Version
 from enum import Enum
 from os import PathLike, makedirs
 from pathlib import Path
 from textwrap import indent
 from typing import Iterator, Tuple
-
-from dunamai import Version
 
 from .model.base import (
     ConfigurationEntry,
@@ -383,10 +382,11 @@ class ModelConfigurationFile(ConfigurationFile):
         super().__init__(sequence)
 
     def write(
-        self, filename: PathLike, overwrite: bool = False, include_version: bool = False
+        self, filename: PathLike, overwrite: bool = False, include_version: bool = False, create_atm_namelist_rc: bool = True,
     ) -> Path:
         filename = super().write(filename, overwrite, include_version)
-        create_symlink(filename, filename.parent / 'atm_namelist.rc')
+        if create_atm_namelist_rc:
+            create_symlink(filename, filename.parent / 'atm_namelist.rc')
         return filename
 
     def __str__(self) -> str:
