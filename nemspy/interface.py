@@ -316,13 +316,15 @@ class ModelingSystem:
         for configuration_file in self.__configuration_files:
             if isinstance(configuration_file, ModelConfigurationFile):
                 kwargs = {'create_atm_namelist_rc': create_atm_namelist_rc}
-                filenames.append(directory / 'atm_namelist.rc')
+
             else:
                 kwargs = {}
             filename = configuration_file.write(
                 directory / configuration_file.name, overwrite, include_version, **kwargs
             )
             filenames.append(filename)
+        if create_atm_namelist_rc:
+            filenames.append(directory / 'atm_namelist.rc')
         return filenames
 
     def __getitem__(self, model_type: str) -> ModelEntry:
