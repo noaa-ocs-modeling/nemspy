@@ -8,7 +8,6 @@ from typing import Iterator, Tuple
 
 from dunamai import Version
 
-from . import LOGGER
 from .model.base import (
     ConfigurationEntry,
     ConnectionEntry,
@@ -22,7 +21,7 @@ from .model.base import (
     RemapMethod,
     SequenceEntry,
 )
-from .utilities import create_symlink
+from .utilities import LOGGER, create_symlink
 
 
 class Earth(ConfigurationEntry):

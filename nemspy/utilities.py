@@ -75,7 +75,7 @@ def get_logger(
     return logger
 
 
-from nemspy import LOGGER
+LOGGER = get_logger('nemspy')
 
 
 def create_symlink(source_filename: PathLike, symlink_filename: PathLike, relative: bool = False):
