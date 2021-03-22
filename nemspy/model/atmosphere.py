@@ -1,9 +1,6 @@
 from os import PathLike
 
 from .base import ModelEntry, ModelMeshEntry, ModelType
-from ..utilities import get_logger
-
-LOGGER = get_logger('model.atmos')
 
 
 class AtmosphericModelEntry(ModelEntry):

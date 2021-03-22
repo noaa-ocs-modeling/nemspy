@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
-from dunamai import Version
 from enum import Enum
 from os import PathLike, makedirs
 from pathlib import Path
 from textwrap import indent
 from typing import Iterator, Tuple
+
+from dunamai import Version
 
 from .model.base import (
     ConfigurationEntry,
@@ -20,9 +21,7 @@ from .model.base import (
     RemapMethod,
     SequenceEntry,
 )
-from .utilities import create_symlink, get_logger
-
-LOGGER = get_logger('configuration')
+from .utilities import LOGGER, create_symlink
 
 
 class Earth(ConfigurationEntry):

@@ -4,9 +4,6 @@ from os import PathLike
 from pathlib import PurePosixPath
 from textwrap import indent
 
-from nemspy.utilities import get_logger
-
-LOGGER = get_logger('model')
 INDENTATION = '  '
 
 
