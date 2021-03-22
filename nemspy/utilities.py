@@ -67,7 +67,7 @@ def get_logger(
         logger.addHandler(file_handler)
 
     if log_format is None:
-        log_format = '[%(asctime)s] %(name)-13s %(levelname)-8s: %(message)s'
+        log_format = '[%(asctime)s] %(name)-9s %(levelname)-8s: %(message)s'
     log_formatter = logging.Formatter(log_format)
     for handler in logger.handlers:
         handler.setFormatter(log_formatter)
@@ -75,7 +75,7 @@ def get_logger(
     return logger
 
 
-LOGGER = get_logger('utilities')
+from nemspy import LOGGER
 
 
 def create_symlink(source_filename: PathLike, symlink_filename: PathLike, relative: bool = False):

@@ -1,7 +1,4 @@
 from .base import ModelEntry, ModelType
-from ..utilities import get_logger
-
-LOGGER = get_logger('model.ocean')
 
 
 class OceanModelEntry(ModelEntry):
