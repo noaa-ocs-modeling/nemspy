@@ -249,48 +249,62 @@ class MediationFunctionEntry(SequenceEntry):
         return f'{self.__class__.__name__}({repr(self.name)}, {repr(self.mediator)})'
 
 
-class MediationEntry(ConnectionEntry):
+class MediationEntry(SequenceEntry):
     def __init__(
         self,
-        source: ModelEntry,
         mediator: MediatorEntry,
-        target: ModelEntry = None,
+        sources: [ModelEntry] = None,
         functions: [str] = None,
-        method: RemapMethod = None,
+        targets: [ModelEntry] = None,
+        method: RemapMethod = None
     ):
         if functions is None:
             functions = []
+
         self.mediator = mediator
         self.functions = [
             MediationFunctionEntry(mediation_function, self.mediator)
             for mediation_function in functions
         ]
-        super().__init__(source, target, method)
+
+        self.sources = sources
+        self.targets = targets
+        self.method = method
+
+    @property
+    def source_connections(self) -> [ConnectionEntry]:
+        source_connections = []
+        if self.sources is not None:
+            for index, source in enumerate(self.sources):
+                source_connections.append(ConnectionEntry(source, self.mediator, self.method))
+        return source_connections
+
+    @property
+    def target_connections(self) -> [ConnectionEntry]:
+        target_connections = []
+        if self.targets is not None:
+            for index, target in enumerate(self.targets):
+                target_connections.append(ConnectionEntry(self.mediator, target, self.method))
+        return target_connections
 
     @property
     def models(self) -> [ModelEntry]:
-        return [self.source, self.mediator, self.target]
+        return [
+            *(connection.source for connection in self.source_connections),
+            self.mediator,
+            *(connection.target for connection in self.target_connections)
+        ]
 
     @property
     def sequence_entry(self) -> str:
-        output = ''
-        if self.source is not None:
-            output += (
-                f'{self.source.entry_type} -> {self.mediator.entry_type}'.ljust(13)
-                + f':remapMethod={self.method.value}'
-            )
-            if len(self.functions) > 0:
-                output += '\n'
-        output += '\n'.join(
-            mediation_function.sequence_entry for mediation_function in self.functions
-        )
-        if self.target is not None:
-            output += (
-                '\n'
-                + f'{self.mediator.entry_type} -> {self.target.entry_type}'.ljust(13)
-                + f':remapMethod={self.method.value}'
-            )
-        return output
+        lines = []
+        lines.extend(source_connection.sequence_entry
+                     for source_connection in self.source_connections)
+        lines.extend(mediation_function.sequence_entry
+                     for mediation_function in self.functions)
+        lines.extend(target_connection.sequence_entry
+                     for target_connection in self.target_connections)
+        return '\n'.join(lines)
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({repr(self.source)}, {repr(self.target)}, {repr(self.mediator)}, {self.method.name})'
+        return f'{self.__class__.__name__}({repr(self.mediator)}, {repr(self.sources)}, {repr(self.functions)}, {repr(self.targets)}, {repr(self.method)})'

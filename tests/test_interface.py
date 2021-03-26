@@ -109,9 +109,9 @@ def test_mediation():
     )
 
     nems.connect('OCN', 'MED')
-    nems.mediate('ATM', 'ICE', functions=['MedPhase_prep_ice'])
-    nems.mediate('ICE', None, functions=['MedPhase_atm_ocn_flux', 'MedPhase_accum_fast'])
-    nems.mediate(None, 'OCN', functions=['MedPhase_prep_ocn'])
+    nems.mediate(sources=['ATM'], functions=['MedPhase_prep_ice'], targets=['ICE'])
+    nems.mediate(sources='ICE', functions=['MedPhase_atm_ocn_flux', 'MedPhase_accum_fast'], targets=None)
+    nems.mediate(sources=None, functions=['MedPhase_prep_ocn'], targets='OCN')
 
     nems.sequence = [
         'ATM',

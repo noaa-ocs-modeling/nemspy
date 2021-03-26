@@ -168,7 +168,8 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
 
     @property
     def connections(self) -> [ConnectionEntry]:
-        return [entry for entry in self.sequence if isinstance(entry, ConnectionEntry)]
+        return [entry for entry in self.sequence
+                if isinstance(entry, ConnectionEntry) or isinstance(entry, MediationEntry)]
 
     @property
     def mediator(self) -> MediatorEntry:
@@ -183,12 +184,12 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
 
     def mediate(
         self,
-        source: ModelType = None,
-        target: ModelType = None,
-        method: RemapMethod = None,
+        sources: [ModelType] = None,
         functions: [str] = None,
+        targets: [ModelType] = None,
+        method: RemapMethod = None,
         processors: int = None,
-        **attributes,
+        **attributes
     ):
         if 'name' not in attributes:
             attributes['name'] = 'mediator'
@@ -201,12 +202,12 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
             if self.mediator.processors < processors:
                 self.mediator.processors = processors
 
-        if source is not None:
-            source = self[source]
-        if target is not None:
-            target = self[target]
+        if sources is not None:
+            sources = [self[source] for source in sources]
+        if targets is not None:
+            targets = [self[target] for target in targets]
 
-        self.append(MediationEntry(source, self.mediator, target, functions, method))
+        self.append(MediationEntry(self.mediator, sources, functions, targets, method))
 
     @property
     def mediations(self) -> [MediationEntry]:

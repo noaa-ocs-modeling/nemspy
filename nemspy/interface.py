@@ -169,7 +169,7 @@ class ModelingSystem:
                 raise KeyError(f'"{entry}" not in {self.sequence}')
         self.__sequence.sequence = sequence_entries
 
-    def connect(self, source: str, target: str, method: str = None):
+    def connect(self, source: str, target: str = None, method: str = None):
         """
         couple two models with an information exchange pathway
 
@@ -178,28 +178,13 @@ class ModelingSystem:
         :param method: remapping method
         """
 
-        if (
-            source is not None
-            and not isinstance(source, str)
-            and not isinstance(source, ModelType)
-        ):
-            raise ValueError(
-                f'source model type must be {str} or {ModelType}, not {type(source)}'
-            )
-        if (
-            target is not None
-            and not isinstance(target, str)
-            and not isinstance(target, ModelType)
-        ):
-            raise ValueError(
-                f'target model type must be {str} or {ModelType}, not {type(target)}'
-            )
-        if (
-            method is not None
-            and not isinstance(method, str)
-            and not isinstance(method, RemapMethod)
-        ):
-            raise ValueError(f'method type must be {str} or {RemapMethod}, not {type(method)}')
+        if source is not None and target is None:
+            if '->' in source:
+                source, target = [entry.strip() for entry in source.split('->', 1)]
+                if ':' in target:
+                    target, parsed_method = [entry.strip() for entry in target.split(':', 1)]
+                    if method is not None:
+                        method = parsed_method
 
         model_types = [model_type.value.upper() for model_type in ModelType]
         remap_methods = [remap.value.lower() for remap in RemapMethod]
@@ -225,64 +210,68 @@ class ModelingSystem:
 
     def mediate(
         self,
-        source: str = None,
-        target: str = None,
-        method: RemapMethod = None,
+        sources: [str] = None,
         functions: [str] = None,
+        targets: [str] = None,
+        method: RemapMethod = None,
         processors: int = None,
-        **attributes,
+        **attributes
     ):
         """
         create a mediation between one or two models and a mediator,
         with an arbitrary number of mediation functions
 
-        :param source: model providing information
-        :param target: model receiving information
-        :param method: remapping method
+        :param sources: model providing information
         :param functions: mediator functions
+        :param targets: model receiving information
+        :param method: remapping method
         :param processors: number of processors to assign to mediation
         """
 
-        if (
-            source is not None
-            and not isinstance(source, str)
-            and not isinstance(source, ModelType)
-        ):
-            raise ValueError(
-                f'source model type must be {str} or {ModelType}, not {type(source)}'
-            )
-        if (
-            target is not None
-            and not isinstance(target, str)
-            and not isinstance(target, ModelType)
-        ):
-            raise ValueError(
-                f'target model type must be {str} or {ModelType}, not {type(target)}'
-            )
-        if (
-            method is not None
-            and not isinstance(method, str)
-            and not isinstance(method, RemapMethod)
-        ):
-            raise ValueError(f'method type must be {str} or {RemapMethod}, not {type(method)}')
+        if sources is not None and targets is None and '->' in sources:
+            split_sources = sources.splitlines()
+            sources = []
+            targets = []
+            functions = []
+            for index, line in enumerate(split_sources):
+                if '->' in line:
+                    line_source, line_target = [entry.strip() for entry in line.split('->', 1)]
+                    if ':' in line_target:
+                        line_target, line_method = [entry.strip() for entry in line_target.split(':', 1)]
+                        if line_method != '' and method is None:
+                            method = line_method
+                    if line_source != 'MED':
+                        sources.append(line_source)
+                    if line_target != 'MED':
+                        targets.append(line_target)
+                elif 'MED' in line:
+                    functions.append(line.split('MED ', 1)[-1])
 
         model_types = [model_type.value.upper() for model_type in ModelType]
         remap_methods = [remap.value.lower() for remap in RemapMethod]
 
-        if isinstance(source, str):
-            if source.upper() not in model_types:
-                raise KeyError(f'"{source}" not in {model_types}')
-            source = ModelType(source.upper())
-        if isinstance(target, str):
-            if target.upper() not in model_types:
-                raise KeyError(f'"{target}" not in {model_types}')
-            target = ModelType(target.upper())
-        if isinstance(method, str):
+        if sources is not None:
+            if isinstance(sources, str):
+                sources = [sources]
+            for index, source in enumerate(sources):
+                if isinstance(source, str):
+                    if source.upper() not in model_types:
+                        raise KeyError(f'"{source}" not in {model_types}')
+                    sources[index] = ModelType(source.upper())
+        if targets is not None:
+            if isinstance(targets, str):
+                targets = [targets]
+            for index, target in enumerate(targets):
+                if isinstance(target, str):
+                    if target.upper() not in model_types:
+                        raise KeyError(f'"{target}" not in {model_types}')
+                    targets[index] = ModelType(target.upper())
+        if method is not None and isinstance(method, str):
             if method.lower() not in remap_methods:
                 raise KeyError(f'"{method}" not in {remap_methods}')
             method = RemapMethod(method.lower())
 
-        self.__sequence.mediate(source, target, method, functions, processors, **attributes)
+        self.__sequence.mediate(sources, functions, targets, method, processors, **attributes)
 
     @property
     def __configuration_files(self) -> [ConfigurationFile]:
