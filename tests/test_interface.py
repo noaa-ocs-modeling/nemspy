@@ -78,6 +78,7 @@ def test_connection():
         start_time, start_time + duration, interval, ocn=ocean_model, wav=wave_mesh
     )
     nems.connect('WAV', 'OCN')
+    nems.connect('OCN -> WAV')
 
     with pytest.raises(KeyError):
         nems.connect('ATM', 'OCN')
@@ -88,7 +89,10 @@ def test_connection():
     with pytest.raises(KeyError):
         nems.connect('WAV', 'OCN', 'nonexistent')
 
-    assert nems.connections == ['WAV -> OCN   :remapMethod=redist']
+    assert nems.connections == [
+        'WAV -> OCN   :remapMethod=redist',
+        'OCN -> WAV   :remapMethod=redist',
+    ]
 
 
 def test_mediation():
@@ -110,7 +114,9 @@ def test_mediation():
 
     nems.connect('OCN', 'MED')
     nems.mediate(sources=['ATM'], functions=['MedPhase_prep_ice'], targets=['ICE'])
-    nems.mediate(sources='ICE', functions=['MedPhase_atm_ocn_flux', 'MedPhase_accum_fast'], targets=None)
+    nems.mediate(
+        sources='ICE', functions=['MedPhase_atm_ocn_flux', 'MedPhase_accum_fast'], targets=None
+    )
     nems.mediate(sources=None, functions=['MedPhase_prep_ocn'], targets='OCN')
 
     nems.sequence = [
