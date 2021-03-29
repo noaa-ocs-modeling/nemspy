@@ -10,7 +10,8 @@ from .configuration import (
     RunSequence,
     ensure_directory,
 )
-from .model.base import ModelEntry, ModelType, RemapMethod
+from .model.base import ConnectionEntry, MediationEntry, ModelEntry, \
+    ModelType, RemapMethod
 from .utilities import parse_datetime
 
 
@@ -178,27 +179,29 @@ class ModelingSystem:
         :param method: remapping method
         """
 
-        if source is not None and target is None:
-            if '->' in source:
-                source, target = [entry.strip() for entry in source.split('->', 1)]
-                if ':' in target:
-                    target, parsed_method = [entry.strip() for entry in target.split(':', 1)]
-                    if method is not None:
-                        method = parsed_method
+        if target is None:
+            try:
+                temp = ConnectionEntry.from_string(source)
+                source = temp.source.name
+                target = temp.target.name
+            except:
+                pass
 
         model_types = [model_type.value.upper() for model_type in ModelType]
         remap_methods = [remap.value.lower() for remap in RemapMethod]
 
         if source.upper() not in model_types:
             raise KeyError(f'"{source}" not in {model_types}')
-        if target.upper() not in model_types:
-            raise KeyError(f'"{target}" not in {model_types}')
+        if target is not None:
+            if target.upper() not in model_types:
+                raise KeyError(f'"{target}" not in {model_types}')
+            target = ModelType(target.upper())
         if method is not None:
             if method.lower() not in remap_methods:
                 raise KeyError(f'"{method}" not in {remap_methods}')
             method = RemapMethod(method.lower())
 
-        self.__sequence.connect(ModelType(source.upper()), ModelType(target.upper()), method)
+        self.__sequence.connect(ModelType(source.upper()), target, method)
 
     @property
     def connections(self) -> [str]:
@@ -215,7 +218,7 @@ class ModelingSystem:
         targets: [str] = None,
         method: RemapMethod = None,
         processors: int = None,
-        **attributes
+        **attributes,
     ):
         """
         create a mediation between one or two models and a mediator,
@@ -228,24 +231,11 @@ class ModelingSystem:
         :param processors: number of processors to assign to mediation
         """
 
-        if sources is not None and targets is None and '->' in sources:
-            split_sources = sources.splitlines()
-            sources = []
-            targets = []
-            functions = []
-            for index, line in enumerate(split_sources):
-                if '->' in line:
-                    line_source, line_target = [entry.strip() for entry in line.split('->', 1)]
-                    if ':' in line_target:
-                        line_target, line_method = [entry.strip() for entry in line_target.split(':', 1)]
-                        if line_method != '' and method is None:
-                            method = line_method
-                    if line_source != 'MED':
-                        sources.append(line_source)
-                    if line_target != 'MED':
-                        targets.append(line_target)
-                elif 'MED' in line:
-                    functions.append(line.split('MED ', 1)[-1])
+        if targets is None:
+            try:
+                targets = MediationEntry.from_string(sources).targets
+            except:
+                pass
 
         model_types = [model_type.value.upper() for model_type in ModelType]
         remap_methods = [remap.value.lower() for remap in RemapMethod]
@@ -289,7 +279,11 @@ class ModelingSystem:
         }
 
     def write(
-        self, directory: PathLike, overwrite: bool = False, include_version: bool = False, create_atm_namelist_rc: bool = True
+        self,
+        directory: PathLike,
+        overwrite: bool = False,
+        include_version: bool = False,
+        create_atm_namelist_rc: bool = True,
     ) -> [Path]:
         """
         write NEMS / NUOPC configuration to the given directory

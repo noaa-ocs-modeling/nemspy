@@ -154,7 +154,7 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
             self.__sequence = sequence
 
     def connect(
-        self, source: ModelType, target: ModelType, method: RemapMethod = None, **kwargs
+        self, source: ModelType, target: ModelType, method: RemapMethod = None, **kwargs,
     ):
         if method is None:
             method = RemapMethod.REDISTRIBUTE
@@ -168,8 +168,11 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
 
     @property
     def connections(self) -> [ConnectionEntry]:
-        return [entry for entry in self.sequence
-                if isinstance(entry, ConnectionEntry) or isinstance(entry, MediationEntry)]
+        return [
+            entry
+            for entry in self.sequence
+            if isinstance(entry, ConnectionEntry) or isinstance(entry, MediationEntry)
+        ]
 
     @property
     def mediator(self) -> MediatorEntry:
@@ -189,8 +192,9 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
         targets: [ModelType] = None,
         method: RemapMethod = None,
         processors: int = None,
-        **attributes
+        **attributes,
     ):
+
         if 'name' not in attributes:
             attributes['name'] = 'mediator'
         if self.mediator is None:
@@ -319,16 +323,16 @@ class ConfigurationFile(ABC):
 
         output = f'{self}\n'
         if include_version:
-            output = f'{self.version_header}\n' \
-                     f'{output}'
+            output = f'{self.version_header}\n' f'{output}'
 
         if filename.is_dir():
             filename = filename / self.name
             LOGGER.warning(f'creating new file "{filename}"')
 
         if filename.exists():
-            LOGGER.warning(f'{"overwriting" if overwrite else "skipping"} '
-                           f'existing file "{filename}"')
+            LOGGER.warning(
+                f'{"overwriting" if overwrite else "skipping"} ' f'existing file "{filename}"'
+            )
         if not filename.exists() or overwrite:
             with open(filename, 'w', newline='\n') as output_file:
                 output_file.write(output)
@@ -382,7 +386,11 @@ class ModelConfigurationFile(ConfigurationFile):
         super().__init__(sequence)
 
     def write(
-        self, filename: PathLike, overwrite: bool = False, include_version: bool = False, create_atm_namelist_rc: bool = True,
+        self,
+        filename: PathLike,
+        overwrite: bool = False,
+        include_version: bool = False,
+        create_atm_namelist_rc: bool = True,
     ) -> Path:
         filename = super().write(filename, overwrite, include_version)
         if create_atm_namelist_rc:

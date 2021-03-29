@@ -113,13 +113,15 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
         self.__previous = None
         self.__next = None
 
-        self.entry_type = str(self.model_type.value)
-
         if 'Verbosity' not in attributes:
             attributes['Verbosity'] = ModelVerbosity.OFF
 
         # http://www.earthsystemmodeling.org/esmf_releases/last_built/NUOPC_refdoc/node3.html#SECTION00033000000000000000
         self.attributes = attributes
+
+    @property
+    def entry_type(self) -> str:
+        return str(self.model_type.value) if self.model_type is not None else None
 
     @property
     def processors(self) -> int:
@@ -207,6 +209,25 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
         kwargs = [f'{key}={value}' for key, value in self.attributes.items()]
         return f'{self.__class__.__name__}({repr(self.name)}, {self.model_type}, {self.processors}, {", ".join(kwargs)})'
 
+    @classmethod
+    def from_string(cls, string: str) -> 'ModelEntry':
+        lines = string.splitlines()
+
+        model_type, name = (value.strip() for value in lines[0].split('_model:'))
+        start_processor, end_processor = lines[1].split('_petlist_bounds:')[-1].strip().split()
+
+        attributes = {}
+        for attribute_line in lines[3:-1]:
+            key, value = (value.strip() for value in attribute_line.split('='))
+            attributes[key] = value
+
+        return cls(
+            name=name,
+            model_type=ModelType(model_type),
+            processors=end_processor + 1 - start_processor,
+            **attributes,
+        )
+
 
 class ConnectionEntry(SequenceEntry):
     def __init__(self, source: ModelEntry, target: ModelEntry, method: RemapMethod = None):
@@ -228,6 +249,26 @@ class ConnectionEntry(SequenceEntry):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({repr(self.source)}, {repr(self.target)}, {repr(self.method)})'
 
+    @classmethod
+    def from_string(cls, string: str) -> 'ConnectionEntry':
+        method = None
+        try:
+            source, target = (entry.strip() for entry in string.split('->', 1))
+            if ':' in target:
+                target, parsed_method = (entry.strip() for entry in target.split(':', 1))
+                if method is None and parsed_method != '':
+                    method = RemapMethod(parsed_method)
+        except:
+            raise ValueError(
+                'connection entry should be formatted as `SRC -> TRG   :remapMethod=METHOD`'
+            )
+
+        return cls(
+            source=ModelEntry(source, None, None),
+            target=ModelEntry(target, None, None),
+            method=method,
+        )
+
 
 class MediatorEntry(ModelEntry):
     def __init__(self, name: str, processors: int = None, **attributes):
@@ -248,6 +289,11 @@ class MediationFunctionEntry(SequenceEntry):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({repr(self.name)}, {repr(self.mediator)})'
 
+    @classmethod
+    def from_string(cls, string: str) -> 'MediationFunctionEntry':
+        mediator_name, function_name = string.split()
+        return cls(name=function_name, mediator=MediatorEntry(mediator_name), )
+
 
 class MediationEntry(SequenceEntry):
     def __init__(
@@ -256,7 +302,7 @@ class MediationEntry(SequenceEntry):
         sources: [ModelEntry] = None,
         functions: [str] = None,
         targets: [ModelEntry] = None,
-        method: RemapMethod = None
+        method: RemapMethod = None,
     ):
         if functions is None:
             functions = []
@@ -292,19 +338,63 @@ class MediationEntry(SequenceEntry):
         return [
             *(connection.source for connection in self.source_connections),
             self.mediator,
-            *(connection.target for connection in self.target_connections)
+            *(connection.target for connection in self.target_connections),
         ]
 
     @property
     def sequence_entry(self) -> str:
-        lines = []
-        lines.extend(source_connection.sequence_entry
-                     for source_connection in self.source_connections)
-        lines.extend(mediation_function.sequence_entry
-                     for mediation_function in self.functions)
-        lines.extend(target_connection.sequence_entry
-                     for target_connection in self.target_connections)
-        return '\n'.join(lines)
+        return '\n'.join(
+            (
+                *(
+                    source_connection.sequence_entry
+                    for source_connection in self.source_connections
+                ),
+                *(mediation_function.sequence_entry for mediation_function in self.functions),
+                *(
+                    target_connection.sequence_entry
+                    for target_connection in self.target_connections
+                ),
+            )
+        )
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({repr(self.mediator)}, {repr(self.sources)}, {repr(self.functions)}, {repr(self.targets)}, {repr(self.method)})'
+
+    @classmethod
+    def from_string(cls, string: str) -> 'MediationEntry':
+        lines = string.strip().splitlines()
+
+        connections = []
+        functions = []
+        for line in lines:
+            if len(line) > 0:
+                if '->' in line:
+                    connections.append(ConnectionEntry.from_string(line))
+                else:
+                    functions.append(MediationFunctionEntry.from_string(line))
+
+        mediator = None
+        function_names = []
+        for function in functions:
+            if mediator is None:
+                mediator = function.mediator
+            function_names.append(function.name)
+
+        method = None
+        sources = []
+        targets = []
+        for connection in connections:
+            if method is None:
+                method = connection.method
+            if connection.source.name != mediator.name:
+                sources.append(connection.source)
+            if connection.target.name != mediator.name:
+                targets.append(connection.target)
+
+        return cls(
+            mediator=mediator,
+            sources=sources,
+            functions=function_names,
+            targets=targets,
+            method=method,
+        )
