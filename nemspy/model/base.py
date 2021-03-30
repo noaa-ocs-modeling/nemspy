@@ -104,6 +104,9 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
     def __init__(
         self, name: str, model_type: ModelType, processors: int, **attributes,
     ):
+        if model_type is None:
+            model_type = ModelType(name)
+
         self.name = name
         self.model_type = model_type
         self.__processors = processors
@@ -214,7 +217,9 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
         lines = string.splitlines()
 
         model_type, name = (value.strip() for value in lines[0].split('_model:'))
-        start_processor, end_processor = lines[1].split('_petlist_bounds:')[-1].strip().split()
+        start_processor, end_processor = [
+            int(entry) for entry in lines[1].split('_petlist_bounds:')[-1].strip().split()
+        ]
 
         attributes = {}
         for attribute_line in lines[3:-1]:
@@ -256,11 +261,11 @@ class ConnectionEntry(SequenceEntry):
             source, target = (entry.strip() for entry in string.split('->', 1))
             if ':' in target:
                 target, parsed_method = (entry.strip() for entry in target.split(':', 1))
-                if method is None and parsed_method != '':
-                    method = RemapMethod(parsed_method)
+                if method is None and len(parsed_method) > 0:
+                    method = RemapMethod(parsed_method.split('=')[-1])
         except:
             raise ValueError(
-                'connection entry should be formatted as `SRC -> TRG   :remapMethod=METHOD`'
+                'connection entry should be formatted as `SRC -> DST   :remapMethod=METHOD`'
             )
 
         return cls(
@@ -369,7 +374,15 @@ class MediationEntry(SequenceEntry):
         for line in lines:
             if len(line) > 0:
                 if '->' in line:
-                    connections.append(ConnectionEntry.from_string(line))
+                    parts = [entry.strip() for entry in line.split('->')]
+                    method = None
+                    if ':' in parts[-1]:
+                        parts[-1], method = [entry.strip() for entry in parts[-1].split(':remapMethod=')]
+                    if len(parts) == 2:
+                        connection = ConnectionEntry.from_string(line)
+                    else:
+                        connection = ConnectionEntry(source=parts[0], target=parts[-1], method=method)
+                    connections.append(connection)
                 else:
                     functions.append(MediationFunctionEntry.from_string(line))
 

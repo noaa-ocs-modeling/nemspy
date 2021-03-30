@@ -113,20 +113,23 @@ def test_mediation():
     )
 
     nems.connect('OCN', 'MED')
-    nems.mediate(sources=['ATM'], functions=['MedPhase_prep_ice'], targets=['ICE'])
     nems.mediate(
-        sources='ICE', functions=['MedPhase_atm_ocn_flux', 'MedPhase_accum_fast'], targets=None
+        sources=['ATM'],
+        functions=['MedPhase_prep_ice'],
+        targets='ICE',
     )
-    nems.mediate(sources=None, functions=['MedPhase_prep_ocn'], targets='OCN')
+    nems.mediate(
+        sources='ICE',
+        functions=['MedPhase_atm_ocn_flux', 'MedPhase_accum_fast', 'MedPhase_prep_ocn'],
+        targets='OCN',
+    )
 
     nems.sequence = [
         'ATM',
         'ATM -> MED -> ICE',
         'ICE',
-        'ICE -> MED',
-        'MED -> OCN',
+        'ICE -> MED -> OCN',
         'OCN',
-        'OCN -> MED',
     ]
 
     with pytest.raises(KeyError):
@@ -142,9 +145,9 @@ def test_mediation():
         'MED -> ICE   :remapMethod=redist',
         'ICE -> MED   :remapMethod=redist\n'
         'MED MedPhase_atm_ocn_flux\n'
-        'MED MedPhase_accum_fast',
-        'MED MedPhase_prep_ocn\n' 'MED -> OCN   :remapMethod=redist',
-        'OCN -> MED   :remapMethod=redist',
+        'MED MedPhase_accum_fast\n'
+        'MED MedPhase_prep_ocn\n'
+        'MED -> OCN   :remapMethod=redist',
     ]
 
 
