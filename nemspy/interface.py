@@ -114,14 +114,14 @@ class ModelingSystem:
         return self.__sequence.models
 
     @property
-    def sequence(self) -> [str]:
-        """ model execution order """
-        return [entry.sequence_entry for entry in self.__sequence.sequence]
-
-    @property
     def processors(self) -> int:
         """ number of PETs / processors / tasks """
         return self.__sequence.processors
+
+    @property
+    def sequence(self) -> [str]:
+        """ model execution order """
+        return [entry.sequence_entry for entry in self.__sequence.sequence]
 
     @sequence.setter
     def sequence(self, sequence: [str]):
@@ -133,26 +133,28 @@ class ModelingSystem:
             elif '->' in entry:
                 models = [model.strip() for model in entry.split('->')]
                 if len(models) == 2:
-                    source, destination = models
+                    connection = ConnectionEntry.from_string(entry)
+                    source = connection.source.model_type.value
+                    destination = connection.target.model_type.value
+                    del connection
+
                     for connection in self.__sequence.connections:
-                        if len(connection.models) == 3 and None in connection.models:
-                            connection_source, connection_destination = [
-                                model.model_type.value.upper()
-                                for model in connection.models
-                                if model is not None
-                            ]
-                        elif len(connection.models) == 2:
-                            connection_source, connection_destination = [
-                                model.model_type.value.upper() for model in connection.models
-                            ]
-                        else:
-                            continue
-                        if (
-                            source == connection_source
-                            and destination == connection_destination
-                        ):
-                            sequence_entries.append(connection)
-                            break
+                        if isinstance(connection, ConnectionEntry):
+                            if (
+                                connection.source.model_type.value == source
+                                and connection.target.model_type.value == destination
+                            ):
+                                sequence_entries.append(connection)
+                                break
+                        elif isinstance(connection, MediationEntry):
+                            if (connection.sources is None and source is None) or \
+                                (connection.sources is not None and
+                                 source in [source.model_type.value for source in connection.sources]):
+                                if (connection.targets is None and destination is None) or \
+                                    (connection.targets is not None and
+                                     destination in [target.model_type.value for target in connection.targets]):
+                                    sequence_entries.append(connection)
+                                    break
                     else:
                         raise KeyError(f'"{entry}" not in {self.connections}')
                 elif len(models) == 3:
@@ -181,9 +183,10 @@ class ModelingSystem:
 
         if target is None:
             try:
-                temp = ConnectionEntry.from_string(source)
-                source = temp.source.name
-                target = temp.target.name
+                connection = ConnectionEntry.from_string(source)
+                source = connection.source.name
+                target = connection.target.name
+                del connection
             except:
                 pass
 
