@@ -1,6 +1,7 @@
 # NEMSpy
 
 [![tests](https://github.com/noaa-ocs-modeling/NEMSpy/workflows/tests/badge.svg)](https://github.com/noaa-ocs-modeling/NEMSpy/actions?query=workflow%3Atests)
+[![codecov](https://codecov.io/gh/noaa-ocs-modeling/nemspy/branch/master/graph/badge.svg?token=uyeRvhmBtD)](https://codecov.io/gh/noaa-ocs-modeling/nemspy)
 [![build](https://github.com/noaa-ocs-modeling/NEMSpy/workflows/build/badge.svg)](https://github.com/noaa-ocs-modeling/NEMSpy/actions?query=workflow%3Abuild)
 [![version](https://img.shields.io/pypi/v/nemspy)](https://pypi.org/project/nemspy)
 [![license](https://img.shields.io/github/license/noaa-ocs-modeling/nemspy)](https://creativecommons.org/share-your-work/public-domain/cc0)
