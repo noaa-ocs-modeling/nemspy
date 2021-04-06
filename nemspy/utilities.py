@@ -8,7 +8,7 @@ import sys
 from typing import Union
 
 
-def repository_root(path: PathLike = None) -> str:
+def repository_root(path: PathLike = None) -> Path:
     if path is None:
         path = __file__
     if not isinstance(path, Path):
@@ -44,7 +44,6 @@ def get_logger(
             logger.setLevel(logging.DEBUG)
             if console_level != logging.NOTSET:
                 if console_level <= logging.INFO:
-
                     class LoggingOutputFilter(logging.Filter):
                         def filter(self, rec):
                             return rec.levelno in (logging.DEBUG, logging.INFO)
@@ -90,15 +89,20 @@ def create_symlink(
     if symlink_filename.is_symlink():
         LOGGER.debug(f'removing symlink {symlink_filename}')
         os.remove(symlink_filename)
-
-    symlink_filename = symlink_filename.parent.resolve() / symlink_filename.name
-    source_filename = source_filename.resolve()
+    symlink_filename = symlink_filename.parent.absolute().resolve() / symlink_filename.name
 
     starting_directory = None
     if relative:
-        starting_directory = Path(os.getcwd())
-        os.chdir(source_filename.parent)
-        source_filename = source_filename.relative_to(symlink_filename.parent)
+        starting_directory = Path().cwd().resolve()
+        os.chdir(symlink_filename.parent)
+        if source_filename.is_absolute():
+            try:
+                source_filename = source_filename.relative_to(symlink_filename.parent)
+            except ValueError as error:
+                LOGGER.warning(error)
+                os.chdir(starting_directory)
+    else:
+        source_filename = source_filename.absolute()
 
     try:
         symlink_filename.symlink_to(source_filename)
