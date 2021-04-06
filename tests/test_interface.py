@@ -8,12 +8,8 @@ import tempfile
 import pytest
 
 from nemspy import ModelingSystem
-from nemspy.model.atmosphere import AtmosphericMeshEntry
-from nemspy.model.base import ModelVerbosity
-from nemspy.model.hydrology import NationalWaterModelEntry
-from nemspy.model.ice import IceMeshEntry
-from nemspy.model.ocean import ADCIRCEntry
-from nemspy.model.waves import WaveMeshEntry
+from nemspy.model import ADCIRCEntry, AtmosphericMeshEntry, \
+    IceMeshEntry, ModelVerbosity, NationalWaterModelEntry, WaveMeshEntry
 from nemspy.utilities import repository_root
 
 REFERENCE_DIRECTORY = repository_root() / 'tests/reference'

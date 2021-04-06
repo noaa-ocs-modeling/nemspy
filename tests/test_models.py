@@ -1,8 +1,7 @@
 import unittest
 
-from nemspy.model.atmosphere import AtmosphericMeshEntry
-from nemspy.model.ocean import ADCIRCEntry
-from nemspy.model.waves import WaveMeshEntry
+from nemspy.model import ADCIRCEntry, AtmosphericMeshEntry, \
+    WaveMeshEntry
 from nemspy.utilities import repository_root
 
 REFERENCE_DIRECTORY = repository_root() / 'tests/reference'
