@@ -26,5 +26,5 @@ setup(
     python_requires='>=3.6',
     setup_requires=['dunamai', 'setuptools>=41.2'],
     install_requires=['dunamai'],
-    extras_require={'testing': ['flake8', 'pytest', 'pytest-cov'], 'development': ['oitnb']},
+    extras_require={'testing': ['flake8', 'pytest', 'pytest-cov', 'pytest-xdist'], 'development': ['oitnb']},
 )
