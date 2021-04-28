@@ -21,7 +21,7 @@ class AtmosphericMeshEntry(AtmosphericModelEntry, ModelMeshEntry):
 
     name = 'atmesh'
 
-    def __init__(self, filename: PathLike, processors: int = None, **kwargs):
+    def __init__(self, filename: PathLike = None, processors: int = None, **kwargs):
         if processors is None:
             processors = 1
         AtmosphericModelEntry.__init__(self, processors, **kwargs)

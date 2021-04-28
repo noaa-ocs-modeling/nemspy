@@ -21,7 +21,7 @@ class IceMeshEntry(IceModelEntry, ModelMeshEntry):
 
     name = 'icemesh'
 
-    def __init__(self, filename: PathLike, processors: int = None, **kwargs):
+    def __init__(self, filename: PathLike = None, processors: int = None, **kwargs):
         if processors is None:
             processors = 1
         # Uses ww3data as name but the implementation is model agnostic

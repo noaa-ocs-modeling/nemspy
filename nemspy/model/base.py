@@ -40,7 +40,7 @@ class RemapMethod(Enum):
 
 
 class ModelMeshEntry(ABC):
-    def __init__(self, mesh_type: ModelType, filename: PathLike):
+    def __init__(self, mesh_type: ModelType, filename: PathLike = None):
         if not isinstance(filename, PurePosixPath):
             filename = PurePosixPath(filename)
 
@@ -48,9 +48,16 @@ class ModelMeshEntry(ABC):
         self.filename = filename
 
     def __str__(self) -> str:
+        if self.filename is not None:
+            directory = self.filename.parent
+            name = self.filename.name
+        else:
+            directory = ''
+            name = ''
+
         return (
-            f' {self.mesh_type.value.lower()}_dir: {self.filename.parent}\n'
-            f' {self.mesh_type.value.lower()}_nam: {self.filename.name}'
+            f' {self.mesh_type.value.lower()}_dir: {directory}\n'
+            f' {self.mesh_type.value.lower()}_nam: {name}'
         )
 
 
@@ -225,6 +232,10 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
         for attribute_line in lines[3:-1]:
             key, value = (value.strip() for value in attribute_line.split('='))
             attributes[key] = value
+
+        if issubclass(cls, ModelMeshEntry):
+            if 'filename' not in kwargs:
+                kwargs['filename'] = None
 
         return cls(
             processors=end_processor + 1 - start_processor,
