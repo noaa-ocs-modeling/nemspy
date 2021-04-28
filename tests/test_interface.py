@@ -9,7 +9,8 @@ import pytest
 
 from nemspy import ModelingSystem
 from nemspy.model import ADCIRCEntry, AtmosphericMeshEntry, \
-    IceMeshEntry, ModelVerbosity, NationalWaterModelEntry, WaveMeshEntry
+    IceMeshEntry, NationalWaterModelEntry, WaveWatch3MeshEntry
+from nemspy.model.base import ModelVerbosity
 from nemspy.utilities import repository_root
 
 REFERENCE_DIRECTORY = repository_root() / 'tests/reference'
@@ -23,7 +24,7 @@ def test_interface():
     duration = timedelta(days=1)
     interval = timedelta(hours=1)
     atmospheric_mesh = AtmosphericMeshEntry(ATMOSPHERIC_MESH_FILENAME)
-    wave_mesh = WaveMeshEntry(WAVE_MESH_FILENAME)
+    wave_mesh = WaveWatch3MeshEntry(WAVE_MESH_FILENAME)
     ocean_model = ADCIRCEntry(11)
     hydrological_model = NationalWaterModelEntry(769, Verbosity=ModelVerbosity.MAX)
 
@@ -68,7 +69,7 @@ def test_connection():
     duration = timedelta(days=1)
     interval = timedelta(hours=1)
     ocean_model = ADCIRCEntry(11)
-    wave_mesh = WaveMeshEntry(WAVE_MESH_FILENAME)
+    wave_mesh = WaveWatch3MeshEntry(WAVE_MESH_FILENAME)
 
     nems = ModelingSystem(
         start_time, start_time + duration, interval, ocn=ocean_model, wav=wave_mesh
@@ -152,7 +153,7 @@ def test_sequence():
     duration = timedelta(days=1)
     interval = timedelta(hours=1)
     atmospheric_mesh = AtmosphericMeshEntry(ATMOSPHERIC_MESH_FILENAME)
-    wave_mesh = WaveMeshEntry(WAVE_MESH_FILENAME)
+    wave_mesh = WaveWatch3MeshEntry(WAVE_MESH_FILENAME)
     ocean_model = ADCIRCEntry(11)
 
     nems = ModelingSystem(
@@ -220,7 +221,7 @@ def test_configuration_files():
     duration = timedelta(days=1)
     interval = timedelta(hours=1)
     atmospheric_mesh = AtmosphericMeshEntry(ATMOSPHERIC_MESH_FILENAME)
-    wave_mesh = WaveMeshEntry(WAVE_MESH_FILENAME, Verbosity='low')
+    wave_mesh = WaveWatch3MeshEntry(WAVE_MESH_FILENAME, Verbosity='low')
     ocean_model = ADCIRCEntry(11)
     hydrological_model = NationalWaterModelEntry(769, Verbosity=ModelVerbosity.MAX)
 

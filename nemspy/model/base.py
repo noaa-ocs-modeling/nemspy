@@ -101,14 +101,10 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
     abstract implementation of a generic model
     """
 
-    def __init__(
-        self, name: str, model_type: ModelType, processors: int, **attributes,
-    ):
-        if model_type is None:
-            model_type = ModelType(name)
+    model_type: ModelType
+    name: str
 
-        self.name = name
-        self.model_type = model_type
+    def __init__(self, processors: int, **attributes):
         self.__processors = processors
 
         self.__start_processor = None
@@ -213,10 +209,14 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
         return f'{self.__class__.__name__}({repr(self.name)}, {self.model_type}, {self.processors}, {", ".join(kwargs)})'
 
     @classmethod
-    def from_string(cls, string: str) -> 'ModelEntry':
+    def from_string(cls, string: str, **kwargs) -> 'ModelEntry':
         lines = string.splitlines()
 
         model_type, name = (value.strip() for value in lines[0].split('_model:'))
+
+        assert ModelType(model_type) == cls.model_type
+        assert name == cls.name
+
         start_processor, end_processor = [
             int(entry) for entry in lines[1].split('_petlist_bounds:')[-1].strip().split()
         ]
@@ -227,10 +227,9 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
             attributes[key] = value
 
         return cls(
-            name=name,
-            model_type=ModelType(model_type),
             processors=end_processor + 1 - start_processor,
             **attributes,
+            **kwargs,
         )
 
 
@@ -268,18 +267,29 @@ class ConnectionEntry(SequenceEntry):
                 'connection entry should be formatted as `SRC -> DST   :remapMethod=METHOD`'
             )
 
+        source_model = ModelEntry(None)
+        target_model = ModelEntry(None)
+
+        source_model.name = source
+        source_model.model_type = ModelType(source)
+        target_model.name = target
+        target_model.model_type = ModelType(target)
+
         return cls(
-            source=ModelEntry(source, None, None),
-            target=ModelEntry(target, None, None),
+            source=source_model,
+            target=target_model,
             method=method,
         )
 
 
 class MediatorEntry(ModelEntry):
-    def __init__(self, name: str, processors: int = None, **attributes):
+    model_type = ModelType.MEDIATOR
+    name = 'implicit'
+
+    def __init__(self, processors: int = None, **attributes):
         if processors is None:
             processors = 1
-        super().__init__(name, ModelType.MEDIATOR, processors, **attributes)
+        super().__init__(processors, **attributes)
 
 
 class MediationFunctionEntry(SequenceEntry):

@@ -6,8 +6,10 @@ class OceanModelEntry(ModelEntry):
     abstract implementation of a generic oceanic model
     """
 
-    def __init__(self, name: str, processors: int, **kwargs):
-        super().__init__(name, ModelType.OCEAN, processors, **kwargs)
+    model_type = ModelType.OCEAN
+
+    def __init__(self, processors: int, **kwargs):
+        super().__init__(processors, **kwargs)
 
 
 class ADCIRCEntry(OceanModelEntry):
@@ -16,8 +18,10 @@ class ADCIRCEntry(OceanModelEntry):
     http://adcirc.org
     """
 
+    name = 'adcirc'
+
     def __init__(self, processors: int, **kwargs):
-        super().__init__('adcirc', processors, **kwargs)
+        super().__init__(processors, **kwargs)
 
 
 class SCHISMEntry(OceanModelEntry):
@@ -26,6 +30,8 @@ class SCHISMEntry(OceanModelEntry):
     http://ccrm.vims.edu/schismweb/
     """
 
+    name = 'schism'
+
     def __init__(self, processors: int, **kwargs):
-        super().__init__('schism', processors, **kwargs)
+        super().__init__(processors, **kwargs)
         raise NotImplementedError(f'unsupported model "{self.__class__.__name__}"')

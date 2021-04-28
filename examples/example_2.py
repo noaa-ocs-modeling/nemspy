@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from nemspy import ModelingSystem
 from nemspy.model import ADCIRCEntry, AtmosphericMeshEntry, \
-    NationalWaterModelEntry, WaveMeshEntry
+    NationalWaterModelEntry, WaveWatch3MeshEntry
 
 if __name__ == '__main__':
     # model run time
@@ -20,7 +20,7 @@ if __name__ == '__main__':
     ocean_model = ADCIRCEntry(processors=11, verbose=True, DumpFields=False)
     hydrological_model = NationalWaterModelEntry(processors=769, DebugFlag=0)
     atmospheric_mesh = AtmosphericMeshEntry('~/wind_atm_fin_ch_time_vec.nc')
-    wave_mesh = WaveMeshEntry('~/ww3.Constant.20151214_sxy_ike_date.nc')
+    wave_mesh = WaveWatch3MeshEntry('~/ww3.Constant.20151214_sxy_ike_date.nc')
 
     # instantiate model system with model entries
     nems = ModelingSystem(

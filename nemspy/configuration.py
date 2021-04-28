@@ -159,7 +159,7 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
         if method is None:
             method = RemapMethod.REDISTRIBUTE
         if ModelType.MEDIATOR in [source, target] and self.mediator is None:
-            self.mediator = MediatorEntry('implicit', **kwargs)
+            self.mediator = MediatorEntry(**kwargs)
         if source not in self.__models:
             raise KeyError(f'no {source.name} model in sequence')
         if target not in self.__models:

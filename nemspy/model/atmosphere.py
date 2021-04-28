@@ -8,8 +8,10 @@ class AtmosphericModelEntry(ModelEntry):
     abstract implementation of a generic atmospheric model
     """
 
-    def __init__(self, name: str, processors: int, **kwargs):
-        super().__init__(name, ModelType.ATMOSPHERIC, processors, **kwargs)
+    model_type = ModelType.ATMOSPHERIC
+
+    def __init__(self, processors: int, **kwargs):
+        super().__init__(processors, **kwargs)
 
 
 class AtmosphericMeshEntry(AtmosphericModelEntry, ModelMeshEntry):
@@ -17,10 +19,12 @@ class AtmosphericMeshEntry(AtmosphericModelEntry, ModelMeshEntry):
     Atmospheric Mesh (ATMesh) reference
     """
 
+    name = 'atmesh'
+
     def __init__(self, filename: PathLike, processors: int = None, **kwargs):
         if processors is None:
             processors = 1
-        AtmosphericModelEntry.__init__(self, 'atmesh', processors, **kwargs)
+        AtmosphericModelEntry.__init__(self, processors, **kwargs)
         ModelMeshEntry.__init__(self, self.model_type, filename)
 
 
@@ -30,5 +34,7 @@ class HWRFEntry(AtmosphericModelEntry):
     https://en.wikipedia.org/wiki/Hurricane_Weather_Research_and_Forecasting_Model
     """
 
+    name = 'hwrf'
+
     def __init__(self, processors: int, **kwargs):
-        super().__init__('hwrf', processors, **kwargs)
+        super().__init__(processors, **kwargs)

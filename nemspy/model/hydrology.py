@@ -6,8 +6,10 @@ class HydrologicalModelEntry(ModelEntry):
     abstract implementation of a generic hydrological model
     """
 
-    def __init__(self, name: str, processors: int, **kwargs):
-        super().__init__(name, ModelType.HYDROLOGICAL, processors, **kwargs)
+    model_type = ModelType.HYDROLOGICAL
+
+    def __init__(self, processors: int, **kwargs):
+        super().__init__(processors, **kwargs)
 
 
 class NationalWaterModelEntry(HydrologicalModelEntry):
@@ -16,5 +18,7 @@ class NationalWaterModelEntry(HydrologicalModelEntry):
     https://water.noaa.gov/about/nwm
     """
 
+    name = 'nwm'
+
     def __init__(self, processors: int, **kwargs):
-        super().__init__('nwm', processors, **kwargs)
+        super().__init__(processors, **kwargs)

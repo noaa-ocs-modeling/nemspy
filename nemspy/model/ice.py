@@ -8,8 +8,10 @@ class IceModelEntry(ModelEntry):
     abstract implementation of a generic ice model
     """
 
-    def __init__(self, name: str, processors: int, **kwargs):
-        super().__init__(name, ModelType.ICE, processors, **kwargs)
+    model_type = ModelType.ICE
+
+    def __init__(self, processors: int, **kwargs):
+        super().__init__(processors, **kwargs)
 
 
 class IceMeshEntry(IceModelEntry, ModelMeshEntry):
@@ -17,9 +19,11 @@ class IceMeshEntry(IceModelEntry, ModelMeshEntry):
     Ice model mesh reference
     """
 
+    name = 'icemesh'
+
     def __init__(self, filename: PathLike, processors: int = None, **kwargs):
         if processors is None:
             processors = 1
         # Uses ww3data as name but the implementation is model agnostic
-        IceModelEntry.__init__(self, 'icemesh', processors, **kwargs)
+        IceModelEntry.__init__(self, processors, **kwargs)
         ModelMeshEntry.__init__(self, self.model_type, filename)

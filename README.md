@@ -20,7 +20,7 @@ configuration files built for NEMS will also work for most NUOPC applications.
 from datetime import datetime, timedelta
 
 from nemspy import ModelingSystem
-from nemspy.model import ADCIRCEntry, AtmosphericMeshEntry, WaveMeshEntry
+from nemspy.model import ADCIRCEntry, AtmosphericMeshEntry, WaveWatch3MeshEntry
 
 # model run time
 start_time = datetime(2020, 6, 1)
@@ -43,7 +43,7 @@ atmospheric_mesh = AtmosphericMeshEntry(
     filename='~/wind_atm_fin_ch_time_vec.nc',
     processors=1
 )
-wave_mesh = WaveMeshEntry(
+wave_mesh = WaveWatch3MeshEntry(
     filename='~/ww3.Constant.20151214_sxy_ike_date.nc',
     processors=1
 )
