@@ -41,7 +41,7 @@ class RemapMethod(Enum):
 
 class ModelMeshEntry(ABC):
     def __init__(self, mesh_type: ModelType, filename: PathLike = None):
-        if not isinstance(filename, PurePosixPath):
+        if filename is not None and not isinstance(filename, PurePosixPath):
             filename = PurePosixPath(filename)
 
         self.mesh_type = mesh_type
@@ -219,10 +219,13 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
     def from_string(cls, string: str, **kwargs) -> 'ModelEntry':
         lines = string.splitlines()
 
-        model_type, name = (value.strip() for value in lines[0].split('_model:'))
+        parsed_model_type, parsed_name = (value.strip() for value in lines[0].split('_model:'))
+        parsed_model_type = ModelType(parsed_model_type)
 
-        assert ModelType(model_type) == cls.model_type
-        assert name == cls.name
+        if hasattr(cls, 'model_type'):
+            assert parsed_model_type == cls.model_type
+        if hasattr(cls, 'name'):
+            assert parsed_name == cls.name
 
         start_processor, end_processor = [
             int(entry) for entry in lines[1].split('_petlist_bounds:')[-1].strip().split()
@@ -233,15 +236,18 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
             key, value = (value.strip() for value in attribute_line.split('='))
             attributes[key] = value
 
-        if issubclass(cls, ModelMeshEntry):
-            if 'filename' not in kwargs:
-                kwargs['filename'] = None
-
-        return cls(
+        instance = cls(
             processors=end_processor + 1 - start_processor,
             **attributes,
             **kwargs,
         )
+
+        if not hasattr(cls, 'model_type'):
+            instance.model_type = parsed_model_type
+        if not hasattr(cls, 'name'):
+            instance.name = parsed_name
+
+        return instance
 
 
 class ConnectionEntry(SequenceEntry):
