@@ -236,11 +236,7 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
             key, value = (value.strip() for value in attribute_line.split('='))
             attributes[key] = value
 
-        instance = cls(
-            processors=end_processor + 1 - start_processor,
-            **attributes,
-            **kwargs,
-        )
+        instance = cls(processors=end_processor + 1 - start_processor, **attributes, **kwargs,)
 
         if not hasattr(cls, 'model_type'):
             instance.model_type = parsed_model_type
@@ -292,11 +288,7 @@ class ConnectionEntry(SequenceEntry):
         target_model.name = target
         target_model.model_type = ModelType(target)
 
-        return cls(
-            source=source_model,
-            target=target_model,
-            method=method,
-        )
+        return cls(source=source_model, target=target_model, method=method,)
 
 
 class MediatorEntry(ModelEntry):
@@ -324,7 +316,7 @@ class MediationFunctionEntry(SequenceEntry):
     @classmethod
     def from_string(cls, string: str) -> 'MediationFunctionEntry':
         mediator_name, function_name = string.split()
-        return cls(name=function_name, mediator=MediatorEntry(mediator_name), )
+        return cls(name=function_name, mediator=MediatorEntry(mediator_name),)
 
 
 class MediationEntry(SequenceEntry):
@@ -404,11 +396,15 @@ class MediationEntry(SequenceEntry):
                     parts = [entry.strip() for entry in line.split('->')]
                     method = None
                     if ':' in parts[-1]:
-                        parts[-1], method = [entry.strip() for entry in parts[-1].split(':remapMethod=')]
+                        parts[-1], method = [
+                            entry.strip() for entry in parts[-1].split(':remapMethod=')
+                        ]
                     if len(parts) == 2:
                         connection = ConnectionEntry.from_string(line)
                     else:
-                        connection = ConnectionEntry(source=parts[0], target=parts[-1], method=method)
+                        connection = ConnectionEntry(
+                            source=parts[0], target=parts[-1], method=method
+                        )
                     connections.append(connection)
                 else:
                     functions.append(MediationFunctionEntry.from_string(line))

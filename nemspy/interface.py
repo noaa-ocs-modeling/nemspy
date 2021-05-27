@@ -4,14 +4,13 @@ from pathlib import Path
 
 from .configuration import (
     ConfigurationFile,
+    ensure_directory,
     MeshFile,
     ModelConfigurationFile,
     NEMSConfigurationFile,
     RunSequence,
-    ensure_directory,
 )
-from .model.base import ConnectionEntry, MediationEntry, ModelEntry, \
-    ModelType, RemapMethod
+from .model.base import ConnectionEntry, MediationEntry, ModelEntry, ModelType, RemapMethod
 from .utilities import parse_datetime
 
 
@@ -147,12 +146,19 @@ class ModelingSystem:
                                 sequence_entries.append(connection)
                                 break
                         elif isinstance(connection, MediationEntry):
-                            if (connection.sources is None and source is None) or \
-                                (connection.sources is not None and
-                                 source in [source.model_type.value for source in connection.sources]):
-                                if (connection.targets is None and destination is None) or \
-                                    (connection.targets is not None and
-                                     destination in [target.model_type.value for target in connection.targets]):
+                            if (connection.sources is None and source is None) or (
+                                connection.sources is not None
+                                and source
+                                in [source.model_type.value for source in connection.sources]
+                            ):
+                                if (connection.targets is None and destination is None) or (
+                                    connection.targets is not None
+                                    and destination
+                                    in [
+                                        target.model_type.value
+                                        for target in connection.targets
+                                    ]
+                                ):
                                     sequence_entries.append(connection)
                                     break
                     else:
