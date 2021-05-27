@@ -2,8 +2,12 @@
 from datetime import datetime, timedelta
 
 from nemspy import ModelingSystem
-from nemspy.model import ADCIRCEntry, AtmosphericMeshEntry, \
-    NationalWaterModelEntry, WaveWatch3MeshEntry
+from nemspy.model import (
+    ADCIRCEntry,
+    AtmosphericMeshEntry,
+    NationalWaterModelEntry,
+    WaveWatch3MeshEntry,
+)
 
 if __name__ == '__main__':
     # model run time

@@ -12,13 +12,15 @@ def test_model():
     )
     model.start_processor = 0
 
-    assert str(model) == 'ATM_model:                      atmesh\n' \
-                         'ATM_petlist_bounds:             0 0\n' \
-                         'ATM_attributes::\n' \
-                         '  Verbosity = off\n' \
-                         '  test = value\n' \
-                         '  test2 = 5\n' \
-                         '::'
+    assert (
+        str(model) == 'ATM_model:                      atmesh\n'
+        'ATM_petlist_bounds:             0 0\n'
+        'ATM_attributes::\n'
+        '  Verbosity = off\n'
+        '  test = value\n'
+        '  test2 = 5\n'
+        '::'
+    )
 
 
 def test_processors():
@@ -58,12 +60,12 @@ def test_processors():
 
 def test_from_string():
     model = AtmosphericMeshEntry.from_string(
-        'ATM_model:                      atmesh\n' \
-        'ATM_petlist_bounds:             0 0\n' \
-        'ATM_attributes::\n' \
-        '  Verbosity = off\n' \
-        '  test = value\n' \
-        '  test2 = 5\n' \
+        'ATM_model:                      atmesh\n'
+        'ATM_petlist_bounds:             0 0\n'
+        'ATM_attributes::\n'
+        '  Verbosity = off\n'
+        '  test = value\n'
+        '  test2 = 5\n'
         '::',
         filename='wind.nc',
     )

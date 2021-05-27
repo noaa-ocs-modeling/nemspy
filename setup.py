@@ -5,8 +5,8 @@ from setuptools import config, find_packages, setup
 try:
     from dunamai import Version
 except ImportError:
-    import sys
     import subprocess
+    import sys
 
     subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'dunamai'])
     from dunamai import Version
@@ -26,5 +26,8 @@ setup(
     python_requires='>=3.6',
     setup_requires=['dunamai', 'setuptools>=41.2'],
     install_requires=['dunamai'],
-    extras_require={'testing': ['pytest', 'pytest-cov', 'pytest-xdist'], 'development': ['flake8', 'isort', 'oitnb']},
+    extras_require={
+        'testing': ['pytest', 'pytest-cov', 'pytest-xdist'],
+        'development': ['flake8', 'isort', 'oitnb'],
+    },
 )

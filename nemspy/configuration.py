@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum
-from os import PathLike, makedirs
+from os import makedirs, PathLike
 from pathlib import Path
 from textwrap import indent
 from typing import Iterator, Tuple
@@ -21,7 +21,7 @@ from .model.base import (
     RemapMethod,
     SequenceEntry,
 )
-from .utilities import LOGGER, create_symlink
+from .utilities import create_symlink, LOGGER
 
 
 class Earth(ConfigurationEntry):

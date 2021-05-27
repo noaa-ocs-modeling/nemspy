@@ -8,8 +8,13 @@ import tempfile
 import pytest
 
 from nemspy import ModelingSystem
-from nemspy.model import ADCIRCEntry, AtmosphericMeshEntry, \
-    IceMeshEntry, NationalWaterModelEntry, WaveWatch3MeshEntry
+from nemspy.model import (
+    ADCIRCEntry,
+    AtmosphericMeshEntry,
+    IceMeshEntry,
+    NationalWaterModelEntry,
+    WaveWatch3MeshEntry,
+)
 from nemspy.model.base import ModelVerbosity
 from nemspy.utilities import repository_root
 
@@ -111,9 +116,7 @@ def test_mediation():
 
     nems.connect('OCN', 'MED')
     nems.mediate(
-        sources=['ATM'],
-        functions=['MedPhase_prep_ice'],
-        targets='ICE',
+        sources=['ATM'], functions=['MedPhase_prep_ice'], targets='ICE',
     )
     nems.mediate(
         sources='ICE',
