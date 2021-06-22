@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from enum import Enum
 from os import PathLike
 from pathlib import PurePosixPath
 from textwrap import indent
+
+from enum import Enum
 
 INDENTATION = '  '
 
@@ -49,7 +50,7 @@ class ModelMeshEntry(ABC):
 
     def __str__(self) -> str:
         if self.filename is not None:
-            directory = self.filename.parent
+            directory = self.filename.parent.as_posix()
             name = self.filename.name
         else:
             directory = ''
