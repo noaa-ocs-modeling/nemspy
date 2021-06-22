@@ -1,15 +1,25 @@
 #!/usr/bin/env python
 
+import logging
+
 from setuptools import config, find_packages, setup
 
 try:
-    from dunamai import Version
-except ImportError:
-    import subprocess
-    import sys
+    try:
+        from dunamai import Version
+    except ImportError:
+        import subprocess
+        import sys
 
-    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'dunamai'])
-    from dunamai import Version
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'dunamai'])
+        from dunamai import Version
+
+    version = Version.from_any_vcs().serialize()
+except RuntimeError as error:
+    logging.exception(error)
+    version = '0.0.0'
+
+logging.info(f'using version {version}')
 
 metadata = config.read_configuration('setup.cfg')['metadata']
 
