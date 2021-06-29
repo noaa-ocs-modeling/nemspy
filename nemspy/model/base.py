@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
+from enum import Enum
 from os import PathLike
 from pathlib import PurePosixPath
 from textwrap import indent
-
-from enum import Enum
 
 INDENTATION = '  '
 
