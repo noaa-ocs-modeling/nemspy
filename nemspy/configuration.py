@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum
-from os import makedirs, PathLike
+from os import PathLike, makedirs
 from pathlib import Path
 from textwrap import indent
 from typing import Iterator, Tuple
@@ -21,7 +21,7 @@ from .model.base import (
     RemapMethod,
     SequenceEntry,
 )
-from .utilities import create_symlink, LOGGER
+from .utilities import LOGGER, create_symlink
 
 
 class Earth(ConfigurationEntry):
@@ -394,7 +394,7 @@ class ModelConfigurationFile(ConfigurationFile):
     ) -> Path:
         filename = super().write(filename, overwrite, include_version)
         if create_atm_namelist_rc:
-            create_symlink(filename, filename.parent / 'atm_namelist.rc')
+            create_symlink(filename, filename.parent / 'atm_namelist.rc', relative=True)
         return filename
 
     def __str__(self) -> str:
