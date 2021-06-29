@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum
-from os import PathLike, makedirs
+from os import makedirs, PathLike
 from pathlib import Path
 from textwrap import indent
 from typing import Iterator, Tuple
@@ -21,7 +21,7 @@ from .model.base import (
     RemapMethod,
     SequenceEntry,
 )
-from .utilities import LOGGER, create_symlink
+from .utilities import create_symlink, LOGGER
 
 
 class Earth(ConfigurationEntry):
@@ -380,20 +380,23 @@ class MeshFile(ConfigurationFile):
 class ModelConfigurationFile(ConfigurationFile):
     name = 'model_configure'
 
-    def __init__(self, start_time: datetime, duration: timedelta, sequence: RunSequence):
+    def __init__(
+        self,
+        start_time: datetime,
+        duration: timedelta,
+        sequence: RunSequence,
+        create_atm_namelist_rc: bool = True,
+    ):
         self.start_time = start_time
         self.duration = duration
+        self.create_atm_namelist_rc = create_atm_namelist_rc
         super().__init__(sequence)
 
     def write(
-        self,
-        filename: PathLike,
-        overwrite: bool = False,
-        include_version: bool = False,
-        create_atm_namelist_rc: bool = True,
+        self, filename: PathLike, overwrite: bool = False, include_version: bool = False,
     ) -> Path:
         filename = super().write(filename, overwrite, include_version)
-        if create_atm_namelist_rc:
+        if self.create_atm_namelist_rc:
             create_symlink(filename, filename.parent / 'atm_namelist.rc', relative=True)
         return filename
 
@@ -403,7 +406,7 @@ class ModelConfigurationFile(ConfigurationFile):
             [
                 'total_member:            1',
                 'print_esmf:              .true.',
-                'namelist:                atm_namelist',
+                f'namelist:                {"atm_namelist.rc" if self.create_atm_namelist_rc else "model_configure"}',
                 f'PE_MEMBER01:             {self.sequence.processors}',
                 f'start_year:              {self.start_time.year}',
                 f'start_month:             {self.start_time.month}',
