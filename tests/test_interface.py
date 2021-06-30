@@ -17,6 +17,7 @@ from nemspy.model import (
 )
 from nemspy.model.base import ModelVerbosity
 from nemspy.utilities import repository_root
+from tests import check_reference_directory
 
 REFERENCE_DIRECTORY = repository_root() / 'tests/reference'
 ATMOSPHERIC_MESH_FILENAME = '~/wind_atm_fin_ch_time_vec.nc'
@@ -263,8 +264,5 @@ def test_configuration_files():
     with tempfile.TemporaryDirectory() as temporary_directory:
         temporary_directory = Path(temporary_directory)
         nems.write(temporary_directory, overwrite=True, include_version=False)
-        for test_filename in temporary_directory.iterdir():
-            reference_filename = REFERENCE_DIRECTORY / test_filename.name
-            with open(test_filename) as test_file:
-                with open(reference_filename) as reference_file:
-                    assert test_file.read() == reference_file.read()
+
+        check_reference_directory(temporary_directory, REFERENCE_DIRECTORY)

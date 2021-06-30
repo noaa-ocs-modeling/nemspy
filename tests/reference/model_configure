@@ -1,6 +1,6 @@
 total_member:            1
 print_esmf:              .true.
-namelist:                atm_namelist
+namelist:                atm_namelist.rc
 PE_MEMBER01:             782
 start_year:              2020
 start_month:             6
