@@ -34,4 +34,3 @@ class SCHISMEntry(OceanModelEntry):
 
     def __init__(self, processors: int, **kwargs):
         super().__init__(processors, **kwargs)
-        raise NotImplementedError(f'unsupported model "{self.__class__.__name__}"')
