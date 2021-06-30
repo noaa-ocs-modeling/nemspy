@@ -292,7 +292,6 @@ class ModelingSystem:
         directory: PathLike,
         overwrite: bool = False,
         include_version: bool = False,
-        create_atm_namelist_rc: bool = True,
     ) -> [Path]:
         """
         write NEMS / NUOPC configuration to the given directory
@@ -300,23 +299,17 @@ class ModelingSystem:
         :param directory: path to output directory
         :param overwrite: overwrite existing files
         :param include_version: include the NEMSpy version in a comment
-        :param create_atm_namelist_rc: create `atm_namelist.rc` as a symlink / copy of `model_configure`
         """
 
         directory = ensure_directory(directory)
         filenames = []
         for configuration_file in self.__configuration_files:
-            if isinstance(configuration_file, ModelConfigurationFile):
-                kwargs = {'create_atm_namelist_rc': create_atm_namelist_rc}
-
-            else:
-                kwargs = {}
             filename = configuration_file.write(
-                directory / configuration_file.name, overwrite, include_version, **kwargs
+                directory / configuration_file.name, overwrite, include_version
             )
             filenames.append(filename)
-        if create_atm_namelist_rc:
-            filenames.append(directory / 'atm_namelist.rc')
+            if isinstance(configuration_file,ModelConfigurationFile):
+                filenames.append(directory / 'atm_namelist.rc')
         return filenames
 
     def __getitem__(self, model_type: str) -> ModelEntry:
