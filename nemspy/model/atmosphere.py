@@ -38,3 +38,16 @@ class HWRFEntry(AtmosphericModelEntry):
 
     def __init__(self, processors: int, **kwargs):
         super().__init__(processors, **kwargs)
+
+
+class ParametricWindEntry(AtmosphericModelEntry):
+    """
+    Parametric Winds (PaHM) reference
+    """
+
+    name = 'pahm'
+
+    def __init__(self, processors: int = None, **kwargs):
+        if processors is None:
+            processors = 1
+        AtmosphericModelEntry.__init__(self, processors, **kwargs)
