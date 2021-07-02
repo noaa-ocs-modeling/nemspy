@@ -1,52 +1,55 @@
 #! /usr/bin/env python
 from datetime import datetime, timedelta
+from pathlib import Path
 
 from nemspy import ModelingSystem
 from nemspy.model import ADCIRCEntry, AtmosphericMeshEntry, WaveWatch3MeshEntry
 
-if __name__ == '__main__':
-    # model run time
-    start_time = datetime(2020, 6, 1)
-    duration = timedelta(days=1)
-    end_time = start_time + duration
+# directory to which configuration files should be written
+output_directory = Path(__file__).parent / 'output' / 'example_1'
 
-    # returning interval of main run sequence
-    interval = timedelta(hours=1)
+# directory containing forcings
+forcings_directory = Path(__file__).parent / 'forcings'
 
-    # directory to which configuration files should be written
-    output_directory = '~/nems_configuration/'
+# model run time
+start_time = datetime(2020, 6, 1)
+duration = timedelta(days=1)
+end_time = start_time + duration
 
-    # model entries
-    ocean_model = ADCIRCEntry(processors=11, Verbosity='max', DumpFields=False)
-    atmospheric_mesh = AtmosphericMeshEntry(
-        filename='~/wind_atm_fin_ch_time_vec.nc', processors=1
-    )
-    wave_mesh = WaveWatch3MeshEntry(
-        filename='~/ww3.Constant.20151214_sxy_ike_date.nc', processors=1
-    )
+# returning interval of main run sequence
+interval = timedelta(hours=1)
 
-    # instantiate model system with model entries
-    nems = ModelingSystem(
-        start_time=start_time,
-        end_time=end_time,
-        interval=interval,
-        ocn=ocean_model,
-        atm=atmospheric_mesh,
-        wav=wave_mesh,
-    )
+# model entries
+ocean_model = ADCIRCEntry(processors=11, Verbosity='max', DumpFields=False)
+atmospheric_mesh = AtmosphericMeshEntry(
+    filename=forcings_directory / 'wind_atm_fin_ch_time_vec.nc', processors=1
+)
+wave_mesh = WaveWatch3MeshEntry(
+    filename=forcings_directory / 'ww3.Constant.20151214_sxy_ike_date.nc', processors=1
+)
 
-    # form connections between models
-    nems.connect('ATM', 'OCN')
-    nems.connect('WAV', 'OCN')
+# instantiate model system with model entries
+nems = ModelingSystem(
+    start_time=start_time,
+    end_time=end_time,
+    interval=interval,
+    ocn=ocean_model,
+    atm=atmospheric_mesh,
+    wav=wave_mesh,
+)
 
-    # define execution order
-    nems.sequence = [
-        'ATM -> OCN',
-        'WAV -> OCN',
-        'ATM',
-        'WAV',
-        'OCN',
-    ]
+# form connections between models
+nems.connect('ATM', 'OCN')
+nems.connect('WAV', 'OCN')
 
-    # write configuration files to the given directory
-    nems.write(directory=output_directory, overwrite=True, include_version=True)
+# define execution order
+nems.sequence = [
+    'ATM -> OCN',
+    'WAV -> OCN',
+    'ATM',
+    'WAV',
+    'OCN',
+]
+
+# write configuration files to the given directory
+nems.write(directory=output_directory, overwrite=True, include_version=True)
