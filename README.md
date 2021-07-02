@@ -79,7 +79,7 @@ nems.write(directory=output_directory, overwrite=True, include_version=True)
 #### nems.configure
 
 ```fortran
-# `nems.configure` generated with NEMSpy 0.5.0
+# `nems.configure` generated with NEMSpy 0.6.21
 # EARTH #
 EARTH_component_list: ATM WAV OCN
 EARTH_attributes::
@@ -123,10 +123,10 @@ runSeq::
 #### model_configure
 
 ```fortran
-# `model_configure` generated with NEMSpy 0.5.0
+# `model_configure` generated with NEMSpy 0.6.21
 total_member:            1
 print_esmf:              .true.
-namelist:                atm_namelist
+namelist:                atm_namelist.rc
 PE_MEMBER01:             13
 start_year:              2020
 start_month:             6
@@ -142,10 +142,10 @@ ENS_SPS:                 .false.
 #### config.rc
 
 ```fortran
-# `config.rc` generated with NEMSpy 0.5.0
- atm_dir: ~
+# `config.rc` generated with NEMSpy 0.6.21
+ atm_dir: ~/forcings
  atm_nam: wind_atm_fin_ch_time_vec.nc
- wav_dir: ~
+ wav_dir: ~/forcings
  wav_nam: ww3.Constant.20151214_sxy_ike_date.nc
 ```
 
