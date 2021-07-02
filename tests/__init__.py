@@ -3,6 +3,13 @@ from os import PathLike
 from pathlib import Path
 import re
 
+from nemspy.utilities import repository_root
+
+DATA_DIRECTORY = repository_root() / 'tests' / 'data'
+INPUT_DIRECTORY = DATA_DIRECTORY / 'input'
+OUTPUT_DIRECTORY = DATA_DIRECTORY / 'output'
+REFERENCE_DIRECTORY = DATA_DIRECTORY / 'reference'
+
 
 def check_reference_directory(
     test_directory: PathLike, reference_directory: PathLike, skip_lines: {str: [int]} = None

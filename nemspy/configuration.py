@@ -6,7 +6,7 @@ from pathlib import Path
 from textwrap import indent
 from typing import Iterator, Tuple
 
-from dunamai import Version
+from pip._internal.utils.misc import get_installed_distributions
 
 from .model.base import (
     ConfigurationEntry,
@@ -308,9 +308,12 @@ class ConfigurationFile(ABC):
 
     @property
     def version_header(self) -> str:
-        try:
-            version = Version.from_git().serialize()
-        except RuntimeError:
+        installed_distributions = get_installed_distributions()
+        for distribution in installed_distributions:
+            if distribution.project_name.lower() == 'nemspy':
+                version = distribution.version
+                break
+        else:
             version = 'unknown'
         return f'# `{self.name}` generated with NEMSpy {version}'
 

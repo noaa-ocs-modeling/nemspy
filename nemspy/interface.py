@@ -288,10 +288,7 @@ class ModelingSystem:
         }
 
     def write(
-        self,
-        directory: PathLike,
-        overwrite: bool = False,
-        include_version: bool = False,
+        self, directory: PathLike, overwrite: bool = False, include_version: bool = False,
     ) -> [Path]:
         """
         write NEMS / NUOPC configuration to the given directory
@@ -308,7 +305,7 @@ class ModelingSystem:
                 directory / configuration_file.name, overwrite, include_version
             )
             filenames.append(filename)
-            if isinstance(configuration_file,ModelConfigurationFile):
+            if isinstance(configuration_file, ModelConfigurationFile):
                 filenames.append(directory / 'atm_namelist.rc')
         return filenames
 

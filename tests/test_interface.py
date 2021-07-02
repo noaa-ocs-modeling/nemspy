@@ -2,8 +2,8 @@
 # flake8: noqa
 
 from datetime import datetime, timedelta
+import os
 from pathlib import Path
-import tempfile
 
 import pytest
 
@@ -16,13 +16,17 @@ from nemspy.model import (
     WaveWatch3MeshEntry,
 )
 from nemspy.model.base import ModelVerbosity
-from nemspy.utilities import repository_root
-from tests import check_reference_directory
+from tests import (
+    check_reference_directory,
+    INPUT_DIRECTORY,
+    OUTPUT_DIRECTORY,
+    REFERENCE_DIRECTORY,
+)
 
-REFERENCE_DIRECTORY = repository_root() / 'tests/reference'
-ATMOSPHERIC_MESH_FILENAME = '~/wind_atm_fin_ch_time_vec.nc'
-ICE_MESH_FILENAME = '~/sea_ice.nc'
-WAVE_MESH_FILENAME = '~/ww3.Constant.20151214_sxy_ike_date.nc'
+FORCINGS_DIRECTORY = Path(os.path.relpath(INPUT_DIRECTORY / 'forcings', Path(__file__).parent))
+ATMOSPHERIC_MESH_FILENAME = FORCINGS_DIRECTORY / 'wind_atm_fin_ch_time_vec.nc'
+ICE_MESH_FILENAME = FORCINGS_DIRECTORY / 'sea_ice.nc'
+WAVE_MESH_FILENAME = FORCINGS_DIRECTORY / 'ww3.Constant.20151214_sxy_ike_date.nc'
 
 
 def test_interface():
@@ -221,6 +225,9 @@ def test_sequence():
 
 
 def test_configuration_files():
+    output_directory = OUTPUT_DIRECTORY / 'test_configuration_files'
+    reference_directory = REFERENCE_DIRECTORY / 'test_configuration_files'
+
     start_time = datetime(2020, 6, 1)
     duration = timedelta(days=1)
     interval = timedelta(hours=1)
@@ -259,10 +266,8 @@ def test_configuration_files():
 
     nems.sequence = sequence
 
+    nems.write(output_directory, overwrite=True, include_version=True)
+
     assert nems.processors == 782
 
-    with tempfile.TemporaryDirectory() as temporary_directory:
-        temporary_directory = Path(temporary_directory)
-        nems.write(temporary_directory, overwrite=True, include_version=False)
-
-        check_reference_directory(temporary_directory, REFERENCE_DIRECTORY)
+    check_reference_directory(output_directory, reference_directory, skip_lines={'.*': [0]})
