@@ -382,6 +382,7 @@ class MeshFile(ConfigurationFile):
 
 class ModelConfigurationFile(ConfigurationFile):
     """ https://ufs-weather-model.readthedocs.io/en/ufs-v1.0.0/InputsOutputs.html#modelconfigparams """
+
     name = 'model_configure'
 
     def __init__(
