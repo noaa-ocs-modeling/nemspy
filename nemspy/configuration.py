@@ -384,8 +384,6 @@ class MeshFile(ConfigurationFile):
 
 
 class ModelConfigurationFile(ConfigurationFile):
-    """ https://ufs-weather-model.readthedocs.io/en/ufs-v1.0.0/InputsOutputs.html#modelconfigparams """
-
     name = 'model_configure'
 
     def __init__(
@@ -412,7 +410,7 @@ class ModelConfigurationFile(ConfigurationFile):
         duration_hours = round(self.duration / timedelta(hours=1))
         return '\n'.join(
             [
-                f'total_member:            {len(self.sequence.models)}',
+                'total_member:            1',
                 'print_esmf:              .true.',
                 f'namelist:                {"atm_namelist.rc" if self.create_atm_namelist_rc else "model_configure"}',
                 f'PE_MEMBER01:             {self.sequence.processors}',
