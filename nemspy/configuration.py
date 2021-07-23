@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum
+import os
 from os import makedirs, PathLike
 from pathlib import Path
 from textwrap import indent
@@ -330,11 +331,13 @@ class ConfigurationFile(ABC):
 
         if filename.is_dir():
             filename = filename / self.name
-            LOGGER.warning(f'creating new file "{filename}"')
+            LOGGER.warning(
+                f'creating new file "{os.path.relpath(filename.resolve(), Path.cwd())}"'
+            )
 
         if filename.exists():
             LOGGER.warning(
-                f'{"overwriting" if overwrite else "skipping"} ' f'existing file "{filename}"'
+                f'{"overwriting" if overwrite else "skipping"} existing file "{os.path.relpath(filename.resolve(), Path.cwd())}"'
             )
         if not filename.exists() or overwrite:
             with open(filename, 'w', newline='\n') as output_file:

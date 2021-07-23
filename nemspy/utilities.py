@@ -88,7 +88,7 @@ def create_symlink(
         symlink_filename = Path(symlink_filename)
 
     if symlink_filename.is_symlink():
-        LOGGER.debug(f'removing symlink {symlink_filename}')
+        LOGGER.debug(f'removing symlink "{symlink_filename}"')
         os.remove(symlink_filename)
     symlink_filename = symlink_filename.parent.absolute().resolve() / symlink_filename.name
 
