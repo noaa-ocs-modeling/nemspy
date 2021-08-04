@@ -15,7 +15,7 @@ from nemspy.model import (
     NationalWaterModelEntry,
     WaveWatch3MeshEntry,
 )
-from nemspy.model.base import ModelVerbosity
+from nemspy.model.base import ConnectionEntry, ModelVerbosity
 from tests import (
     check_reference_directory,
     INPUT_DIRECTORY,
@@ -87,6 +87,9 @@ def test_connection():
     nems.connect('WAV', 'OCN')
     nems.connect('OCN -> WAV')
 
+    connection_1 = ConnectionEntry.from_string('ATM -> OCN   :remapMethod=bilinear')
+    connection_2 = ConnectionEntry.from_string('ATM ->OCN :remapMethod=nearest_stod')
+
     with pytest.raises(KeyError):
         nems.connect('ATM', 'OCN')
     with pytest.raises(KeyError):
@@ -100,6 +103,13 @@ def test_connection():
         'WAV -> OCN   :remapMethod=redist',
         'OCN -> WAV   :remapMethod=redist',
     ]
+
+    assert connection_1.source.name == 'ATM'
+    assert connection_1.target.name == 'OCN'
+    assert connection_1.method.name == 'BILINEAR'
+    assert connection_2.source.name == 'ATM'
+    assert connection_2.target.name == 'OCN'
+    assert connection_2.method.name == 'NEAREST_STOD'
 
 
 def test_mediation():

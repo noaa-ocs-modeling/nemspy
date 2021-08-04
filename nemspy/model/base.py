@@ -37,6 +37,11 @@ class RemapMethod(Enum):
     """
 
     REDISTRIBUTE = 'redist'
+    BILINEAR = 'bilinear'
+    PATH = 'patch'
+    NEAREST_STOD = 'nearest_stod'
+    NEAREST_DTOS = 'nearest_dtos'
+    CONSERVE = 'conserve'
 
 
 class ModelMeshEntry(ABC):
@@ -250,7 +255,7 @@ class ConnectionEntry(SequenceEntry):
     def __init__(self, source: ModelEntry, target: ModelEntry, method: RemapMethod = None):
         self.source = source
         self.target = target
-        self.method = method if method is not None else RemapMethod.REDISTRIBUTE
+        self.method = method if method is not None else RemapMethod.BILINEAR
 
     @property
     def models(self) -> [ModelEntry]:
@@ -271,14 +276,15 @@ class ConnectionEntry(SequenceEntry):
         method = None
         try:
             source, target = (entry.strip() for entry in string.split('->', 1))
-            if ':' in target:
-                target, parsed_method = (entry.strip() for entry in target.split(':', 1))
-                if method is None and len(parsed_method) > 0:
-                    method = RemapMethod(parsed_method.split('=')[-1])
-        except:
+        except ValueError:
             raise ValueError(
                 'connection entry should be formatted as `SRC -> DST   :remapMethod=METHOD`'
             )
+
+        if ':' in target:
+            target, parsed_method = (entry.strip() for entry in target.split(':', 1))
+            if method is None and len(parsed_method) > 0:
+                method = RemapMethod(parsed_method.split('=')[-1])
 
         source_model = ModelEntry(None)
         target_model = ModelEntry(None)
@@ -288,7 +294,7 @@ class ConnectionEntry(SequenceEntry):
         target_model.name = target
         target_model.model_type = ModelType(target)
 
-        return cls(source=source_model, target=target_model, method=method,)
+        return cls(source=source_model, target=target_model, method=method)
 
 
 class MediatorEntry(ModelEntry):
