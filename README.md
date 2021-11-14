@@ -14,7 +14,7 @@ NEMS implements
 the [National Unified Operational Prediction Capability (NUOPC)](https://www.earthsystemcog.org/projects/nuopc/), and
 configuration files built for NEMS will also work for most NUOPC applications.
 
-### Usage:
+## Usage
 
 ```python
 from datetime import datetime, timedelta
@@ -74,9 +74,9 @@ nems.write(directory=output_directory, overwrite=True, include_version=True)
 
 ```
 
-### Output:
+## Output
 
-#### nems.configure
+### `nems.configure`
 
 ```fortran
 # `nems.configure` generated with NEMSpy 1.0.0
@@ -120,7 +120,7 @@ runSeq::
 ::
 ```
 
-#### model_configure
+### `model_configure`
 
 ```fortran
 # `model_configure` generated with NEMSpy 1.0.0
@@ -139,7 +139,7 @@ RUN_CONTINUE:            .false.
 ENS_SPS:                 .false.
 ```
 
-#### config.rc
+### `config.rc`
 
 ```fortran
 # `config.rc` generated with NEMSpy 1.0.0
@@ -149,7 +149,7 @@ ENS_SPS:                 .false.
  wav_nam: ww3.Constant.20151214_sxy_ike_date.nc
 ```
 
-### Related:
+## Related Projects
 
 - [NOAA-EMC/NEMS](https://github.com/NOAA-EMC/NEMS)
 - [esmf-org/esmf](https://github.com/esmf-org/esmf)
