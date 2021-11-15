@@ -16,7 +16,12 @@ from nemspy.model import (
     WaveWatch3MeshEntry,
 )
 from nemspy.model.base import ConnectionEntry, ModelVerbosity
-from tests import (INPUT_DIRECTORY, OUTPUT_DIRECTORY, REFERENCE_DIRECTORY, check_reference_directory)
+from tests import (
+    check_reference_directory,
+    INPUT_DIRECTORY,
+    OUTPUT_DIRECTORY,
+    REFERENCE_DIRECTORY,
+)
 
 FORCINGS_DIRECTORY = Path(os.path.relpath(INPUT_DIRECTORY / 'forcings', Path(__file__).parent))
 ATMOSPHERIC_MESH_FILENAME = FORCINGS_DIRECTORY / 'wind_atm_fin_ch_time_vec.nc'
