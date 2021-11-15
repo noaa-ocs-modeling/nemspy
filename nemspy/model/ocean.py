@@ -1,4 +1,4 @@
-from .base import ModelEntry, ModelType
+from .base import EntryType, ModelEntry
 
 
 class OceanModelEntry(ModelEntry):
@@ -6,7 +6,7 @@ class OceanModelEntry(ModelEntry):
     abstract implementation of a generic oceanic model
     """
 
-    model_type = ModelType.OCEAN
+    entry_type = EntryType.OCEAN
 
     def __init__(self, processors: int, **kwargs):
         super().__init__(processors, **kwargs)

@@ -8,9 +8,9 @@ from typing import Dict, List
 INDENTATION = '  '
 
 
-class ModelType(Enum):
+class EntryType(Enum):
     """
-    abbreviated model type within a NEMS / NUOPC configuration file
+    possible types of a configuration entry
     """
 
     ATMOSPHERIC = 'ATM'
@@ -21,9 +21,9 @@ class ModelType(Enum):
     MEDIATOR = 'MED'
 
 
-class ModelVerbosity(Enum):
+class VerbosityOption(Enum):
     """
-    verbosity attribute within a NEMS / NUOPC configuration file
+    possible verbosity options for model entries
     """
 
     OFF = 'off'
@@ -32,9 +32,9 @@ class ModelVerbosity(Enum):
     MAX = 'max'
 
 
-class RemapMethod(Enum):
+class GridRemapMethod(Enum):
     """
-    model remapping methods
+    possible remapping methods (interpolation / redistribution) for translating coupled data from one grid to another
     """
 
     REDISTRIBUTE = 'redist'
@@ -45,15 +45,26 @@ class RemapMethod(Enum):
     CONSERVE = 'conserve'
 
 
-class ModelMeshEntry(ABC):
-    def __init__(self, mesh_type: ModelType, filename: PathLike = None):
+class FileForcingEntry(ABC):
+    def __init__(self, entry_type: EntryType, filename: PathLike = None):
+        """
+        abstraction of a forcing entry in `config.rc`, defining the file path to a forcing file
+
+        :param entry_type: type of file forcing (i.e. `ATM`, `ICE`, etc.)
+        :param filename: path to file
+        """
+
         if filename is not None and not isinstance(filename, PurePosixPath):
             filename = PurePosixPath(filename)
 
-        self.mesh_type = mesh_type
+        self.mesh_type = entry_type
         self.filename = filename
 
     def __str__(self) -> str:
+        """
+        string representation of the forcing entry in `config.rc`
+        """
+
         if self.filename is not None:
             directory = self.filename.parent.as_posix()
             name = self.filename.name
@@ -68,19 +79,38 @@ class ModelMeshEntry(ABC):
 
 
 class ConfigurationEntry(ABC):
+    @classmethod
+    @abstractmethod
+    def from_string(cls, string: str, **kwargs) -> 'ConfigurationEntry':
+        """
+        parse entry information from a configuration entry string
+        """
+
+        raise NotImplementedError
+
+
+class AttributeEntry(ABC):
     """
-    NEMS / NUOPC configuration entry within `nems.configure`
+    abstraction of a configuration entry in `nems.configure`
     """
 
-    entry_type: str = NotImplementedError
+    entry_title: str = NotImplementedError
     __attributes: Dict[str, str] = NotImplementedError
 
     @abstractmethod
     def __str__(self) -> str:
+        """
+        string representation of the configuration entry in `nems.configure`
+        """
+
         raise NotImplementedError
 
     @property
     def attributes(self) -> Dict[str, str]:
+        """
+        attributes defining options for the configuration entry, such as verbosity
+        """
+
         attributes = {}
         for attribute, value in self.__attributes.items():
             if isinstance(value, Enum):
@@ -97,27 +127,36 @@ class ConfigurationEntry(ABC):
 
 class SequenceEntry(ABC):
     """
-    entry within run sequence
+    abstraction of an entry within the run sequence in `nems.configure`
     """
 
     @property
     @abstractmethod
     def sequence_entry(self) -> str:
+        """
+        string representation of the sequence entry in `nems.configure`
+        """
+
         raise NotImplementedError
 
     def __str__(self) -> str:
         return self.sequence_entry
 
 
-class ModelEntry(ConfigurationEntry, SequenceEntry):
-    """
-    abstract implementation of a generic model
-    """
-
-    model_type: ModelType
+class ModelEntry(AttributeEntry, SequenceEntry, ConfigurationEntry):
+    entry_type: EntryType
     name: str
 
     def __init__(self, processors: int, **attributes):
+        """
+        abstraction of a generic model implementing NEMS / NUOPC coupling
+
+        The model entry is represented in two places in `nems.configure`: once as a configuration entry with attributes, and once in the run sequence.
+        The specific processors assigned to the model are defined by start and stop indices, which are determined on configuration write from the stop index of the previous entry in the run sequence.
+
+        :param processors: number of processors to assign to this model
+        """
+
         self.__processors = processors
 
         self.__start_processor = None
@@ -126,21 +165,29 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
         self.__next = None
 
         if 'Verbosity' not in attributes:
-            attributes['Verbosity'] = ModelVerbosity.OFF
+            attributes['Verbosity'] = VerbosityOption.OFF
 
         # http://www.earthsystemmodeling.org/esmf_releases/last_built/NUOPC_refdoc/node3.html#SECTION00033000000000000000
         self.attributes = attributes
 
     @property
-    def entry_type(self) -> str:
-        return str(self.model_type.value) if self.model_type is not None else None
+    def entry_title(self) -> str:
+        return str(self.entry_type.value) if self.entry_type is not None else None
 
     @property
     def processors(self) -> int:
+        """
+        the number of processors assigned to this model
+        """
+
         return self.__processors
 
     @processors.setter
     def processors(self, processors: int):
+        """
+        set the number of processors (this also updates all subsequent entries in the run sequence)
+        """
+
         if processors != self.processors:
             self.__processors = processors
             # update following processors
@@ -148,10 +195,18 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
 
     @property
     def start_processor(self) -> int:
+        """
+        the first index in the processor series assigned to this model
+        """
+
         return self.__start_processor
 
     @start_processor.setter
     def start_processor(self, index: int):
+        """
+        set the first index in the processor series (this also updates all subsequent entries in the run sequence)
+        """
+
         self.__start_processor = index
         current_model = self.next
         while current_model is not None:
@@ -161,6 +216,10 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
 
     @property
     def end_processor(self) -> int:
+        """
+        the last index in the processor series assigned to this model
+        """
+
         if self.start_processor is not None:
             return self.start_processor + self.processors - 1
         else:
@@ -168,10 +227,18 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
 
     @property
     def previous(self) -> 'ModelEntry':
+        """
+        the previous entry in the run sequence
+        """
+
         return self.__previous
 
     @previous.setter
     def previous(self, previous: 'ModelEntry'):
+        """
+        assign the previous entry in the run sequence (this also updates the processor series for this and all subsequent entries in the run sequence)
+        """
+
         if previous is None and self.previous is not None:
             self.previous.__next = None
         self.__previous = previous
@@ -184,10 +251,18 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
 
     @property
     def next(self) -> 'ModelEntry':
+        """
+        the next entry in the run sequence
+        """
+
         return self.__next
 
     @next.setter
     def next(self, next: 'ModelEntry'):
+        """
+        assign the next entry in the run sequence (this updates all subsequent entries in the run sequence)
+        """
+
         if next is None and self.next is not None:
             self.next.__previous = None
         self.__next = next
@@ -196,7 +271,7 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
 
     @property
     def sequence_entry(self) -> str:
-        return str(self.model_type.value)
+        return str(self.entry_type.value)
 
     def __str__(self) -> str:
         return '\n'.join(
@@ -219,17 +294,17 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
 
     def __repr__(self) -> str:
         kwargs = [f'{key}={value}' for key, value in self.attributes.items()]
-        return f'{self.__class__.__name__}({repr(self.name)}, {self.model_type}, {self.processors}, {", ".join(kwargs)})'
+        return f'{self.__class__.__name__}({repr(self.name)}, {self.entry_type}, {self.processors}, {", ".join(kwargs)})'
 
     @classmethod
     def from_string(cls, string: str, **kwargs) -> 'ModelEntry':
         lines = string.splitlines()
 
         parsed_model_type, parsed_name = (value.strip() for value in lines[0].split('_model:'))
-        parsed_model_type = ModelType(parsed_model_type)
+        parsed_model_type = EntryType(parsed_model_type)
 
         if hasattr(cls, 'model_type'):
-            assert parsed_model_type == cls.model_type
+            assert parsed_model_type == cls.entry_type
         if hasattr(cls, 'name'):
             assert parsed_name == cls.name
 
@@ -245,21 +320,33 @@ class ModelEntry(ConfigurationEntry, SequenceEntry):
         instance = cls(processors=end_processor + 1 - start_processor, **attributes, **kwargs,)
 
         if not hasattr(cls, 'model_type'):
-            instance.model_type = parsed_model_type
+            instance.entry_type = parsed_model_type
         if not hasattr(cls, 'name'):
             instance.name = parsed_name
 
         return instance
 
 
-class ConnectionEntry(SequenceEntry):
-    def __init__(self, source: ModelEntry, target: ModelEntry, method: RemapMethod = None):
+class ConnectionEntry(SequenceEntry, ConfigurationEntry):
+    def __init__(self, source: ModelEntry, target: ModelEntry, method: GridRemapMethod = None):
+        """
+        a connection entry in `nems.configure` representing a simple coupling between two model entries
+
+        :param source: source model entry
+        :param target: target model entry
+        :param method: remapping method with which to translate between differing grids (use `redist` for the same grid)
+        """
+
         self.source = source
         self.target = target
-        self.method = method if method is not None else RemapMethod.BILINEAR
+        self.method = method if method is not None else GridRemapMethod.BILINEAR
 
     @property
-    def models(self) -> [ModelEntry]:
+    def models(self) -> List[ModelEntry]:
+        """
+        the source and target models in the coupling
+        """
+
         return [self.source, self.target]
 
     @property
@@ -273,7 +360,7 @@ class ConnectionEntry(SequenceEntry):
         return f'{self.__class__.__name__}({repr(self.source)}, {repr(self.target)}, {repr(self.method)})'
 
     @classmethod
-    def from_string(cls, string: str) -> 'ConnectionEntry':
+    def from_string(cls, string: str, **kwargs) -> 'ConnectionEntry':
         method = None
         try:
             source, target = (entry.strip() for entry in string.split('->', 1))
@@ -285,31 +372,44 @@ class ConnectionEntry(SequenceEntry):
         if ':' in target:
             target, parsed_method = (entry.strip() for entry in target.split(':', 1))
             if method is None and len(parsed_method) > 0:
-                method = RemapMethod(parsed_method.split('=')[-1])
+                method = GridRemapMethod(parsed_method.split('=')[-1])
 
         source_model = ModelEntry(None)
         target_model = ModelEntry(None)
 
         source_model.name = source
-        source_model.model_type = ModelType(source)
+        source_model.entry_type = EntryType(source)
         target_model.name = target
-        target_model.model_type = ModelType(target)
+        target_model.entry_type = EntryType(target)
 
         return cls(source=source_model, target=target_model, method=method)
 
 
 class MediatorEntry(ModelEntry):
-    model_type = ModelType.MEDIATOR
+    entry_type = EntryType.MEDIATOR
     name = 'implicit'
 
     def __init__(self, processors: int = None, **attributes):
+        """
+        a special entry in `nems.configure` representing a coupler between two model entries with a dedicated coupling function
+
+        :param processors: number of processors to assign to this mediator
+        """
+
         if processors is None:
             processors = 1
         super().__init__(processors, **attributes)
 
 
-class MediationFunctionEntry(SequenceEntry):
+class MediationFunctionEntry(SequenceEntry, ConfigurationEntry):
     def __init__(self, name: str, mediator: MediatorEntry):
+        """
+        the dedicated function of a mediation entry, applied to the coupling between two model entries in `nems.configure`
+
+        :param name: name of function
+        :param mediator: mediator entry to host this function
+        """
+
         self.name = name
         self.mediator = mediator
 
@@ -321,20 +421,35 @@ class MediationFunctionEntry(SequenceEntry):
         return f'{self.__class__.__name__}({repr(self.name)}, {repr(self.mediator)})'
 
     @classmethod
-    def from_string(cls, string: str) -> 'MediationFunctionEntry':
+    def from_string(cls, string: str, **kwargs) -> 'MediationFunctionEntry':
+        """
+        parse entry information from a configuration entry string
+        """
+
         mediator_name, function_name = string.split()
-        return cls(name=function_name, mediator=MediatorEntry(mediator_name),)
+        return cls(name=function_name, mediator=MediatorEntry(mediator_name))
 
 
-class MediationEntry(SequenceEntry):
+class MediationEntry(SequenceEntry, ConfigurationEntry):
     def __init__(
         self,
         mediator: MediatorEntry,
         sources: List[ModelEntry] = None,
         functions: List[str] = None,
         targets: List[ModelEntry] = None,
-        method: RemapMethod = None,
+        method: GridRemapMethod = None,
     ):
+        """
+        an application of a mediator between model entries, with a dedicated coupling function
+        A Mediation can include multiple connections; for instance, an ICE model might connect to the mediation function, then the mediation function connects to the OCN model.
+
+        :param mediator: mediator entry to host this mediation
+        :param sources: source models
+        :param functions: mediation functions to use
+        :param targets: target models
+        :param method: remapping method with which to translate between differing grids (use `redist` for the same grid)
+        """
+
         if functions is None:
             functions = []
 
@@ -350,6 +465,10 @@ class MediationEntry(SequenceEntry):
 
     @property
     def source_connections(self) -> List[ConnectionEntry]:
+        """
+        list of connections between the source(s) and the mediator
+        """
+
         source_connections = []
         if self.sources is not None:
             for index, source in enumerate(self.sources):
@@ -358,6 +477,10 @@ class MediationEntry(SequenceEntry):
 
     @property
     def target_connections(self) -> List[ConnectionEntry]:
+        """
+        list of connections between the mediator and the target(s)
+        """
+
         target_connections = []
         if self.targets is not None:
             for index, target in enumerate(self.targets):
@@ -366,6 +489,10 @@ class MediationEntry(SequenceEntry):
 
     @property
     def models(self) -> List[ModelEntry]:
+        """
+        list of model entries involved in the mediation
+        """
+
         return [
             *(connection.source for connection in self.source_connections),
             self.mediator,
@@ -392,7 +519,7 @@ class MediationEntry(SequenceEntry):
         return f'{self.__class__.__name__}({repr(self.mediator)}, {repr(self.sources)}, {repr(self.functions)}, {repr(self.targets)}, {repr(self.method)})'
 
     @classmethod
-    def from_string(cls, string: str) -> 'MediationEntry':
+    def from_string(cls, string: str, **kwargs) -> 'MediationEntry':
         lines = string.strip().splitlines()
 
         connections = []

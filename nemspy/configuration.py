@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum
 import os
-from os import makedirs, PathLike
+from os import PathLike
 from pathlib import Path
 from textwrap import indent
 from typing import Iterator, List, Tuple, Union
@@ -10,62 +10,68 @@ from typing import Iterator, List, Tuple, Union
 from dunamai import Version
 
 from .model.base import (
-    ConfigurationEntry,
+    AttributeEntry,
     ConnectionEntry,
+    EntryType,
+    FileForcingEntry,
+    GridRemapMethod,
     INDENTATION,
     MediationEntry,
     MediatorEntry,
     ModelEntry,
-    ModelMeshEntry,
-    ModelType,
-    ModelVerbosity,
-    RemapMethod,
     SequenceEntry,
+    VerbosityOption,
 )
 from .utilities import create_symlink, LOGGER
 
 
-class Earth(ConfigurationEntry):
-    """
-    multi-model coupling container
-    """
-
-    entry_type = 'EARTH'
+class Earth(AttributeEntry):
+    entry_title = 'EARTH'
 
     def __init__(self, **models):
-        if 'Verbosity' not in models:
-            models['Verbosity'] = ModelVerbosity.OFF
+        """
+        multi-model coupling container representing the entire Earth system
 
-        self.__models = {model_type: None for model_type in ModelType}
+        Only one of each model type can be assigned to the Earth system model at a time.
+        """
+
+        if 'Verbosity' not in models:
+            models['Verbosity'] = VerbosityOption.OFF
+
+        self.__models = {model_type: None for model_type in EntryType}
 
         attributes = {}
         for key, value in models.items():
-            if key.upper() in {entry.name for entry in ModelType}:
+            if key.upper() in {entry.name for entry in EntryType}:
                 if isinstance(value, ModelEntry):
-                    self[ModelType[key.upper()]] = value
+                    self[EntryType[key.upper()]] = value
             else:
                 attributes[key] = value
         self.attributes = attributes
 
     @property
     def models(self):
+        """
+        list of models comprising the Earth system
+        """
+
         return self.__models
 
-    def __getitem__(self, model_type: ModelType) -> ModelEntry:
+    def __getitem__(self, model_type: EntryType) -> ModelEntry:
         return self.__models[model_type]
 
-    def __setitem__(self, model_type: ModelType, model: ModelEntry):
-        assert model_type == model.model_type
+    def __setitem__(self, model_type: EntryType, model: ModelEntry):
+        assert model_type == model.entry_type
         if self.__models[model_type] is not None:
             LOGGER.warning(
                 f'overwriting existing "{model_type.name}" model: ' f'{repr(self[model_type])}'
             )
         self.__models[model_type] = model
 
-    def __contains__(self, model_type: ModelType):
+    def __contains__(self, model_type: EntryType):
         return model_type in self.__models
 
-    def __iter__(self) -> Iterator[Tuple[ModelType, ModelEntry]]:
+    def __iter__(self) -> Iterator[Tuple[EntryType, ModelEntry]]:
         for model_type, model in self.models.items():
             yield model_type, model
 
@@ -95,48 +101,72 @@ class Earth(ConfigurationEntry):
         )
 
 
-class RunSequence(ConfigurationEntry, SequenceEntry):
-    entry_type = 'Run Sequence'
+class RunSequence(AttributeEntry, SequenceEntry):
+    entry_title = 'Run Sequence'
 
     def __init__(self, interval: timedelta, **kwargs):
+        """
+        multi-model container for model entries, defining the sequence in which they run within the modeled time loop
+
+        NOTE: Currently, only one loop is supported. Nested loops will be implemented in a future version of NEMSpy.
+
+        :param interval: time interval to repeat the main loop in modeled time
+        """
+
         self.interval = interval
 
         if 'Verbosity' not in kwargs:
-            kwargs['Verbosity'] = ModelVerbosity.OFF
+            kwargs['Verbosity'] = VerbosityOption.OFF
 
         self.__models = {}
         attributes = {}
         for key, value in kwargs.items():
-            model_types = [model_type.value for model_type in ModelType]
+            model_types = [model_type.value for model_type in EntryType]
             if key.upper() in model_types and isinstance(value, ModelEntry):
-                self.__models[ModelType(key.upper())] = value
+                self.__models[EntryType(key.upper())] = value
             else:
                 attributes[key] = value
         self.attributes = attributes
 
         self.__sequence = [
-            model for model in self.models if model.model_type != ModelType.MEDIATOR
+            model for model in self.models if model.entry_type != EntryType.MEDIATOR
         ]
         self.__link_models()
 
     def append(self, entry: SequenceEntry):
+        """
+        add a sequence entry
+        """
+
         if isinstance(entry, ModelEntry):
-            model_type = entry.model_type
+            model_type = entry.entry_type
             if model_type in self.__models:
                 del self.__models[model_type]
-                self[entry.model_type] = entry
+                self[entry.entry_type] = entry
         self.__sequence.append(entry)
 
     def extend(self, sequence: List[SequenceEntry]):
+        """
+        add several sequence entries
+        """
+
         for entry in sequence:
             self.append(entry)
 
     @property
     def sequence(self) -> List[SequenceEntry]:
+        """
+        list of sequence entries in order, including model entries and connections / mediations
+        """
+
         return self.__sequence
 
     @sequence.setter
     def sequence(self, sequence: List[SequenceEntry]):
+        """
+        set the sequence by passing a list of entries in order
+        """
+
         sequence = list(sequence)
         if sequence != self.__sequence:
             mediator = self.mediator
@@ -145,7 +175,7 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
                 self.mediator = mediator
             for entry in sequence:
                 if isinstance(entry, ModelEntry):
-                    model_type = entry.model_type
+                    model_type = entry.entry_type
                     if model_type in self.__models:
                         raise TypeError(
                             f'duplicate model type ' f'"{model_type.name}" in given sequence'
@@ -155,11 +185,15 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
             self.__sequence = sequence
 
     def connect(
-        self, source: ModelType, target: ModelType, method: RemapMethod = None, **kwargs,
+        self, source: EntryType, target: EntryType, method: GridRemapMethod = None, **kwargs,
     ):
+        """
+        assign a simple connection (not a mediation) between two model entries within the sequence
+        """
+
         if method is None:
-            method = RemapMethod.REDISTRIBUTE
-        if ModelType.MEDIATOR in [source, target] and self.mediator is None:
+            method = GridRemapMethod.REDISTRIBUTE
+        if EntryType.MEDIATOR in [source, target] and self.mediator is None:
             self.mediator = MediatorEntry(**kwargs)
         if source not in self.__models:
             raise KeyError(f'no {source.name} model in sequence')
@@ -169,6 +203,10 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
 
     @property
     def connections(self) -> List[Union[ConnectionEntry, MediationEntry]]:
+        """
+        list of all connections in the sequence
+        """
+
         return [
             entry
             for entry in self.sequence
@@ -177,24 +215,35 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
 
     @property
     def mediator(self) -> MediatorEntry:
-        if ModelType.MEDIATOR in self:
-            return self.__models[ModelType.MEDIATOR]
+        """
+        shortcut property to the mediator entry
+        """
+
+        if EntryType.MEDIATOR in self:
+            return self.__models[EntryType.MEDIATOR]
         else:
             return None
 
     @mediator.setter
     def mediator(self, mediator: MediatorEntry):
-        self[ModelType.MEDIATOR] = mediator
+        """
+        set the mediator entry (does not exist in the sequence by itself)
+        """
+
+        self[EntryType.MEDIATOR] = mediator
 
     def mediate(
         self,
-        sources: List[ModelType] = None,
+        sources: List[EntryType] = None,
         functions: List[str] = None,
-        targets: List[ModelType] = None,
-        method: RemapMethod = None,
+        targets: List[EntryType] = None,
+        method: GridRemapMethod = None,
         processors: int = None,
         **attributes,
     ):
+        """
+        assign a mediation between two entries in the sequence
+        """
 
         if 'name' not in attributes:
             attributes['name'] = 'mediator'
@@ -216,20 +265,35 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
 
     @property
     def mediations(self) -> List[MediationEntry]:
+        """
+        list of all mediations in the sequence
+        """
+
         return [entry for entry in self.sequence if isinstance(entry, MediationEntry)]
 
     @property
     def earth(self) -> Earth:
+        """
+        Earth system assigned to the sequence
+        """
+
         return Earth(
-            **{model.model_type.name: model for model in self.models}, **self.attributes
+            **{model.entry_type.name: model for model in self.models}, **self.attributes
         )
 
     @property
     def processors(self) -> int:
+        """
+        :returns: total number of processors assigned to sequence entries
+        """
+
         return sum(model.processors for model in self.__models.values())
 
     def __link_models(self):
-        """ link entries and assign processors """
+        """
+        link entries and assign processors
+        """
+
         models = self.models
         for model in models:
             if model.previous is not None:
@@ -242,8 +306,8 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
             if previous_model_index >= 0:
                 model.previous = models[previous_model_index]
 
-    def __setitem__(self, model_type: ModelType, model: ModelEntry):
-        assert model_type == model.model_type
+    def __setitem__(self, model_type: EntryType, model: ModelEntry):
+        assert model_type == model.entry_type
         if model_type in self.__models:
             existing_model = self.__models[model_type]
             LOGGER.warning(
@@ -253,15 +317,19 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
         self.__models[model_type] = model
         self.__link_models()
 
-    def __getitem__(self, model_type: ModelType) -> ModelEntry:
+    def __getitem__(self, model_type: EntryType) -> ModelEntry:
         return self.__models[model_type]
 
     @property
     def models(self) -> List[ModelEntry]:
+        """
+        list of models in the run sequence
+        """
+
         models = [
             model
             for model_type, model in self.__models.items()
-            if model_type in self and model_type is not ModelType.MEDIATOR
+            if model_type in self and model_type is not EntryType.MEDIATOR
         ]
         if self.mediator is not None:
             models.insert(0, self.mediator)
@@ -271,7 +339,7 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
         for model in self.models:
             yield model
 
-    def __contains__(self, model_type: ModelType) -> bool:
+    def __contains__(self, model_type: EntryType) -> bool:
         return model_type in self.__models
 
     def __len__(self) -> int:
@@ -294,7 +362,7 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
         return '\n'.join([f'runSeq::', indent(block, INDENTATION), '::'])
 
     def __repr__(self) -> str:
-        models = [f'{model.model_type.name.lower()}={repr(model)}' for model in self.models]
+        models = [f'{model.entry_type.name.lower()}={repr(model)}' for model in self.models]
         return f'{self.__class__.__name__}({repr(self.interval)}, {", ".join(models)})'
 
 
@@ -302,13 +370,23 @@ class ConfigurationFile(ABC):
     name: str = NotImplementedError
 
     def __init__(self, sequence: RunSequence):
+        """
+        abstraction of a configuration file
+
+        :param sequence: run sequence object containing models and order
+        """
+
         self.sequence = sequence
 
-    def __getitem__(self, entry_type: type) -> List[ConfigurationEntry]:
+    def __getitem__(self, entry_type: type) -> List[AttributeEntry]:
         return [entry for entry in self if isinstance(entry, entry_type)]
 
     @property
     def version_header(self) -> str:
+        """
+        comment header indicating filename and NEMSpy version
+        """
+
         try:
             version = Version.from_any_vcs().serialize()
         except RuntimeError:
@@ -318,6 +396,15 @@ class ConfigurationFile(ABC):
     def write(
         self, filename: PathLike, overwrite: bool = False, include_version: bool = False
     ) -> Path:
+        """
+        write this configuration to file
+
+        :param filename: path to file
+        :param overwrite: overwrite an existing file
+        :param include_version: include NEMSpy version information
+        :returns: path to written file
+        """
+
         if not isinstance(filename, Path):
             filename = Path(filename)
         ensure_directory(filename.parent)
@@ -344,6 +431,10 @@ class ConfigurationFile(ABC):
 
     @abstractmethod
     def __str__(self) -> str:
+        """
+        :returns: string representation of configuration file
+        """
+
         raise NotImplementedError
 
     def __repr__(self) -> str:
@@ -351,33 +442,49 @@ class ConfigurationFile(ABC):
 
 
 class NEMSConfigurationFile(ConfigurationFile):
+    """
+    `nems.configure` file, containing NEMS members, coupling connections, and run sequence information
+    """
+
     name = 'nems.configure'
 
     @property
-    def entries(self) -> List[ConfigurationEntry]:
+    def entries(self) -> List[AttributeEntry]:
+        """
+        list of attributed configuration entries, including the Earth system, models, and run sequence
+        """
+
         return [self.sequence.earth, *self.sequence.models, self.sequence]
 
-    def __iter__(self) -> Iterator[ConfigurationEntry]:
+    def __iter__(self) -> Iterator[AttributeEntry]:
         for entry in self.entries:
             yield entry
 
     def __str__(self) -> str:
-        return '\n'.join(f'# {entry.entry_type} #\n' f'{entry}\n' for entry in self).strip()
+        return '\n'.join(f'# {entry.entry_title} #\n' f'{entry}\n' for entry in self).strip()
 
 
-class MeshFile(ConfigurationFile):
+class FileForcingsFile(ConfigurationFile):
+    """
+    `config.rc` file, containing paths to forcing files
+    """
+
     name = 'config.rc'
 
     @property
-    def entries(self) -> List[ModelMeshEntry]:
-        return [entry for entry in self.sequence if isinstance(entry, ModelMeshEntry)]
+    def entries(self) -> List[FileForcingEntry]:
+        """
+        list of file forcing entries
+        """
 
-    def __iter__(self) -> Iterator[ConfigurationEntry]:
+        return [entry for entry in self.sequence if isinstance(entry, FileForcingEntry)]
+
+    def __iter__(self) -> Iterator[AttributeEntry]:
         for entry in self.entries:
             yield entry
 
     def __str__(self) -> str:
-        return '\n'.join([ModelMeshEntry.__str__(model_mesh) for model_mesh in self])
+        return '\n'.join([FileForcingEntry.__str__(model_mesh) for model_mesh in self])
 
 
 class ModelConfigurationFile(ConfigurationFile):
@@ -390,6 +497,16 @@ class ModelConfigurationFile(ConfigurationFile):
         sequence: RunSequence,
         create_atm_namelist_rc: bool = True,
     ):
+        """
+        `model_configure` file, containing information on modeled start and end times, as well as ensemble information
+        also aliased to `atm_namelist.rc`
+
+        :param start_time: start time in model time
+        :param duration: duration in model time
+        :param sequence: run sequence containing models, connections, and order
+        :param create_atm_namelist_rc: whether to create a symlink to `atm_namelist.rc`
+        """
+
         self.start_time = start_time
         self.duration = duration
         self.create_atm_namelist_rc = create_atm_namelist_rc
@@ -434,11 +551,18 @@ class ModelConfigurationFile(ConfigurationFile):
 
 
 def ensure_directory(directory: PathLike) -> Path:
+    """
+    ensure that a directory exists
+
+    :param directory: directory path to ensure
+    :returns: path to ensured directory
+    """
+
     if not isinstance(directory, Path):
         directory = Path(directory)
     directory = directory.expanduser()
     if directory.is_file():
         directory = directory.parent
     if not directory.exists():
-        makedirs(directory, exist_ok=True)
+        directory.mkdir(parents=True, exist_ok=True)
     return directory

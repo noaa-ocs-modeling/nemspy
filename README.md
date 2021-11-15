@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from nemspy import ModelingSystem
-from nemspy.model import ADCIRCEntry, AtmosphericMeshEntry, WaveWatch3MeshEntry
+from nemspy.model import ADCIRCEntry, AtmosphericForcingEntry, WaveWatch3ForcingEntry
 
 # directory to which configuration files should be written
 output_directory = Path(__file__).parent / 'nems_configuration'
@@ -39,10 +39,10 @@ interval = timedelta(hours=1)
 
 # model entries
 ocean_model = ADCIRCEntry(processors=11, Verbosity='max', DumpFields=False)
-atmospheric_mesh = AtmosphericMeshEntry(
+atmospheric_mesh = AtmosphericForcingEntry(
     filename=forcings_directory / 'wind_atm_fin_ch_time_vec.nc', processors=1
 )
-wave_mesh = WaveWatch3MeshEntry(
+wave_mesh = WaveWatch3ForcingEntry(
     filename=forcings_directory / 'ww3.Constant.20151214_sxy_ike_date.nc', processors=1
 )
 

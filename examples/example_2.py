@@ -5,9 +5,9 @@ from pathlib import Path
 from nemspy import ModelingSystem
 from nemspy.model import (
     ADCIRCEntry,
-    AtmosphericMeshEntry,
+    AtmosphericForcingEntry,
     NationalWaterModelEntry,
-    WaveWatch3MeshEntry,
+    WaveWatch3ForcingEntry,
 )
 
 # directory to which configuration files should be written
@@ -26,8 +26,10 @@ interval = timedelta(hours=1)
 # model entries
 ocean_model = ADCIRCEntry(processors=11, verbose=True, DumpFields=False)
 hydrological_model = NationalWaterModelEntry(processors=769, DebugFlag=0)
-atmospheric_mesh = AtmosphericMeshEntry(forcings_directory / 'wind_atm_fin_ch_time_vec.nc')
-wave_mesh = WaveWatch3MeshEntry(forcings_directory / 'ww3.Constant.20151214_sxy_ike_date.nc')
+atmospheric_mesh = AtmosphericForcingEntry(forcings_directory / 'wind_atm_fin_ch_time_vec.nc')
+wave_mesh = WaveWatch3ForcingEntry(
+    forcings_directory / 'ww3.Constant.20151214_sxy_ike_date.nc'
+)
 
 # instantiate model system with model entries
 nems = ModelingSystem(

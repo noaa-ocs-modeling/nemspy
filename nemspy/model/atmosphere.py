@@ -1,6 +1,6 @@
 from os import PathLike
 
-from .base import ModelEntry, ModelMeshEntry, ModelType
+from .base import EntryType, FileForcingEntry, ModelEntry
 
 
 class AtmosphericModelEntry(ModelEntry):
@@ -8,13 +8,13 @@ class AtmosphericModelEntry(ModelEntry):
     abstract implementation of a generic atmospheric model
     """
 
-    model_type = ModelType.ATMOSPHERIC
+    entry_type = EntryType.ATMOSPHERIC
 
     def __init__(self, processors: int, **kwargs):
         super().__init__(processors, **kwargs)
 
 
-class AtmosphericMeshEntry(AtmosphericModelEntry, ModelMeshEntry):
+class AtmosphericForcingEntry(AtmosphericModelEntry, FileForcingEntry):
     """
     Atmospheric Mesh (ATMesh) reference
     """
@@ -25,7 +25,7 @@ class AtmosphericMeshEntry(AtmosphericModelEntry, ModelMeshEntry):
         if processors is None:
             processors = 1
         AtmosphericModelEntry.__init__(self, processors, **kwargs)
-        ModelMeshEntry.__init__(self, self.model_type, filename)
+        FileForcingEntry.__init__(self, self.model_type, filename)
 
 
 class HWRFEntry(AtmosphericModelEntry):

@@ -1,6 +1,6 @@
 from os import PathLike
 
-from .base import ModelEntry, ModelMeshEntry, ModelType
+from .base import EntryType, FileForcingEntry, ModelEntry
 
 
 class IceModelEntry(ModelEntry):
@@ -8,13 +8,13 @@ class IceModelEntry(ModelEntry):
     abstract implementation of a generic ice model
     """
 
-    model_type = ModelType.ICE
+    entry_type = EntryType.ICE
 
     def __init__(self, processors: int, **kwargs):
         super().__init__(processors, **kwargs)
 
 
-class IceMeshEntry(IceModelEntry, ModelMeshEntry):
+class IceForcingEntry(IceModelEntry, FileForcingEntry):
     """
     Ice model mesh reference
     """
@@ -26,4 +26,4 @@ class IceMeshEntry(IceModelEntry, ModelMeshEntry):
             processors = 1
         # Uses ww3data as name but the implementation is model agnostic
         IceModelEntry.__init__(self, processors, **kwargs)
-        ModelMeshEntry.__init__(self, self.model_type, filename)
+        FileForcingEntry.__init__(self, self.model_type, filename)

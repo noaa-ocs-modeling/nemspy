@@ -1,4 +1,4 @@
-from .base import ModelEntry, ModelType
+from .base import EntryType, ModelEntry
 
 
 class HydrologicalModelEntry(ModelEntry):
@@ -6,7 +6,7 @@ class HydrologicalModelEntry(ModelEntry):
     abstract implementation of a generic hydrological model
     """
 
-    model_type = ModelType.HYDROLOGICAL
+    entry_type = EntryType.HYDROLOGICAL
 
     def __init__(self, processors: int, **kwargs):
         super().__init__(processors, **kwargs)

@@ -6,25 +6,21 @@ from typing import Dict, List
 from .configuration import (
     ConfigurationFile,
     ensure_directory,
-    MeshFile,
+    FileForcingsFile,
     ModelConfigurationFile,
     NEMSConfigurationFile,
     RunSequence,
 )
-from .model.base import ConnectionEntry, MediationEntry, ModelEntry, ModelType, RemapMethod
+from .model.base import ConnectionEntry, EntryType, GridRemapMethod, MediationEntry, ModelEntry
 from .utilities import parse_datetime
 
 
 class ModelingSystem:
-    """
-    NEMS interface with configuration file output
-    """
-
     def __init__(
         self, start_time: datetime, end_time: datetime, interval: timedelta, **models,
     ):
         """
-        create a NEMS interface from the given interval and models
+        the NEMSpy public class, providing configuration and output to files
 
         :param start_time: start time within the modeled system
         :param end_time: end time within the modeled system
@@ -40,7 +36,7 @@ class ModelingSystem:
         self.__start_time = start_time
         self.end_time = end_time
 
-        model_types = [model_type.value.lower() for model_type in ModelType]
+        model_types = [model_type.value.lower() for model_type in EntryType]
 
         parsed_models = {}
         attributes = {}
@@ -48,7 +44,7 @@ class ModelingSystem:
             if key.lower() in model_types:
                 key = key.lower()
                 if isinstance(value, ModelEntry):
-                    if value.model_type.value.lower() == key:
+                    if value.entry_type.value.lower() == key:
                         parsed_models[key.upper()] = value
                     else:
                         raise TypeError(f'"{value.name}" is not {key}')
@@ -62,7 +58,10 @@ class ModelingSystem:
 
     @property
     def start_time(self) -> datetime:
-        """ end time within modeled system """
+        """
+        end time within modeled system
+        """
+
         return self.__start_time
 
     @start_time.setter
@@ -75,7 +74,10 @@ class ModelingSystem:
 
     @property
     def end_time(self) -> datetime:
-        """ end time within modeled system """
+        """
+        end time within modeled system
+        """
+
         return self.__end_time
 
     @end_time.setter
@@ -88,12 +90,18 @@ class ModelingSystem:
 
     @property
     def duration(self) -> timedelta:
-        """ duration of run within modeled system """
+        """
+        duration of run within modeled system
+        """
+
         return self.end_time - self.start_time
 
     @property
     def interval(self) -> timedelta:
-        """ run sequence interval within the modeled system """
+        """
+        run sequence interval within the modeled system
+        """
+
         return self.__sequence.interval
 
     @interval.setter
@@ -110,17 +118,26 @@ class ModelingSystem:
 
     @property
     def models(self) -> List[ModelEntry]:
-        """ models in execution order """
+        """
+        models in execution order
+        """
+
         return self.__sequence.models
 
     @property
     def processors(self) -> int:
-        """ number of PETs / processors / tasks """
+        """
+        number of PETs / processors / tasks
+        """
+
         return self.__sequence.processors
 
     @property
     def sequence(self) -> List[str]:
-        """ model execution order """
+        """
+        model execution order
+        """
+
         return [entry.sequence_entry for entry in self.__sequence.sequence]
 
     @sequence.setter
@@ -134,15 +151,15 @@ class ModelingSystem:
                 models = [model.strip() for model in entry.split('->')]
                 if len(models) == 2:
                     connection = ConnectionEntry.from_string(entry)
-                    source = connection.source.model_type.value
-                    destination = connection.target.model_type.value
+                    source = connection.source.entry_type.value
+                    destination = connection.target.entry_type.value
                     del connection
 
                     for connection in self.__sequence.connections:
                         if isinstance(connection, ConnectionEntry):
                             if (
-                                connection.source.model_type.value == source
-                                and connection.target.model_type.value == destination
+                                connection.source.entry_type.value == source
+                                and connection.target.entry_type.value == destination
                             ):
                                 sequence_entries.append(connection)
                                 break
@@ -150,13 +167,13 @@ class ModelingSystem:
                             if (connection.sources is None and source is None) or (
                                 connection.sources is not None
                                 and source
-                                in [source.model_type.value for source in connection.sources]
+                                in [source.entry_type.value for source in connection.sources]
                             ):
                                 if (connection.targets is None and destination is None) or (
                                     connection.targets is not None
                                     and destination
                                     in [
-                                        target.model_type.value
+                                        target.entry_type.value
                                         for target in connection.targets
                                     ]
                                 ):
@@ -167,7 +184,7 @@ class ModelingSystem:
                 elif len(models) == 3:
                     for mediation in self.__sequence.mediations:
                         if models == [
-                            model.model_type.value
+                            model.entry_type.value
                             for model in mediation.models
                             if model is not None
                         ]:
@@ -197,21 +214,21 @@ class ModelingSystem:
             except:
                 pass
 
-        model_types = [model_type.value.upper() for model_type in ModelType]
-        remap_methods = [remap.value.lower() for remap in RemapMethod]
+        model_types = [model_type.value.upper() for model_type in EntryType]
+        remap_methods = [remap.value.lower() for remap in GridRemapMethod]
 
         if source.upper() not in model_types:
             raise KeyError(f'"{source}" not in {model_types}')
         if target is not None:
             if target.upper() not in model_types:
                 raise KeyError(f'"{target}" not in {model_types}')
-            target = ModelType(target.upper())
+            target = EntryType(target.upper())
         if method is not None:
             if method.lower() not in remap_methods:
                 raise KeyError(f'"{method}" not in {remap_methods}')
-            method = RemapMethod(method.lower())
+            method = GridRemapMethod(method.lower())
 
-        self.__sequence.connect(ModelType(source.upper()), target, method)
+        self.__sequence.connect(EntryType(source.upper()), target, method)
 
     @property
     def connections(self) -> List[str]:
@@ -226,7 +243,7 @@ class ModelingSystem:
         sources: List[str] = None,
         functions: List[str] = None,
         targets: List[str] = None,
-        method: RemapMethod = None,
+        method: GridRemapMethod = None,
         processors: int = None,
         **attributes,
     ):
@@ -247,8 +264,8 @@ class ModelingSystem:
             except:
                 pass
 
-        model_types = [model_type.value.upper() for model_type in ModelType]
-        remap_methods = [remap.value.lower() for remap in RemapMethod]
+        model_types = [model_type.value.upper() for model_type in EntryType]
+        remap_methods = [remap.value.lower() for remap in GridRemapMethod]
 
         if sources is not None:
             if isinstance(sources, str):
@@ -257,7 +274,7 @@ class ModelingSystem:
                 if isinstance(source, str):
                     if source.upper() not in model_types:
                         raise KeyError(f'"{source}" not in {model_types}')
-                    sources[index] = ModelType(source.upper())
+                    sources[index] = EntryType(source.upper())
         if targets is not None:
             if isinstance(targets, str):
                 targets = [targets]
@@ -265,11 +282,11 @@ class ModelingSystem:
                 if isinstance(target, str):
                     if target.upper() not in model_types:
                         raise KeyError(f'"{target}" not in {model_types}')
-                    targets[index] = ModelType(target.upper())
+                    targets[index] = EntryType(target.upper())
         if method is not None and isinstance(method, str):
             if method.lower() not in remap_methods:
                 raise KeyError(f'"{method}" not in {remap_methods}')
-            method = RemapMethod(method.lower())
+            method = GridRemapMethod(method.lower())
 
         self.__sequence.mediate(sources, functions, targets, method, processors, **attributes)
 
@@ -277,7 +294,7 @@ class ModelingSystem:
     def __configuration_files(self) -> List[ConfigurationFile]:
         return [
             NEMSConfigurationFile(self.__sequence),
-            MeshFile(self.__sequence),
+            FileForcingsFile(self.__sequence),
             ModelConfigurationFile(self.start_time, self.duration, self.__sequence),
         ]
 
@@ -297,6 +314,7 @@ class ModelingSystem:
         :param directory: path to output directory
         :param overwrite: overwrite existing files
         :param include_version: include the NEMSpy version in a comment
+        :returns: list of written file paths
         """
 
         directory = ensure_directory(directory)
@@ -311,32 +329,32 @@ class ModelingSystem:
         return filenames
 
     def __getitem__(self, model_type: str) -> ModelEntry:
-        if not isinstance(model_type, str) and not isinstance(model_type, ModelType):
+        if not isinstance(model_type, str) and not isinstance(model_type, EntryType):
             raise ValueError(
-                f'model type must be {str} or {ModelType}, not {type(model_type)}'
+                f'model type must be {str} or {EntryType}, not {type(model_type)}'
             )
-        model_types = [model_type.value.upper() for model_type in ModelType]
+        model_types = [model_type.value.upper() for model_type in EntryType]
         if model_type.upper() not in model_types:
             raise KeyError(f'"{model_type}" not in {model_types}')
-        return self.__sequence[ModelType(model_type.upper())]
+        return self.__sequence[EntryType(model_type.upper())]
 
     def __setitem__(self, model_type: str, model: ModelEntry):
-        if not isinstance(model_type, str) and not isinstance(model_type, ModelType):
+        if not isinstance(model_type, str) and not isinstance(model_type, EntryType):
             raise ValueError(
-                f'model type must be {str} or {ModelType}, not {type(model_type)}'
+                f'model type must be {str} or {EntryType}, not {type(model_type)}'
             )
-        model_types = [model_type.value.upper() for model_type in ModelType]
+        model_types = [model_type.value.upper() for model_type in EntryType]
         if model_type.upper() not in model_types:
             raise KeyError(f'"{model_type}" not in {model_types}')
-        self.__sequence[ModelType(model_type.upper())] = model
+        self.__sequence[EntryType(model_type.upper())] = model
 
     def __contains__(self, model_type: str) -> bool:
-        if not isinstance(model_type, str) and not isinstance(model_type, ModelType):
+        if not isinstance(model_type, str) and not isinstance(model_type, EntryType):
             raise ValueError(
-                f'model type must be {str} or {ModelType}, not {type(model_type)}'
+                f'model type must be {str} or {EntryType}, not {type(model_type)}'
             )
-        return ModelType(model_type.upper()) in self.__sequence
+        return EntryType(model_type.upper()) in self.__sequence
 
     def __repr__(self) -> str:
-        models = [f'{model.model_type}={repr(model)}' for model in self.__sequence.models]
+        models = [f'{model.entry_type}={repr(model)}' for model in self.__sequence.models]
         return f'{self.__class__.__name__}({repr(self.interval)}, {", ".join(models)})'

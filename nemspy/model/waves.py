@@ -1,6 +1,6 @@
 from os import PathLike
 
-from .base import ModelEntry, ModelMeshEntry, ModelType
+from .base import EntryType, FileForcingEntry, ModelEntry
 
 
 class WaveModelEntry(ModelEntry):
@@ -8,13 +8,13 @@ class WaveModelEntry(ModelEntry):
     abstract implementation of a generic wave model
     """
 
-    model_type = ModelType.WAVE
+    entry_type = EntryType.WAVE
 
     def __init__(self, processors: int, **kwargs):
         super().__init__(processors, **kwargs)
 
 
-class WaveWatch3MeshEntry(WaveModelEntry, ModelMeshEntry):
+class WaveWatch3ForcingEntry(WaveModelEntry, FileForcingEntry):
     """
     WaveWatch III mesh reference
     """
@@ -26,7 +26,7 @@ class WaveWatch3MeshEntry(WaveModelEntry, ModelMeshEntry):
             processors = 1
         # Uses ww3data as name but the implementation is model agnostic
         WaveModelEntry.__init__(self, processors, **kwargs)
-        ModelMeshEntry.__init__(self, self.model_type, filename)
+        FileForcingEntry.__init__(self, self.model_type, filename)
 
 
 class WaveWatch3Entry(WaveModelEntry):

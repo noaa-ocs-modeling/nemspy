@@ -10,12 +10,12 @@ import pytest
 from nemspy import ModelingSystem
 from nemspy.model import (
     ADCIRCEntry,
-    AtmosphericMeshEntry,
-    IceMeshEntry,
+    AtmosphericForcingEntry,
+    IceForcingEntry,
     NationalWaterModelEntry,
-    WaveWatch3MeshEntry,
+    WaveWatch3ForcingEntry,
 )
-from nemspy.model.base import ConnectionEntry, ModelVerbosity
+from nemspy.model.base import ConnectionEntry, VerbosityOption
 from tests import (
     check_reference_directory,
     INPUT_DIRECTORY,
@@ -33,10 +33,10 @@ def test_interface():
     start_time = datetime(2020, 6, 1)
     duration = timedelta(days=1)
     interval = timedelta(hours=1)
-    atmospheric_mesh = AtmosphericMeshEntry(ATMOSPHERIC_MESH_FILENAME)
-    wave_mesh = WaveWatch3MeshEntry(WAVE_MESH_FILENAME)
+    atmospheric_mesh = AtmosphericForcingEntry(ATMOSPHERIC_MESH_FILENAME)
+    wave_mesh = WaveWatch3ForcingEntry(WAVE_MESH_FILENAME)
     ocean_model = ADCIRCEntry(11)
-    hydrological_model = NationalWaterModelEntry(769, Verbosity=ModelVerbosity.MAX)
+    hydrological_model = NationalWaterModelEntry(769, Verbosity=VerbosityOption.MAX)
 
     nems = ModelingSystem(
         start_time,
@@ -68,8 +68,8 @@ def test_interface():
 
     assert nems.interval == new_interval
 
-    nems.attributes = {'Verbosity': ModelVerbosity.MAX}
-    nems.attributes['Verbosity'] = ModelVerbosity.LOW
+    nems.attributes = {'Verbosity': VerbosityOption.MAX}
+    nems.attributes['Verbosity'] = VerbosityOption.LOW
 
     assert nems.attributes['Verbosity'] == 'max'
 
@@ -79,7 +79,7 @@ def test_connection():
     duration = timedelta(days=1)
     interval = timedelta(hours=1)
     ocean_model = ADCIRCEntry(11)
-    wave_mesh = WaveWatch3MeshEntry(WAVE_MESH_FILENAME)
+    wave_mesh = WaveWatch3ForcingEntry(WAVE_MESH_FILENAME)
 
     nems = ModelingSystem(
         start_time, start_time + duration, interval, ocn=ocean_model, wav=wave_mesh
@@ -116,8 +116,8 @@ def test_mediation():
     start_time = datetime(2020, 6, 1)
     duration = timedelta(days=1)
     interval = timedelta(hours=1)
-    atmospheric_mesh = AtmosphericMeshEntry(ATMOSPHERIC_MESH_FILENAME)
-    ice_mesh = IceMeshEntry(ICE_MESH_FILENAME)
+    atmospheric_mesh = AtmosphericForcingEntry(ATMOSPHERIC_MESH_FILENAME)
+    ice_mesh = IceForcingEntry(ICE_MESH_FILENAME)
     ocean_model = ADCIRCEntry(11)
 
     nems = ModelingSystem(
@@ -170,8 +170,8 @@ def test_sequence():
     start_time = datetime(2020, 6, 1)
     duration = timedelta(days=1)
     interval = timedelta(hours=1)
-    atmospheric_mesh = AtmosphericMeshEntry(ATMOSPHERIC_MESH_FILENAME)
-    wave_mesh = WaveWatch3MeshEntry(WAVE_MESH_FILENAME)
+    atmospheric_mesh = AtmosphericForcingEntry(ATMOSPHERIC_MESH_FILENAME)
+    wave_mesh = WaveWatch3ForcingEntry(WAVE_MESH_FILENAME)
     ocean_model = ADCIRCEntry(11)
 
     nems = ModelingSystem(
@@ -241,10 +241,10 @@ def test_configuration_files():
     start_time = datetime(2020, 6, 1)
     duration = timedelta(days=1)
     interval = timedelta(hours=1)
-    atmospheric_mesh = AtmosphericMeshEntry(ATMOSPHERIC_MESH_FILENAME)
-    wave_mesh = WaveWatch3MeshEntry(WAVE_MESH_FILENAME, Verbosity='low')
+    atmospheric_mesh = AtmosphericForcingEntry(ATMOSPHERIC_MESH_FILENAME)
+    wave_mesh = WaveWatch3ForcingEntry(WAVE_MESH_FILENAME, Verbosity='low')
     ocean_model = ADCIRCEntry(11)
-    hydrological_model = NationalWaterModelEntry(769, Verbosity=ModelVerbosity.MAX)
+    hydrological_model = NationalWaterModelEntry(769, Verbosity=VerbosityOption.MAX)
 
     nems = ModelingSystem(
         start_time,

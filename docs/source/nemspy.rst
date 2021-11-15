@@ -1,45 +1,26 @@
-nemspy package
-==============
+nemspy
+======
 
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 4
-
-   nemspy.model
-
-Submodules
-----------
-
-nemspy.configuration module
----------------------------
-
-.. automodule:: nemspy.configuration
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-nemspy.interface module
------------------------
+nemspy.interface
+----------------
 
 .. automodule:: nemspy.interface
    :members:
    :undoc-members:
    :show-inheritance:
 
-nemspy.utilities module
------------------------
+nemspy.configuration
+--------------------
 
-.. automodule:: nemspy.utilities
+.. automodule:: nemspy.configuration
    :members:
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
+nemspy.utilities
+----------------
 
-.. automodule:: nemspy
+.. automodule:: nemspy.utilities
    :members:
    :undoc-members:
    :show-inheritance:

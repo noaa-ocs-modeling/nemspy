@@ -1,61 +1,50 @@
-nemspy.model package
-====================
+nemspy.model
+============
 
-Submodules
-----------
-
-nemspy.model.atmosphere module
-------------------------------
-
-.. automodule:: nemspy.model.atmosphere
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-nemspy.model.base module
-------------------------
+nemspy.model.base
+-----------------
 
 .. automodule:: nemspy.model.base
    :members:
    :undoc-members:
    :show-inheritance:
 
-nemspy.model.hydrology module
------------------------------
+nemspy.model.atmosphere
+-----------------------
+
+.. automodule:: nemspy.model.atmosphere
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+nemspy.model.hydrology
+----------------------
 
 .. automodule:: nemspy.model.hydrology
    :members:
    :undoc-members:
    :show-inheritance:
 
-nemspy.model.ice module
------------------------
+nemspy.model.ice
+----------------
 
 .. automodule:: nemspy.model.ice
    :members:
    :undoc-members:
    :show-inheritance:
 
-nemspy.model.ocean module
--------------------------
+nemspy.model.ocean
+------------------
 
 .. automodule:: nemspy.model.ocean
    :members:
    :undoc-members:
    :show-inheritance:
 
-nemspy.model.waves module
--------------------------
+nemspy.model.waves
+------------------
 
 .. automodule:: nemspy.model.waves
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: nemspy.model
    :members:
    :undoc-members:
    :show-inheritance:
