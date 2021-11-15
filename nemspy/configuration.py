@@ -5,9 +5,9 @@ import os
 from os import makedirs, PathLike
 from pathlib import Path
 from textwrap import indent
-from typing import Iterator, Tuple
+from typing import Iterator, List, Tuple, Union
 
-from pip._internal.utils.misc import get_installed_distributions
+from dunamai import Version
 
 from .model.base import (
     ConfigurationEntry,
@@ -127,16 +127,16 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
                 self[entry.model_type] = entry
         self.__sequence.append(entry)
 
-    def extend(self, sequence: [SequenceEntry]):
+    def extend(self, sequence: List[SequenceEntry]):
         for entry in sequence:
             self.append(entry)
 
     @property
-    def sequence(self) -> [SequenceEntry]:
+    def sequence(self) -> List[SequenceEntry]:
         return self.__sequence
 
     @sequence.setter
-    def sequence(self, sequence: [SequenceEntry]):
+    def sequence(self, sequence: List[SequenceEntry]):
         sequence = list(sequence)
         if sequence != self.__sequence:
             mediator = self.mediator
@@ -168,7 +168,7 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
         self.append(ConnectionEntry(self[source], self[target], method))
 
     @property
-    def connections(self) -> [ConnectionEntry]:
+    def connections(self) -> List[Union[ConnectionEntry, MediationEntry]]:
         return [
             entry
             for entry in self.sequence
@@ -188,9 +188,9 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
 
     def mediate(
         self,
-        sources: [ModelType] = None,
-        functions: [str] = None,
-        targets: [ModelType] = None,
+        sources: List[ModelType] = None,
+        functions: List[str] = None,
+        targets: List[ModelType] = None,
         method: RemapMethod = None,
         processors: int = None,
         **attributes,
@@ -215,7 +215,7 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
         self.append(MediationEntry(self.mediator, sources, functions, targets, method))
 
     @property
-    def mediations(self) -> [MediationEntry]:
+    def mediations(self) -> List[MediationEntry]:
         return [entry for entry in self.sequence if isinstance(entry, MediationEntry)]
 
     @property
@@ -257,7 +257,7 @@ class RunSequence(ConfigurationEntry, SequenceEntry):
         return self.__models[model_type]
 
     @property
-    def models(self) -> [ModelEntry]:
+    def models(self) -> List[ModelEntry]:
         models = [
             model
             for model_type, model in self.__models.items()
@@ -304,17 +304,14 @@ class ConfigurationFile(ABC):
     def __init__(self, sequence: RunSequence):
         self.sequence = sequence
 
-    def __getitem__(self, entry_type: type) -> [ConfigurationEntry]:
+    def __getitem__(self, entry_type: type) -> List[ConfigurationEntry]:
         return [entry for entry in self if isinstance(entry, entry_type)]
 
     @property
     def version_header(self) -> str:
-        installed_distributions = get_installed_distributions()
-        for distribution in installed_distributions:
-            if distribution.project_name.lower() == 'nemspy':
-                version = distribution.version
-                break
-        else:
+        try:
+            version = Version.from_any_vcs().serialize()
+        except RuntimeError:
             version = 'unknown'
         return f'# `{self.name}` generated with NEMSpy {version}'
 
@@ -357,7 +354,7 @@ class NEMSConfigurationFile(ConfigurationFile):
     name = 'nems.configure'
 
     @property
-    def entries(self) -> [ConfigurationEntry]:
+    def entries(self) -> List[ConfigurationEntry]:
         return [self.sequence.earth, *self.sequence.models, self.sequence]
 
     def __iter__(self) -> Iterator[ConfigurationEntry]:
@@ -372,7 +369,7 @@ class MeshFile(ConfigurationFile):
     name = 'config.rc'
 
     @property
-    def entries(self) -> [ModelMeshEntry]:
+    def entries(self) -> List[ModelMeshEntry]:
         return [entry for entry in self.sequence if isinstance(entry, ModelMeshEntry)]
 
     def __iter__(self) -> Iterator[ConfigurationEntry]:

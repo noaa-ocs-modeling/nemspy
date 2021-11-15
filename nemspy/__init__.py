@@ -1,1 +1,1 @@
-from .interface import ModelingSystem
+from nemspy.interface import ModelingSystem

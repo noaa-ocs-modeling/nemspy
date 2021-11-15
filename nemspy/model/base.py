@@ -3,6 +3,7 @@ from enum import Enum
 from os import PathLike
 from pathlib import PurePosixPath
 from textwrap import indent
+from typing import Dict, List
 
 INDENTATION = '  '
 
@@ -72,14 +73,14 @@ class ConfigurationEntry(ABC):
     """
 
     entry_type: str = NotImplementedError
-    __attributes: {str: str} = NotImplementedError
+    __attributes: Dict[str, str] = NotImplementedError
 
     @abstractmethod
     def __str__(self) -> str:
         raise NotImplementedError
 
     @property
-    def attributes(self) -> {str: str}:
+    def attributes(self) -> Dict[str, str]:
         attributes = {}
         for attribute, value in self.__attributes.items():
             if isinstance(value, Enum):
@@ -90,7 +91,7 @@ class ConfigurationEntry(ABC):
         return attributes
 
     @attributes.setter
-    def attributes(self, attributes: {str: str}):
+    def attributes(self, attributes: Dict[str, str]):
         self.__attributes = attributes
 
 
@@ -329,9 +330,9 @@ class MediationEntry(SequenceEntry):
     def __init__(
         self,
         mediator: MediatorEntry,
-        sources: [ModelEntry] = None,
-        functions: [str] = None,
-        targets: [ModelEntry] = None,
+        sources: List[ModelEntry] = None,
+        functions: List[str] = None,
+        targets: List[ModelEntry] = None,
         method: RemapMethod = None,
     ):
         if functions is None:
@@ -348,7 +349,7 @@ class MediationEntry(SequenceEntry):
         self.method = method
 
     @property
-    def source_connections(self) -> [ConnectionEntry]:
+    def source_connections(self) -> List[ConnectionEntry]:
         source_connections = []
         if self.sources is not None:
             for index, source in enumerate(self.sources):
@@ -356,7 +357,7 @@ class MediationEntry(SequenceEntry):
         return source_connections
 
     @property
-    def target_connections(self) -> [ConnectionEntry]:
+    def target_connections(self) -> List[ConnectionEntry]:
         target_connections = []
         if self.targets is not None:
             for index, target in enumerate(self.targets):
@@ -364,7 +365,7 @@ class MediationEntry(SequenceEntry):
         return target_connections
 
     @property
-    def models(self) -> [ModelEntry]:
+    def models(self) -> List[ModelEntry]:
         return [
             *(connection.source for connection in self.source_connections),
             self.mediator,

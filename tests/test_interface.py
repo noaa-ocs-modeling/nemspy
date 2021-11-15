@@ -155,14 +155,14 @@ def test_mediation():
         nems.connect('WAV', 'OCN', 'nonexistent')
 
     assert nems.connections == [
-        'ATM -> MED   :remapMethod=redist\n'
+        'ATM -> MED   :remapMethod=bilinear\n'
         'MED MedPhase_prep_ice\n'
-        'MED -> ICE   :remapMethod=redist',
-        'ICE -> MED   :remapMethod=redist\n'
+        'MED -> ICE   :remapMethod=bilinear',
+        'ICE -> MED   :remapMethod=bilinear\n'
         'MED MedPhase_atm_ocn_flux\n'
         'MED MedPhase_accum_fast\n'
         'MED MedPhase_prep_ocn\n'
-        'MED -> OCN   :remapMethod=redist',
+        'MED -> OCN   :remapMethod=bilinear',
     ]
 
 
