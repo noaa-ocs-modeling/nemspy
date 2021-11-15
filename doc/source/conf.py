@@ -9,9 +9,13 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
+import os
 from os import PathLike
 from pathlib import Path
 import sys
+
+from dunamai import Version
+from setuptools import config
 
 
 def repository_root(path: PathLike = None) -> Path:
@@ -30,23 +34,27 @@ def repository_root(path: PathLike = None) -> Path:
 sys.path.insert(0, str(repository_root()))
 
 # -- Project information -----------------------------------------------------
+metadata = config.read_configuration('../../setup.cfg')['metadata']
 
-project = 'NEMSpy'
-copyright = '2021, Zachary Burnett'
-author = 'Zachary Burnett'
+project = metadata['name']
+author = metadata['author']
+copyright = f'2021, {author}'
 
 # The full version, including alpha/beta/rc tags
-release = '1.0.3'
+try:
+    release = Version.from_any_vcs().serialize()
+except RuntimeError:
+    release = os.environ.get('VERSION')
 
 # -- General configuration ---------------------------------------------------
 
-autoclass_content = "both"  # include both class docstring and __init__
+autoclass_content = 'both'  # include both class docstring and __init__
 autodoc_default_options = {
     # Make sure that any autodoc declarations show the right members
-    "members": True,
-    "inherited-members": True,
-    "private-members": True,
-    "show-inheritance": True,
+    'members': True,
+    'inherited-members': True,
+    'private-members': True,
+    'show-inheritance': True,
 }
 autosummary_generate = True  # Make _autosummary files and include them
 napoleon_numpy_docstring = False  # Force consistency, leave only Google
@@ -77,7 +85,7 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'alabaster'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

@@ -1,0 +1,34 @@
+name: documentation
+
+on:
+  push:
+    branches:
+      - main
+  release:
+    types:
+      - published
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2.4.0
+        with:
+          fetch-depth: 0
+      - name: Retrieve latest version from Git tags
+        uses: mtkennerly/dunamai-action@v1
+        with:
+          env-var: VERSION
+          args: --style semver
+      - name: Build documentation site with Sphinx
+        uses: ammaraskar/sphinx-action@0.4
+        with:
+          pre-build-command: 'pip install dunamai m2r2'
+          docs-folder: 'docs/'
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@4.1.5
+        with:
+          branch: gh-pages
+          folder: docs/build/html

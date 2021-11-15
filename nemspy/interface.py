@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from os import PathLike
 from pathlib import Path
+from typing import Dict, List
 
 from .configuration import (
     ConfigurationFile,
@@ -104,11 +105,11 @@ class ModelingSystem:
         return self.__sequence.attributes
 
     @attributes.setter
-    def attributes(self, attributes: {str: str}):
+    def attributes(self, attributes: Dict[str, str]):
         self.__sequence.attributes = attributes
 
     @property
-    def models(self) -> [ModelEntry]:
+    def models(self) -> List[ModelEntry]:
         """ models in execution order """
         return self.__sequence.models
 
@@ -118,12 +119,12 @@ class ModelingSystem:
         return self.__sequence.processors
 
     @property
-    def sequence(self) -> [str]:
+    def sequence(self) -> List[str]:
         """ model execution order """
         return [entry.sequence_entry for entry in self.__sequence.sequence]
 
     @sequence.setter
-    def sequence(self, sequence: [str]):
+    def sequence(self, sequence: List[str]):
         sequence_entries = []
         entries = {entry.sequence_entry: entry for entry in self.__sequence.sequence}
         for entry in sequence:
@@ -213,7 +214,7 @@ class ModelingSystem:
         self.__sequence.connect(ModelType(source.upper()), target, method)
 
     @property
-    def connections(self) -> [str]:
+    def connections(self) -> List[str]:
         """
         string representations of coupling connections in format `'WAV -> HYD'`
         """
@@ -222,9 +223,9 @@ class ModelingSystem:
 
     def mediate(
         self,
-        sources: [str] = None,
-        functions: [str] = None,
-        targets: [str] = None,
+        sources: List[str] = None,
+        functions: List[str] = None,
+        targets: List[str] = None,
         method: RemapMethod = None,
         processors: int = None,
         **attributes,
@@ -273,7 +274,7 @@ class ModelingSystem:
         self.__sequence.mediate(sources, functions, targets, method, processors, **attributes)
 
     @property
-    def __configuration_files(self) -> [ConfigurationFile]:
+    def __configuration_files(self) -> List[ConfigurationFile]:
         return [
             NEMSConfigurationFile(self.__sequence),
             MeshFile(self.__sequence),
@@ -281,7 +282,7 @@ class ModelingSystem:
         ]
 
     @property
-    def configuration(self) -> {str: str}:
+    def configuration(self) -> Dict[str, str]:
         return {
             configuration_file.name: str(configuration_file)
             for configuration_file in self.__configuration_files
@@ -289,7 +290,7 @@ class ModelingSystem:
 
     def write(
         self, directory: PathLike, overwrite: bool = False, include_version: bool = False,
-    ) -> [Path]:
+    ) -> List[Path]:
         """
         write NEMS / NUOPC configuration to the given directory
 
