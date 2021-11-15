@@ -16,12 +16,7 @@ from nemspy.model import (
     WaveWatch3MeshEntry,
 )
 from nemspy.model.base import ConnectionEntry, ModelVerbosity
-from tests import (
-    check_reference_directory,
-    INPUT_DIRECTORY,
-    OUTPUT_DIRECTORY,
-    REFERENCE_DIRECTORY,
-)
+from tests import (INPUT_DIRECTORY, OUTPUT_DIRECTORY, REFERENCE_DIRECTORY, check_reference_directory)
 
 FORCINGS_DIRECTORY = Path(os.path.relpath(INPUT_DIRECTORY / 'forcings', Path(__file__).parent))
 ATMOSPHERIC_MESH_FILENAME = FORCINGS_DIRECTORY / 'wind_atm_fin_ch_time_vec.nc'
@@ -155,14 +150,14 @@ def test_mediation():
         nems.connect('WAV', 'OCN', 'nonexistent')
 
     assert nems.connections == [
-        'ATM -> MED   :remapMethod=redist\n'
+        'ATM -> MED   :remapMethod=bilinear\n'
         'MED MedPhase_prep_ice\n'
-        'MED -> ICE   :remapMethod=redist',
-        'ICE -> MED   :remapMethod=redist\n'
+        'MED -> ICE   :remapMethod=bilinear',
+        'ICE -> MED   :remapMethod=bilinear\n'
         'MED MedPhase_atm_ocn_flux\n'
         'MED MedPhase_accum_fast\n'
         'MED MedPhase_prep_ocn\n'
-        'MED -> OCN   :remapMethod=redist',
+        'MED -> OCN   :remapMethod=bilinear',
     ]
 
 
