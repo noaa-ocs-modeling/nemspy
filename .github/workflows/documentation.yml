@@ -23,10 +23,10 @@ jobs:
           env-var: VERSION
           args: --style semver
       - name: Build documentation site with Sphinx
-        uses: ammaraskar/sphinx-action@0.4
-        with:
-          pre-build-command: 'pip install dunamai m2r2'
-          docs-folder: 'docs/'
+        run: |
+          pip install dunamai m2r2 sphinx sphinx-rtd-theme
+          cd docs
+          make html
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@4.1.5
         with:
