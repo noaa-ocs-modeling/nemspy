@@ -1,50 +1,50 @@
-nemspy.model
-============
+Models and Forcing Configurations
+=================================
 
-nemspy.model.base
------------------
-
-.. automodule:: nemspy.model.base
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-nemspy.model.atmosphere
------------------------
+atmospheric models
+------------------
 
 .. automodule:: nemspy.model.atmosphere
    :members:
    :undoc-members:
    :show-inheritance:
 
-nemspy.model.hydrology
-----------------------
+terrestrial hydrology models
+----------------------------
 
 .. automodule:: nemspy.model.hydrology
    :members:
    :undoc-members:
    :show-inheritance:
 
-nemspy.model.ice
-----------------
+sea ice models
+--------------
 
 .. automodule:: nemspy.model.ice
    :members:
    :undoc-members:
    :show-inheritance:
 
-nemspy.model.ocean
-------------------
+ocean circulation models
+------------------------
 
 .. automodule:: nemspy.model.ocean
    :members:
    :undoc-members:
    :show-inheritance:
 
-nemspy.model.waves
-------------------
+wave models
+-----------
 
 .. automodule:: nemspy.model.waves
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+abstract classes
+----------------
+
+.. automodule:: nemspy.model.base
    :members:
    :undoc-members:
    :show-inheritance:
