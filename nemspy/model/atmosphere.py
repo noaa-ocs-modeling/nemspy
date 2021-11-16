@@ -16,7 +16,10 @@ class AtmosphericModelEntry(ModelEntry):
 
 class AtmosphericForcingEntry(AtmosphericModelEntry, FileForcingEntry):
     """
-    Atmospheric Mesh (ATMesh) reference
+    file forcing entry for Atmospheric Mesh (ATMesh), which combines data from HRRR, GFS, etc.
+
+    :example:
+    >>> atmospheric_mesh = AtmosphericForcingEntry(filename='wind_atm_fin_ch_time_vec.nc', processors=1)
     """
 
     name = 'atmesh'

@@ -5,7 +5,7 @@ from .base import EntryType, FileForcingEntry, ModelEntry
 
 class IceModelEntry(ModelEntry):
     """
-    abstract implementation of a generic ice model
+    abstraction of a generic ice model
     """
 
     entry_type = EntryType.ICE
@@ -16,7 +16,7 @@ class IceModelEntry(ModelEntry):
 
 class IceForcingEntry(IceModelEntry, FileForcingEntry):
     """
-    Ice model mesh reference
+    file forcing entry of an ice model
     """
 
     name = 'icemesh'

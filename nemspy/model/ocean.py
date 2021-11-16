@@ -3,7 +3,7 @@ from .base import EntryType, ModelEntry
 
 class OceanModelEntry(ModelEntry):
     """
-    abstract implementation of a generic oceanic model
+    abstraction of a generic oceanic model
     """
 
     entry_type = EntryType.OCEAN
@@ -16,6 +16,9 @@ class ADCIRCEntry(OceanModelEntry):
     """
     Advanced Circulation (ADCIRC) model
     http://adcirc.org
+
+    :example:
+    >>> ocean_model = ADCIRCEntry(processors=11, Verbosity='max', DumpFields=False)
     """
 
     name = 'adcirc'

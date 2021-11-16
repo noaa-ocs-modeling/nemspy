@@ -9,6 +9,13 @@ from typing import Union
 
 
 def repository_root(path: PathLike = None) -> Path:
+    """
+    find enclosing Git repository
+
+    :param path: path to start at
+    :return: path to root of Git repository
+    """
+
     if path is None:
         path = __file__
     if not isinstance(path, Path):
@@ -28,6 +35,17 @@ def get_logger(
     console_level: int = None,
     log_format: str = None,
 ) -> logging.Logger:
+    """
+    instantiate logger instance
+
+    :param name: name of logger
+    :param log_filename: path to log file
+    :param file_level: minimum log level to write to log file
+    :param console_level: minimum log level to print to console
+    :param log_format: logger message format
+    :return: instance of a Logger object
+    """
+
     if file_level is None:
         file_level = logging.DEBUG
     if console_level is None:
@@ -82,6 +100,12 @@ LOGGER = get_logger('nemspy')
 def create_symlink(
     source_filename: PathLike, symlink_filename: PathLike, relative: bool = False
 ):
+    """
+    :param source_filename: path to point to
+    :param symlink_filename: path at which to create symlink
+    :param relative: make symlink relative to source location
+    """
+
     if not isinstance(source_filename, Path):
         source_filename = Path(source_filename)
     if not isinstance(symlink_filename, Path):
@@ -115,7 +139,14 @@ def create_symlink(
         os.chdir(starting_directory)
 
 
-def parse_datetime(value: Union[int, float, str, datetime]):
+def parse_datetime(value: Union[int, float, str, datetime]) -> datetime:
+    """
+    attempt to parse a datetime from the given value
+
+    :param value: value to parse
+    :return: parsed datetime
+    """
+
     if not isinstance(value, datetime):
         if isinstance(value, int) or isinstance(value, float):
             value = datetime.fromtimestamp(value)

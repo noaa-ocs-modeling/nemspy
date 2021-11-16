@@ -46,10 +46,12 @@ class GridRemapMethod(Enum):
 
 
 class FileForcingEntry(ABC):
+    """
+    abstraction of a forcing entry in `config.rc`, defining the file path to a forcing file
+    """
+
     def __init__(self, entry_type: EntryType, filename: PathLike = None):
         """
-        abstraction of a forcing entry in `config.rc`, defining the file path to a forcing file
-
         :param entry_type: type of file forcing (i.e. `ATM`, `ICE`, etc.)
         :param filename: path to file
         """
@@ -79,6 +81,10 @@ class FileForcingEntry(ABC):
 
 
 class ConfigurationEntry(ABC):
+    """
+    abstraction of an entry in a configuration file
+    """
+
     @classmethod
     @abstractmethod
     def from_string(cls, string: str, **kwargs) -> 'ConfigurationEntry':
@@ -144,13 +150,15 @@ class SequenceEntry(ABC):
 
 
 class ModelEntry(AttributeEntry, SequenceEntry, ConfigurationEntry):
+    """
+    abstraction of a generic model implementing NEMS / NUOPC coupling
+    """
+
     entry_type: EntryType
     name: str
 
     def __init__(self, processors: int, **attributes):
         """
-        abstraction of a generic model implementing NEMS / NUOPC coupling
-
         The model entry is represented in two places in `nems.configure`: once as a configuration entry with attributes, and once in the run sequence.
         The specific processors assigned to the model are defined by start and stop indices, which are determined on configuration write from the stop index of the previous entry in the run sequence.
 
@@ -328,10 +336,12 @@ class ModelEntry(AttributeEntry, SequenceEntry, ConfigurationEntry):
 
 
 class ConnectionEntry(SequenceEntry, ConfigurationEntry):
+    """
+    a connection entry in `nems.configure` representing a simple coupling between two model entries
+    """
+
     def __init__(self, source: ModelEntry, target: ModelEntry, method: GridRemapMethod = None):
         """
-        a connection entry in `nems.configure` representing a simple coupling between two model entries
-
         :param source: source model entry
         :param target: target model entry
         :param method: remapping method with which to translate between differing grids (use `redist` for the same grid)
@@ -386,13 +396,15 @@ class ConnectionEntry(SequenceEntry, ConfigurationEntry):
 
 
 class MediatorEntry(ModelEntry):
+    """
+    a special entry in `nems.configure` representing a coupler between two model entries with a dedicated coupling function
+    """
+
     entry_type = EntryType.MEDIATOR
     name = 'implicit'
 
     def __init__(self, processors: int = None, **attributes):
         """
-        a special entry in `nems.configure` representing a coupler between two model entries with a dedicated coupling function
-
         :param processors: number of processors to assign to this mediator
         """
 
@@ -402,10 +414,12 @@ class MediatorEntry(ModelEntry):
 
 
 class MediationFunctionEntry(SequenceEntry, ConfigurationEntry):
+    """
+    the dedicated function of a mediation entry, applied to the coupling between two model entries in `nems.configure`
+    """
+
     def __init__(self, name: str, mediator: MediatorEntry):
         """
-        the dedicated function of a mediation entry, applied to the coupling between two model entries in `nems.configure`
-
         :param name: name of function
         :param mediator: mediator entry to host this function
         """
@@ -431,6 +445,10 @@ class MediationFunctionEntry(SequenceEntry, ConfigurationEntry):
 
 
 class MediationEntry(SequenceEntry, ConfigurationEntry):
+    """
+    an application of a mediator between model entries, with a dedicated coupling function
+    """
+
     def __init__(
         self,
         mediator: MediatorEntry,
@@ -440,7 +458,6 @@ class MediationEntry(SequenceEntry, ConfigurationEntry):
         method: GridRemapMethod = None,
     ):
         """
-        an application of a mediator between model entries, with a dedicated coupling function
         A Mediation can include multiple connections; for instance, an ICE model might connect to the mediation function, then the mediation function connects to the OCN model.
 
         :param mediator: mediator entry to host this mediation

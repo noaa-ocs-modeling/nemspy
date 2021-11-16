@@ -3,7 +3,7 @@ from .base import EntryType, ModelEntry
 
 class HydrologicalModelEntry(ModelEntry):
     """
-    abstract implementation of a generic hydrological model
+    abstraction of a generic hydrological model
     """
 
     entry_type = EntryType.HYDROLOGICAL

@@ -26,13 +26,21 @@ from .utilities import create_symlink, LOGGER
 
 
 class Earth(AttributeEntry):
+    """
+    multi-model coupling container representing the entire Earth system
+
+    Only one of each model type can be assigned to the Earth system model at a time.
+    """
+
     entry_title = 'EARTH'
 
     def __init__(self, **models):
         """
-        multi-model coupling container representing the entire Earth system
-
-        Only one of each model type can be assigned to the Earth system model at a time.
+        :param atm: atmospheric wind model
+        :param wav: oceanic wave model
+        :param ocn: oceanic circulation model
+        :param hyd: terrestrial water model
+        :param med: model mediator
         """
 
         if 'Verbosity' not in models:
@@ -102,14 +110,16 @@ class Earth(AttributeEntry):
 
 
 class RunSequence(AttributeEntry, SequenceEntry):
+    """
+    multi-model container for model entries, defining the sequence in which they run within the modeled time loop
+
+    NOTE: Currently, only one loop is supported. Nested loops will be implemented in a future version of NEMSpy.
+    """
+
     entry_title = 'Run Sequence'
 
     def __init__(self, interval: timedelta, **kwargs):
         """
-        multi-model container for model entries, defining the sequence in which they run within the modeled time loop
-
-        NOTE: Currently, only one loop is supported. Nested loops will be implemented in a future version of NEMSpy.
-
         :param interval: time interval to repeat the main loop in modeled time
         """
 
@@ -367,12 +377,14 @@ class RunSequence(AttributeEntry, SequenceEntry):
 
 
 class ConfigurationFile(ABC):
+    """
+    abstraction of a configuration file
+    """
+
     name: str = NotImplementedError
 
     def __init__(self, sequence: RunSequence):
         """
-        abstraction of a configuration file
-
         :param sequence: run sequence object containing models and order
         """
 
@@ -488,6 +500,10 @@ class FileForcingsFile(ConfigurationFile):
 
 
 class ModelConfigurationFile(ConfigurationFile):
+    """
+    `model_configure` file, containing information on modeled start and end times, as well as ensemble information also aliased to `atm_namelist.rc`
+    """
+
     name = 'model_configure'
 
     def __init__(
@@ -498,9 +514,6 @@ class ModelConfigurationFile(ConfigurationFile):
         create_atm_namelist_rc: bool = True,
     ):
         """
-        `model_configure` file, containing information on modeled start and end times, as well as ensemble information
-        also aliased to `atm_namelist.rc`
-
         :param start_time: start time in model time
         :param duration: duration in model time
         :param sequence: run sequence containing models, connections, and order

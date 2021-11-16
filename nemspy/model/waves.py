@@ -16,7 +16,10 @@ class WaveModelEntry(ModelEntry):
 
 class WaveWatch3ForcingEntry(WaveModelEntry, FileForcingEntry):
     """
-    WaveWatch III mesh reference
+    file forcing entry for WaveWatch III data
+
+    :example:
+    >>> wave_mesh = WaveWatch3ForcingEntry(filename='ww3.Constant.20151214_sxy_ike_date.nc', processors=1)
     """
 
     name = 'ww3data'

@@ -16,12 +16,41 @@ from .utilities import parse_datetime
 
 
 class ModelingSystem:
+    """
+    main user interface class of NEMSpy, providing configuration and output to files
+
+    :example:
+    >>> from datetime import datetime, timedelta
+    >>> from nemspy import ModelingSystem
+    >>> from nemspy.model import ADCIRCEntry, AtmosphericForcingEntry, WaveWatch3ForcingEntry
+    >>> # instantiate model system with model entries
+    >>> nems = ModelingSystem(
+    >>>     start_time=datetime(2020, 6, 1),
+    >>>     end_time=start_time + timedelta(days=1),
+    >>>     interval=timedelta(hours=1),
+    >>>     ocn=ADCIRCEntry(processors=11),
+    >>>     atm=AtmosphericForcingEntry(filename='wind_atm_fin_ch_time_vec.nc'),
+    >>>     wav=WaveWatch3ForcingEntry(filename='ww3.Constant.20151214_sxy_ike_date.nc'),
+    >>> )
+    >>> # form connections between models
+    >>> nems.connect('ATM', 'OCN')
+    >>> nems.connect('WAV', 'OCN')
+    >>> # define execution order
+    >>> nems.sequence = [
+    >>>     'ATM -> OCN',
+    >>>     'WAV -> OCN',
+    >>>     'ATM',
+    >>>     'WAV',
+    >>>     'OCN',
+    >>> ]
+    >>> # write configuration files to the given directory
+    >>> nems.write('nems_configuration')
+    """
+
     def __init__(
         self, start_time: datetime, end_time: datetime, interval: timedelta, **models,
     ):
         """
-        the NEMSpy public class, providing configuration and output to files
-
         :param start_time: start time within the modeled system
         :param end_time: end time within the modeled system
         :param interval: time interval of top-level run sequence
