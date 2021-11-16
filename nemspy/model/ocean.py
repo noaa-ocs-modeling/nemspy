@@ -17,7 +17,6 @@ class ADCIRCEntry(OceanModelEntry):
     Advanced Circulation (ADCIRC) model
     http://adcirc.org
 
-    :example:
     >>> ocean_model = ADCIRCEntry(processors=11, Verbosity='max', DumpFields=False)
     """
 

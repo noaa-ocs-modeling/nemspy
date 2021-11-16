@@ -19,7 +19,6 @@ class ModelingSystem:
     """
     main user interface class of NEMSpy, providing configuration and output to files
 
-    :example:
     >>> from datetime import datetime, timedelta
     >>> from nemspy import ModelingSystem
     >>> from nemspy.model import ADCIRCEntry, AtmosphericForcingEntry, WaveWatch3ForcingEntry
