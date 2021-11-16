@@ -261,7 +261,7 @@ class ModelingSystem:
     @property
     def connections(self) -> List[str]:
         """
-        string representations of coupling connections in format `'WAV -> HYD'`
+        string representations of coupling connections in format ``'WAV -> HYD'``
         """
 
         return [str(connection) for connection in self.__sequence.connections]

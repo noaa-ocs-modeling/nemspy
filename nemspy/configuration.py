@@ -455,7 +455,7 @@ class ConfigurationFile(ABC):
 
 class NEMSConfigurationFile(ConfigurationFile):
     """
-    `nems.configure` file, containing NEMS members, coupling connections, and run sequence information
+    ``nems.configure`` file, containing NEMS members, coupling connections, and run sequence information
     """
 
     name = 'nems.configure'
@@ -478,7 +478,7 @@ class NEMSConfigurationFile(ConfigurationFile):
 
 class FileForcingsFile(ConfigurationFile):
     """
-    `config.rc` file, containing paths to forcing files
+    ``config.rc`` file, containing paths to forcing files
     """
 
     name = 'config.rc'
@@ -501,7 +501,7 @@ class FileForcingsFile(ConfigurationFile):
 
 class ModelConfigurationFile(ConfigurationFile):
     """
-    `model_configure` file, containing information on modeled start and end times, as well as ensemble information also aliased to `atm_namelist.rc`
+    ``model_configure`` file, containing information on modeled start and end times, as well as ensemble information also aliased to ``atm_namelist.rc``
     """
 
     name = 'model_configure'
@@ -517,7 +517,7 @@ class ModelConfigurationFile(ConfigurationFile):
         :param start_time: start time in model time
         :param duration: duration in model time
         :param sequence: run sequence containing models, connections, and order
-        :param create_atm_namelist_rc: whether to create a symlink to `atm_namelist.rc`
+        :param create_atm_namelist_rc: whether to create a symlink to ``atm_namelist.rc``
         """
 
         self.start_time = start_time

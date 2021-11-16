@@ -47,12 +47,12 @@ class GridRemapMethod(Enum):
 
 class FileForcingEntry(ABC):
     """
-    abstraction of a forcing entry in `config.rc`, defining the file path to a forcing file
+    abstraction of a forcing entry in ``config.rc``, defining the file path to a forcing file
     """
 
     def __init__(self, entry_type: EntryType, filename: PathLike = None):
         """
-        :param entry_type: type of file forcing (i.e. `ATM`, `ICE`, etc.)
+        :param entry_type: type of file forcing (i.e. ``ATM``, ``ICE``, etc.)
         :param filename: path to file
         """
 
@@ -64,7 +64,7 @@ class FileForcingEntry(ABC):
 
     def __str__(self) -> str:
         """
-        string representation of the forcing entry in `config.rc`
+        string representation of the forcing entry in ``config.rc``
         """
 
         if self.filename is not None:
@@ -97,7 +97,7 @@ class ConfigurationEntry(ABC):
 
 class AttributeEntry(ABC):
     """
-    abstraction of a configuration entry in `nems.configure`
+    abstraction of a configuration entry in ``nems.configure``
     """
 
     entry_title: str = NotImplementedError
@@ -106,7 +106,7 @@ class AttributeEntry(ABC):
     @abstractmethod
     def __str__(self) -> str:
         """
-        string representation of the configuration entry in `nems.configure`
+        string representation of the configuration entry in ``nems.configure``
         """
 
         raise NotImplementedError
@@ -133,14 +133,14 @@ class AttributeEntry(ABC):
 
 class SequenceEntry(ABC):
     """
-    abstraction of an entry within the run sequence in `nems.configure`
+    abstraction of an entry within the run sequence in ``nems.configure``
     """
 
     @property
     @abstractmethod
     def sequence_entry(self) -> str:
         """
-        string representation of the sequence entry in `nems.configure`
+        string representation of the sequence entry in ``nems.configure``
         """
 
         raise NotImplementedError
@@ -159,7 +159,7 @@ class ModelEntry(AttributeEntry, SequenceEntry, ConfigurationEntry):
 
     def __init__(self, processors: int, **attributes):
         """
-        The model entry is represented in two places in `nems.configure`: once as a configuration entry with attributes, and once in the run sequence.
+        The model entry is represented in two places in ``nems.configure``: once as a configuration entry with attributes, and once in the run sequence.
         The specific processors assigned to the model are defined by start and stop indices, which are determined on configuration write from the stop index of the previous entry in the run sequence.
 
         :param processors: number of processors to assign to this model
@@ -337,14 +337,14 @@ class ModelEntry(AttributeEntry, SequenceEntry, ConfigurationEntry):
 
 class ConnectionEntry(SequenceEntry, ConfigurationEntry):
     """
-    a connection entry in `nems.configure` representing a simple coupling between two model entries
+    a connection entry in ``nems.configure`` representing a simple coupling between two model entries
     """
 
     def __init__(self, source: ModelEntry, target: ModelEntry, method: GridRemapMethod = None):
         """
         :param source: source model entry
         :param target: target model entry
-        :param method: remapping method with which to translate between differing grids (use `redist` for the same grid)
+        :param method: remapping method with which to translate between differing grids (use ``redist`` for the same grid)
         """
 
         self.source = source
@@ -397,7 +397,7 @@ class ConnectionEntry(SequenceEntry, ConfigurationEntry):
 
 class MediatorEntry(ModelEntry):
     """
-    a special entry in `nems.configure` representing a coupler between two model entries with a dedicated coupling function
+    a special entry in ``nems.configure`` representing a coupler between two model entries with a dedicated coupling function
     """
 
     entry_type = EntryType.MEDIATOR
@@ -415,7 +415,7 @@ class MediatorEntry(ModelEntry):
 
 class MediationFunctionEntry(SequenceEntry, ConfigurationEntry):
     """
-    the dedicated function of a mediation entry, applied to the coupling between two model entries in `nems.configure`
+    the dedicated function of a mediation entry, applied to the coupling between two model entries in ``nems.configure``
     """
 
     def __init__(self, name: str, mediator: MediatorEntry):
@@ -464,7 +464,7 @@ class MediationEntry(SequenceEntry, ConfigurationEntry):
         :param sources: source models
         :param functions: mediation functions to use
         :param targets: target models
-        :param method: remapping method with which to translate between differing grids (use `redist` for the same grid)
+        :param method: remapping method with which to translate between differing grids (use ``redist`` for the same grid)
         """
 
         if functions is None:
