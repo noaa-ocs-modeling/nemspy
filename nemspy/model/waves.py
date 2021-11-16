@@ -26,7 +26,7 @@ class WaveWatch3ForcingEntry(WaveModelEntry, FileForcingEntry):
             processors = 1
         # Uses ww3data as name but the implementation is model agnostic
         WaveModelEntry.__init__(self, processors, **kwargs)
-        FileForcingEntry.__init__(self, self.model_type, filename)
+        FileForcingEntry.__init__(self, self.entry_type, filename)
 
 
 class WaveWatch3Entry(WaveModelEntry):

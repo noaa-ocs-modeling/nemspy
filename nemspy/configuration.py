@@ -83,9 +83,9 @@ class Earth(AttributeEntry):
 
         return '\n'.join(
             [
-                f'{self.entry_type}_component_list: '
+                f'{self.entry_title}_component_list: '
                 f'{" ".join(model_type.value for model_type, model in self.models.items() if model is not None)}',
-                f'{self.entry_type}_attributes::',
+                f'{self.entry_title}_attributes::',
                 indent('\n'.join(attributes), INDENTATION),
                 '::',
             ]

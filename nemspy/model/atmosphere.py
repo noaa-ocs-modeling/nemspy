@@ -25,7 +25,7 @@ class AtmosphericForcingEntry(AtmosphericModelEntry, FileForcingEntry):
         if processors is None:
             processors = 1
         AtmosphericModelEntry.__init__(self, processors, **kwargs)
-        FileForcingEntry.__init__(self, self.model_type, filename)
+        FileForcingEntry.__init__(self, self.entry_type, filename)
 
 
 class HWRFEntry(AtmosphericModelEntry):

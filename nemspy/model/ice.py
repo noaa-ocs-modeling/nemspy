@@ -26,4 +26,4 @@ class IceForcingEntry(IceModelEntry, FileForcingEntry):
             processors = 1
         # Uses ww3data as name but the implementation is model agnostic
         IceModelEntry.__init__(self, processors, **kwargs)
-        FileForcingEntry.__init__(self, self.model_type, filename)
+        FileForcingEntry.__init__(self, self.entry_type, filename)

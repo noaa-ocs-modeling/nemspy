@@ -276,9 +276,9 @@ class ModelEntry(AttributeEntry, SequenceEntry, ConfigurationEntry):
     def __str__(self) -> str:
         return '\n'.join(
             [
-                f'{self.entry_type}_model:                      {self.name}',
-                f'{self.entry_type}_petlist_bounds:             {self.start_processor} {self.end_processor}',
-                f'{self.entry_type}_attributes::',
+                f'{self.entry_type.value}_model:                      {self.name}',
+                f'{self.entry_type.value}_petlist_bounds:             {self.start_processor} {self.end_processor}',
+                f'{self.entry_type.value}_attributes::',
                 indent(
                     '\n'.join(
                         [
@@ -352,7 +352,7 @@ class ConnectionEntry(SequenceEntry, ConfigurationEntry):
     @property
     def sequence_entry(self) -> str:
         return (
-            f'{self.source.entry_type} -> {self.target.entry_type}'.ljust(13)
+            f'{self.source.entry_type.value} -> {self.target.entry_type.value}'.ljust(13)
             + f':remapMethod={self.method.value}'
         )
 
@@ -415,7 +415,7 @@ class MediationFunctionEntry(SequenceEntry, ConfigurationEntry):
 
     @property
     def sequence_entry(self) -> str:
-        return f'{self.mediator.model_type.value} {self.name}'
+        return f'{self.mediator.entry_type.value} {self.name}'
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({repr(self.name)}, {repr(self.mediator)})'
