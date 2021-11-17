@@ -1,13 +1,12 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum
+from importlib import metadata as importlib_metadata
 import os
 from os import PathLike
 from pathlib import Path
 from textwrap import indent
 from typing import Iterator, List, Tuple, Union
-
-from dunamai import Version
 
 from .model.base import (
     AttributeEntry,
@@ -399,9 +398,12 @@ class ConfigurationFile(ABC):
         comment header indicating filename and NEMSpy version
         """
 
-        try:
-            version = Version.from_any_vcs().serialize()
-        except RuntimeError:
+        installed_distributions = importlib_metadata.distributions()
+        for distribution in installed_distributions:
+            if distribution.metadata['Name'].lower() == 'nemspy':
+                version = distribution.version
+                break
+        else:
             version = 'unknown'
         return f'# `{self.name}` generated with NEMSpy {version}'
 
