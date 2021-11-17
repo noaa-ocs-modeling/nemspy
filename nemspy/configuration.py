@@ -294,7 +294,7 @@ class RunSequence(AttributeEntry, SequenceEntry):
     @property
     def processors(self) -> int:
         """
-        :returns: total number of processors assigned to sequence entries
+        total number of processors assigned to sequence entries
         """
 
         return sum(model.processors for model in self.__models.values())

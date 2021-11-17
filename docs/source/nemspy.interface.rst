@@ -1,7 +1,4 @@
-``ModelingSystem``
-==================
+``ModelingSystem`` Interface
+============================
 
 .. automodule:: nemspy.interface
-   :members:
-   :undoc-members:
-   :show-inheritance:

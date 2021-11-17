@@ -5,7 +5,7 @@ from .base import EntryType, FileForcingEntry, ModelEntry
 
 class AtmosphericModelEntry(ModelEntry):
     """
-    abstract implementation of a generic atmospheric model
+    abstraction of a generic atmospheric model
     """
 
     entry_type = EntryType.ATMOSPHERIC

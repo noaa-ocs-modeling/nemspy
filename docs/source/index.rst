@@ -5,6 +5,6 @@
 
    readme
    nemspy.interface
-   nemspy.configuration
    nemspy.model
+   nemspy.configuration
    nemspy.utilities

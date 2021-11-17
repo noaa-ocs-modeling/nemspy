@@ -10,6 +10,10 @@
 NEMSpy generates configuration files (`nems.configure`, `config.rc`, `model_configure`, `atm_namelist.rc`)
 for coupled modeling applications run with a compiled NEMS binary (not included).
 
+```shell
+pip install nemspy
+```
+
 NEMS implements
 the [National Unified Operational Prediction Capability (NUOPC)](https://www.earthsystemcog.org/projects/nuopc/), and
 configuration files built for NEMS will also work for most NUOPC applications.

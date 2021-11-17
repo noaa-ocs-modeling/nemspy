@@ -2,6 +2,5 @@ Utilities
 =========
 
 .. automodule:: nemspy.utilities
-   :members:
-   :undoc-members:
-   :show-inheritance:
+
+.. autoclass:: nemspy.configuration.ensure_directory
