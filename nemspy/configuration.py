@@ -1,12 +1,17 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum
-from importlib import metadata as importlib_metadata
 import os
 from os import PathLike
 from pathlib import Path
+import sys
 from textwrap import indent
 from typing import Iterator, List, Tuple, Union
+
+if sys.version_info >= (3, 8):
+    from importlib import metadata as importlib_metadata
+else:
+    import importlib_metadata
 
 from .model.base import (
     AttributeEntry,
