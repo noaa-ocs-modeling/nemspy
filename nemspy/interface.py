@@ -3,16 +3,10 @@ from os import PathLike
 from pathlib import Path
 from typing import Dict, List
 
-from .configuration import (
-    ConfigurationFile,
-    ensure_directory,
-    FileForcingsFile,
-    ModelConfigurationFile,
-    NEMSConfigurationFile,
-    RunSequence,
-)
-from .model.base import ConnectionEntry, EntryType, GridRemapMethod, MediationEntry, ModelEntry
-from .utilities import parse_datetime
+from nemspy.configuration import ConfigurationFile, FileForcingsFile, ModelConfigurationFile, NEMSConfigurationFile, \
+    RunSequence, ensure_directory
+from nemspy.model.base import ConnectionEntry, EntryType, GridRemapMethod, MediationEntry, ModelEntry
+from nemspy.utilities import parse_datetime
 
 
 class ModelingSystem:

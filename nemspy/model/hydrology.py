@@ -1,4 +1,4 @@
-from .base import EntryType, ModelEntry
+from nemspy.model.base import EntryType, ModelEntry
 
 
 class HydrologicalModelEntry(ModelEntry):

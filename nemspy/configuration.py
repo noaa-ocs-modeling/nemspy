@@ -13,20 +13,9 @@ if sys.version_info >= (3, 8):
 else:
     import importlib_metadata
 
-from .model.base import (
-    AttributeEntry,
-    ConnectionEntry,
-    EntryType,
-    FileForcingEntry,
-    GridRemapMethod,
-    INDENTATION,
-    MediationEntry,
-    MediatorEntry,
-    ModelEntry,
-    SequenceEntry,
-    VerbosityOption,
-)
-from .utilities import create_symlink, LOGGER
+from nemspy.model.base import AttributeEntry, ConnectionEntry, EntryType, FileForcingEntry, GridRemapMethod, INDENTATION, \
+    MediationEntry, MediatorEntry, ModelEntry, SequenceEntry, VerbosityOption
+from nemspy.utilities import create_symlink, LOGGER
 
 
 class Earth(AttributeEntry):

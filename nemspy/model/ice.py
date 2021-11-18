@@ -1,6 +1,6 @@
 from os import PathLike
 
-from .base import EntryType, FileForcingEntry, ModelEntry
+from nemspy.model.base import EntryType, FileForcingEntry, ModelEntry
 
 
 class IceModelEntry(ModelEntry):
