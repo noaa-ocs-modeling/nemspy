@@ -26,7 +26,7 @@ NEMSpy is developed by the [Coastal Marine Modeling Branch (CMMB)](https://coast
 - Saeed Moghimi - saeed.moghimi@noaa.gov
 - Jaime Calzada (past)
 
-## Usage
+## usage
 
 ```python
 from datetime import datetime, timedelta
@@ -86,7 +86,7 @@ nems.write(directory=output_directory, overwrite=True, include_version=True)
 
 ```
 
-## Output
+## output
 
 ### `nems.configure`
 
@@ -161,7 +161,7 @@ ENS_SPS:                 .false.
  wav_nam: ww3.Constant.20151214_sxy_ike_date.nc
 ```
 
-## Related Projects
+## related projects
 
 - [NOAA-EMC/NEMS](https://github.com/NOAA-EMC/NEMS)
 - [esmf-org/esmf](https://github.com/esmf-org/esmf)
