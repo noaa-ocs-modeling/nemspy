@@ -20,7 +20,7 @@ configuration files built for NEMS will also work for most NUOPC applications.
 
 ## organization / responsibility
 
-NEMSpy is developed by the [Coastal Marine Modeling Branch (CMMB)](https://coastaloceanmodels.noaa.gov) of the Office of Coast Survey (OCS), a part of the [National Oceanographic and Atmospheric Administration (NOAA)](https://www.noaa.gov), an agency of the United States federal government.
+NEMSpy is developed by the [Coastal Marine Modeling Branch (CMMB)](https://coastaloceanmodels.noaa.gov) of the Office of Coast Survey (OCS), a part of the [National Oceanic and Atmospheric Administration (NOAA)](https://www.noaa.gov), an agency of the United States federal government.
 
 - Zachary Burnett (**lead**) - zachary.burnett@noaa.gov
 - Saeed Moghimi - saeed.moghimi@noaa.gov
