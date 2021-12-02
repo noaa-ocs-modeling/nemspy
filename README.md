@@ -19,6 +19,8 @@ NEMS implements
 the [National Unified Operational Prediction Capability (NUOPC)](https://www.earthsystemcog.org/projects/nuopc/), and
 configuration files built for NEMS will also work for most NUOPC applications.
 
+Documentation can be found at https://nemspy.readthedocs.io
+
 ## organization / responsibility
 
 NEMSpy is developed by the [Coastal Marine Modeling Branch (CMMB)](https://coastaloceanmodels.noaa.gov) of the Office of Coast Survey (OCS), a part of the [National Oceanic and Atmospheric Administration (NOAA)](https://www.noaa.gov), an agency of the United States federal government.
