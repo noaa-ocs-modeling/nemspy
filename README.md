@@ -6,6 +6,7 @@
 [![version](https://img.shields.io/pypi/v/nemspy)](https://pypi.org/project/nemspy)
 [![license](https://img.shields.io/github/license/noaa-ocs-modeling/nemspy)](https://creativecommons.org/share-your-work/public-domain/cc0)
 [![style](https://sourceforge.net/p/oitnb/code/ci/default/tree/_doc/_static/oitnb.svg?format=raw)](https://sourceforge.net/p/oitnb/code)
+[![documentation](https://readthedocs.org/projects/nemspy/badge/?version=latest)](https://nemspy.readthedocs.io/en/latest/?badge=latest)
 
 NEMSpy generates configuration files (`nems.configure`, `config.rc`, `model_configure`, `atm_namelist.rc`)
 for coupled modeling applications run with a compiled NEMS binary (not included).
