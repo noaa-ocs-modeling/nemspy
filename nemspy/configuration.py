@@ -405,7 +405,10 @@ class ConfigurationFile(ABC):
 
         installed_distributions = importlib_metadata.distributions()
         for distribution in installed_distributions:
-            if distribution.metadata['Name'].lower() == 'nemspy':
+            if (
+                distribution.metadata['Name'] is not None
+                and distribution.metadata['Name'].lower() == 'nemspy'
+            ):
                 version = distribution.version
                 break
         else:
