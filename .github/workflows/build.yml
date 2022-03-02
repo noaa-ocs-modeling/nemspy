@@ -20,12 +20,12 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: restore cached dependencies
+      - name: load cached `~/.local`
         uses: actions/cache@v2
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('setup.py') }}
-          restore-keys: ${{ runner.os }}-pip-${{ steps.setup-python.outputs.python-version }}-
+          path: ~/.local
+          key: ${{ runner.os }}-python${{ matrix.python-version }}-${{ hashFiles('pyproject.toml', 'setup.*') }}
+          restore-keys: ${{ runner.os }}-python${{ matrix.python-version }}-
       - name: build wheel
         run: pip wheel . -w dist --no-deps
       - name: save wheel
