@@ -22,7 +22,6 @@ jobs:
         with:
           path: ${{ env.pythonLocation }}
           key: lint-${{ runner.os }}-${{ env.pythonLocation }}-${{ hashFiles('pyproject.toml', 'setup.*') }}
-          restore-keys: ${{ runner.os }}-${{ env.pythonLocation }}-
       - name: install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install ".[development]"
@@ -53,7 +52,6 @@ jobs:
         with:
           path: ${{ env.pythonLocation }}
           key: test-${{ runner.os }}-${{ env.pythonLocation }}-${{ hashFiles('pyproject.toml', 'setup.*') }}
-          restore-keys: ${{ runner.os }}-${{ env.pythonLocation }}-
       - name: install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
         run: pip install ".[testing]"
