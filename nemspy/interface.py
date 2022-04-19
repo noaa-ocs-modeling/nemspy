@@ -3,6 +3,8 @@ from os import PathLike
 from pathlib import Path
 from typing import Dict, List
 
+import typepigeon as typepigeon
+
 from nemspy.configuration import (
     ConfigurationFile,
     ensure_directory,
@@ -18,7 +20,6 @@ from nemspy.model.base import (
     MediationEntry,
     ModelEntry,
 )
-from nemspy.utilities import parse_datetime
 
 
 class ModelingSystem:
@@ -106,7 +107,7 @@ class ModelingSystem:
 
     @start_time.setter
     def start_time(self, start_time: datetime):
-        start_time = parse_datetime(start_time)
+        start_time = typepigeon.convert_value(start_time, datetime)
         self.__start_time = start_time
         if self.start_time > self.end_time:
             self.start_time = self.end_time
@@ -122,7 +123,7 @@ class ModelingSystem:
 
     @end_time.setter
     def end_time(self, end_time: datetime):
-        end_time = parse_datetime(end_time)
+        end_time = typepigeon.convert_value(end_time, datetime)
         self.__end_time = end_time
         if self.end_time < self.start_time:
             self.end_time = self.start_time

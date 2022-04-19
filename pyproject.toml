@@ -20,6 +20,7 @@ enable = true
 
 [tool.poetry.dependencies]
 python = '^3.6'
+typepigeon = '*'
 isort = { version = '*', optional = true }
 oitnb = { version = '*', optional = true }
 pytest = { version = '*', optional = true }
