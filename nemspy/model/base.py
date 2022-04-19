@@ -94,6 +94,14 @@ class ConfigurationEntry(ABC):
 
         raise NotImplementedError
 
+    @abstractmethod
+    def __copy__(self) -> 'ConfigurationEntry':
+        raise NotImplementedError()
+
+    @abstractmethod
+    def __eq__(self, other: 'ConfigurationEntry') -> bool:
+        raise NotImplementedError()
+
 
 class AttributeEntry(ABC):
     """
@@ -177,6 +185,39 @@ class ModelEntry(AttributeEntry, SequenceEntry, ConfigurationEntry):
 
         # http://www.earthsystemmodeling.org/esmf_releases/last_built/NUOPC_refdoc/node3.html#SECTION00033000000000000000
         self.attributes = attributes
+
+    @classmethod
+    def from_string(cls, string: str, **kwargs) -> 'ModelEntry':
+        lines = string.splitlines()
+
+        parsed_model_type, parsed_name = (value.strip() for value in lines[0].split('_model:'))
+        parsed_model_type = EntryType(parsed_model_type)
+
+        if hasattr(cls, 'model_type'):
+            assert parsed_model_type == cls.entry_type
+        if hasattr(cls, 'name'):
+            assert parsed_name == cls.name
+
+        start_processor, end_processor = [
+            int(entry) for entry in lines[1].split('_petlist_bounds:')[-1].strip().split()
+        ]
+
+        attributes = {}
+        for attribute_line in lines[3:-1]:
+            key, value = (value.strip() for value in attribute_line.split('='))
+            attributes[key] = value
+
+        instance = cls(processors=end_processor + 1 - start_processor, **attributes)
+
+        if not hasattr(cls, 'model_type'):
+            instance.entry_type = parsed_model_type
+        if not hasattr(cls, 'name'):
+            instance.name = parsed_name
+
+        return instance
+
+    def __copy__(self) -> 'ModelEntry':
+        return self.__class__(processors=self.processors, **self.attributes)
 
     @property
     def entry_title(self) -> str:
@@ -300,39 +341,18 @@ class ModelEntry(AttributeEntry, SequenceEntry, ConfigurationEntry):
             ]
         )
 
+    def __eq__(self, other: 'ModelEntry') -> bool:
+        return (
+            isinstance(other, ModelEntry)
+            and self.entry_title == other.entry_title
+            and self.processors == other.processors
+            and {key: str(value) for key, value in self.attributes.items()}
+            == {key: str(value) for key, value in other.attributes.items()}
+        )
+
     def __repr__(self) -> str:
         kwargs = [f'{key}={value}' for key, value in self.attributes.items()]
         return f'{self.__class__.__name__}({repr(self.name)}, {self.entry_type}, {self.processors}, {", ".join(kwargs)})'
-
-    @classmethod
-    def from_string(cls, string: str, **kwargs) -> 'ModelEntry':
-        lines = string.splitlines()
-
-        parsed_model_type, parsed_name = (value.strip() for value in lines[0].split('_model:'))
-        parsed_model_type = EntryType(parsed_model_type)
-
-        if hasattr(cls, 'model_type'):
-            assert parsed_model_type == cls.entry_type
-        if hasattr(cls, 'name'):
-            assert parsed_name == cls.name
-
-        start_processor, end_processor = [
-            int(entry) for entry in lines[1].split('_petlist_bounds:')[-1].strip().split()
-        ]
-
-        attributes = {}
-        for attribute_line in lines[3:-1]:
-            key, value = (value.strip() for value in attribute_line.split('='))
-            attributes[key] = value
-
-        instance = cls(processors=end_processor + 1 - start_processor, **attributes, **kwargs,)
-
-        if not hasattr(cls, 'model_type'):
-            instance.entry_type = parsed_model_type
-        if not hasattr(cls, 'name'):
-            instance.name = parsed_name
-
-        return instance
 
 
 class ConnectionEntry(SequenceEntry, ConfigurationEntry):
@@ -350,24 +370,6 @@ class ConnectionEntry(SequenceEntry, ConfigurationEntry):
         self.source = source
         self.target = target
         self.method = method if method is not None else GridRemapMethod.BILINEAR
-
-    @property
-    def models(self) -> List[ModelEntry]:
-        """
-        the source and target models in the coupling
-        """
-
-        return [self.source, self.target]
-
-    @property
-    def sequence_entry(self) -> str:
-        return (
-            f'{self.source.entry_type.value} -> {self.target.entry_type.value}'.ljust(13)
-            + f':remapMethod={self.method.value}'
-        )
-
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({repr(self.source)}, {repr(self.target)}, {repr(self.method)})'
 
     @classmethod
     def from_string(cls, string: str, **kwargs) -> 'ConnectionEntry':
@@ -393,6 +395,35 @@ class ConnectionEntry(SequenceEntry, ConfigurationEntry):
         target_model.entry_type = EntryType(target)
 
         return cls(source=source_model, target=target_model, method=method)
+
+    def __copy__(self) -> 'ConnectionEntry':
+        return self.__class__(source=self.source, target=self.target, method=self.method)
+
+    @property
+    def models(self) -> List[ModelEntry]:
+        """
+        the source and target models in the coupling
+        """
+
+        return [self.source, self.target]
+
+    @property
+    def sequence_entry(self) -> str:
+        return (
+            f'{self.source.entry_type.value} -> {self.target.entry_type.value}'.ljust(13)
+            + f':remapMethod={self.method.value}'
+        )
+
+    def __eq__(self, other: 'ConnectionEntry') -> bool:
+        return (
+            isinstance(other, ConnectionEntry)
+            and self.source == other.source
+            and self.target == other.target
+            and self.method == other.method
+        )
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({repr(self.source)}, {repr(self.target)}, {repr(self.method)})'
 
 
 class MediatorEntry(ModelEntry):
@@ -427,13 +458,6 @@ class MediationFunctionEntry(SequenceEntry, ConfigurationEntry):
         self.name = name
         self.mediator = mediator
 
-    @property
-    def sequence_entry(self) -> str:
-        return f'{self.mediator.entry_type.value} {self.name}'
-
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({repr(self.name)}, {repr(self.mediator)})'
-
     @classmethod
     def from_string(cls, string: str, **kwargs) -> 'MediationFunctionEntry':
         """
@@ -442,6 +466,23 @@ class MediationFunctionEntry(SequenceEntry, ConfigurationEntry):
 
         mediator_name, function_name = string.split()
         return cls(name=function_name, mediator=MediatorEntry(mediator_name))
+
+    def __copy__(self) -> 'MediationFunctionEntry':
+        return self.__class__(name=self.name, mediator=self.mediator)
+
+    @property
+    def sequence_entry(self) -> str:
+        return f'{self.mediator.entry_type.value} {self.name}'
+
+    def __eq__(self, other: 'MediationFunctionEntry') -> bool:
+        return (
+            isinstance(other, MediationFunctionEntry)
+            and self.name == other.name
+            and self.mediator == other.mediator
+        )
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({repr(self.name)}, {repr(self.mediator)})'
 
 
 class MediationEntry(SequenceEntry, ConfigurationEntry):
@@ -479,6 +520,66 @@ class MediationEntry(SequenceEntry, ConfigurationEntry):
         self.sources = sources
         self.targets = targets
         self.method = method
+
+    @classmethod
+    def from_string(cls, string: str, **kwargs) -> 'MediationEntry':
+        lines = string.strip().splitlines()
+
+        connections = []
+        functions = []
+        for line in lines:
+            if len(line) > 0:
+                if '->' in line:
+                    parts = [entry.strip() for entry in line.split('->')]
+                    method = None
+                    if ':' in parts[-1]:
+                        parts[-1], method = [
+                            entry.strip() for entry in parts[-1].split(':remapMethod=')
+                        ]
+                    if len(parts) == 2:
+                        connection = ConnectionEntry.from_string(line)
+                    else:
+                        connection = ConnectionEntry(
+                            source=parts[0], target=parts[-1], method=method
+                        )
+                    connections.append(connection)
+                else:
+                    functions.append(MediationFunctionEntry.from_string(line))
+
+        mediator = None
+        function_names = []
+        for function in functions:
+            if mediator is None:
+                mediator = function.mediator
+            function_names.append(function.name)
+
+        method = None
+        sources = []
+        targets = []
+        for connection in connections:
+            if method is None:
+                method = connection.method
+            if connection.source.name != mediator.name:
+                sources.append(connection.source)
+            if connection.target.name != mediator.name:
+                targets.append(connection.target)
+
+        return cls(
+            mediator=mediator,
+            sources=sources,
+            functions=function_names,
+            targets=targets,
+            method=method,
+        )
+
+    def __copy__(self) -> 'MediationEntry':
+        return self.__class__(
+            mediator=self.mediator,
+            sources=self.sources,
+            functions=[mediator_function.name for mediator_function in self.functions],
+            targets=self.targets,
+            method=self.method,
+        )
 
     @property
     def source_connections(self) -> List[ConnectionEntry]:
@@ -532,56 +633,14 @@ class MediationEntry(SequenceEntry, ConfigurationEntry):
             )
         )
 
+    def __eq__(self, other: 'MediationEntry') -> bool:
+        return (
+            self.mediator == other.mediator
+            and self.sources == other.sources
+            and self.functions == other.functions
+            and self.targets == other.targets
+            and self.method == other.method
+        )
+
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({repr(self.mediator)}, {repr(self.sources)}, {repr(self.functions)}, {repr(self.targets)}, {repr(self.method)})'
-
-    @classmethod
-    def from_string(cls, string: str, **kwargs) -> 'MediationEntry':
-        lines = string.strip().splitlines()
-
-        connections = []
-        functions = []
-        for line in lines:
-            if len(line) > 0:
-                if '->' in line:
-                    parts = [entry.strip() for entry in line.split('->')]
-                    method = None
-                    if ':' in parts[-1]:
-                        parts[-1], method = [
-                            entry.strip() for entry in parts[-1].split(':remapMethod=')
-                        ]
-                    if len(parts) == 2:
-                        connection = ConnectionEntry.from_string(line)
-                    else:
-                        connection = ConnectionEntry(
-                            source=parts[0], target=parts[-1], method=method
-                        )
-                    connections.append(connection)
-                else:
-                    functions.append(MediationFunctionEntry.from_string(line))
-
-        mediator = None
-        function_names = []
-        for function in functions:
-            if mediator is None:
-                mediator = function.mediator
-            function_names.append(function.name)
-
-        method = None
-        sources = []
-        targets = []
-        for connection in connections:
-            if method is None:
-                method = connection.method
-            if connection.source.name != mediator.name:
-                sources.append(connection.source)
-            if connection.target.name != mediator.name:
-                targets.append(connection.target)
-
-        return cls(
-            mediator=mediator,
-            sources=sources,
-            functions=function_names,
-            targets=targets,
-            method=method,
-        )

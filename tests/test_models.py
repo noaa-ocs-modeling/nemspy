@@ -1,19 +1,23 @@
-from nemspy.model import ADCIRCEntry, AtmosphericForcingEntry, WaveWatch3ForcingEntry
-from nemspy.utilities import repository_root
+from copy import copy
 
-REFERENCE_DIRECTORY = repository_root() / 'tests/reference'
-ATMOSPHERIC_MESH_FILENAME = REFERENCE_DIRECTORY / 'wind_atm_fin_ch_time_vec.nc'
-WAVE_MESH_FILENAME = REFERENCE_DIRECTORY / 'ww3.Constant.20151214_sxy_ike_date.nc'
+from nemspy.model import ADCIRCEntry, AtmosphericForcingEntry, WaveWatch3ForcingEntry
+from tests import INPUT_DIRECTORY
+
+ATMOSPHERIC_MESH_FILENAME = INPUT_DIRECTORY / 'wind_atm_fin_ch_time_vec.nc'
+WAVE_MESH_FILENAME = INPUT_DIRECTORY / 'ww3.Constant.20151214_sxy_ike_date.nc'
 
 
 def test_model():
-    model = AtmosphericForcingEntry(
+    model_1 = AtmosphericForcingEntry(
         ATMOSPHERIC_MESH_FILENAME, Verbosity='off', test='value', test2=5,
     )
-    model.start_processor = 0
+    model_1.start_processor = 0
+
+    model_2 = copy(model_1)
+    model_3 = AtmosphericForcingEntry.from_string(str(model_1))
 
     assert (
-        str(model) == 'ATM_model:                      atmesh\n'
+        str(model_1) == 'ATM_model:                      atmesh\n'
         'ATM_petlist_bounds:             0 0\n'
         'ATM_attributes::\n'
         '  Verbosity = off\n'
@@ -21,6 +25,9 @@ def test_model():
         '  test2 = 5\n'
         '::'
     )
+
+    assert model_2 == model_1
+    assert model_3 == model_1
 
 
 def test_processors():

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum
+import logging
 import os
 from os import PathLike
 from pathlib import Path
@@ -26,7 +27,7 @@ from nemspy.model.base import (
     SequenceEntry,
     VerbosityOption,
 )
-from nemspy.utilities import create_symlink, LOGGER
+from nemspy.utilities import create_symlink
 
 
 class Earth(AttributeEntry):
@@ -75,7 +76,7 @@ class Earth(AttributeEntry):
     def __setitem__(self, model_type: EntryType, model: ModelEntry):
         assert model_type == model.entry_type
         if self.__models[model_type] is not None:
-            LOGGER.warning(
+            logging.debug(
                 f'overwriting existing "{model_type.name}" model: ' f'{repr(self[model_type])}'
             )
         self.__models[model_type] = model
@@ -324,7 +325,7 @@ class RunSequence(AttributeEntry, SequenceEntry):
         assert model_type == model.entry_type
         if model_type in self.__models:
             existing_model = self.__models[model_type]
-            LOGGER.warning(
+            logging.debug(
                 f'overwriting {model_type.name} model ' f'"{existing_model}" with "{model}"'
             )
             self.__sequence.remove(self.__sequence.index(existing_model))
@@ -437,12 +438,12 @@ class ConfigurationFile(ABC):
 
         if filename.is_dir():
             filename = filename / self.name
-            LOGGER.warning(
+            logging.debug(
                 f'creating new file "{os.path.relpath(filename.resolve(), Path.cwd())}"'
             )
 
         if filename.exists():
-            LOGGER.warning(
+            logging.debug(
                 f'{"overwriting" if overwrite else "skipping"} existing file "{os.path.relpath(filename.resolve(), Path.cwd())}"'
             )
         if not filename.exists() or overwrite:

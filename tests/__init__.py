@@ -3,9 +3,7 @@ from os import PathLike
 from pathlib import Path
 import re
 
-from nemspy.utilities import repository_root
-
-DATA_DIRECTORY = repository_root() / 'tests' / 'data'
+DATA_DIRECTORY = Path(__file__).parent / 'data'
 INPUT_DIRECTORY = DATA_DIRECTORY / 'input'
 OUTPUT_DIRECTORY = DATA_DIRECTORY / 'output'
 REFERENCE_DIRECTORY = DATA_DIRECTORY / 'reference'
