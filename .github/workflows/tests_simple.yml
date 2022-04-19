@@ -2,9 +2,8 @@ name: tests
 
 on:
   push:
-    branches:
-      - '*'
-      - '!main'
+    branches-ignore:
+      - main
 
 jobs:
   lint:
