@@ -29,3 +29,6 @@ pytest-xdist = { version = '*', optional = true }
 m2r2 = { version = '*', optional = true }
 sphinx = { version = '*', optional = true }
 sphinx-rtd-theme = { version = '*', optional = true }
+
+[tool.poetry.extras]
+documentation = ['dunamai', 'm2r2', 'sphinx', 'sphinx-rtd-theme']
